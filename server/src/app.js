@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
@@ -9,11 +10,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
-
-// Import your routes here
-// app.use('/api/users', userRoutes);
 
 export default app;
