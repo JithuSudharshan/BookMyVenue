@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, EyeOff, Eye } from 'lucide-react';
-import axios from 'axios';
+import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
 
@@ -19,13 +19,18 @@ const Login = () => {
     setApiError('');
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/login', {
-        identifier: data.email,
+      const res = await authApi.login({
+        email: data.email.trim().toLowerCase(),
         password: data.password
       });
-      login(res.data);
+      login(res);
+      
+      const role = res.user.role;
+      if (role === 'admin') navigate('/admin-dashboard');
+      else if (role === 'vendor') navigate('/vendor-dashboard');
+      else navigate('/home');
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Login failed. Please try again.');
+      setApiError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }

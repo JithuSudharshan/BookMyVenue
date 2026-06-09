@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { authApi } from '../api/auth-api/authApi';
 
 export const AuthContext = createContext();
 
@@ -15,11 +15,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const res = await axios.get('http://localhost:5001/api/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const res = await authApi.getMe();
       setUser(res.data);
     } catch (error) {
       console.error('Error fetching user:', error);

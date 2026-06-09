@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { authApi } from '../api/auth-api/authApi';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
@@ -19,9 +19,9 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/auth/verify-email/${token}`);
+        const res = await authApi.verifyEmail(token);
         setStatus('success');
-        setUserData(res.data);
+        setUserData(res);
       } catch (err) {
         setStatus('error');
         setMessage(err.response?.data?.message || 'Verification failed. The link may be expired or already used.');

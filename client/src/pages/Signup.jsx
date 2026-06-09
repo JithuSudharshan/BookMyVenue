@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, EyeOff, Eye, User, Phone, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
@@ -35,8 +35,8 @@ const CustomerSignup = () => {
     if (!email || errors.email) return;
     
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/check-email', { email });
-      if (!res.data.available) {
+      const res = await authApi.checkEmail(email);
+      if (!res.available) {
         setError('email', { type: 'manual', message: 'This email is already registered.' });
         setEmailAvailable(false);
       } else {
@@ -53,8 +53,8 @@ const CustomerSignup = () => {
     if (!phone || errors.phone || phone.length !== 10) return;
     
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/check-phone', { phone });
-      if (!res.data.available) {
+      const res = await authApi.checkPhone(phone);
+      if (!res.available) {
         setError('phone', { type: 'manual', message: 'This phone number is already registered.' });
         setPhoneAvailable(false);
       } else {
@@ -70,7 +70,7 @@ const CustomerSignup = () => {
     setApiError('');
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/register', {
+      const res = await authApi.register({
         firstName: data.firstName.trim(),
         lastName: data.lastName ? data.lastName.trim() : '',
         email: data.email.trim().toLowerCase(),

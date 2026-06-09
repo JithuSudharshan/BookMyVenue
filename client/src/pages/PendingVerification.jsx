@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, RefreshCw, ArrowLeft } from 'lucide-react';
-import axios from 'axios';
+import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 
 const PendingVerification = () => {
@@ -60,7 +60,7 @@ const PendingVerification = () => {
     setError('');
 
     try {
-      await axios.post('http://localhost:5001/api/auth/resend-verification', { email });
+      await authApi.resendVerification(email);
       setMessage('Verification link resent! Please check your inbox.');
       
       // Start 60s cooldown
