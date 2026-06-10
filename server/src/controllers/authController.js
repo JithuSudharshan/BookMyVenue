@@ -2,9 +2,24 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import CustomerProfile from '../models/CustomerProfile.js';
+import VendorProfile from '../models/VendorProfile.js';
 import redisClient from '../config/redis.js';
-import { sendVerificationEmail } from '../utils/sendEmail.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/sendEmail.js';
 import { validateSignupData } from '../utils/validation.js';
+
+const deleteOldTokens = async (prefix, userId) => {
+  try {
+    const keys = await redisClient.keys(`${prefix}:*`);
+    for (const key of keys) {
+      const storedId = await redisClient.get(key);
+      if (storedId === userId.toString()) {
+        await redisClient.del(key);
+      }
+    }
+  } catch (err) {
+    console.error(`Error deleting old ${prefix} tokens:`, err);
+  }
+};
 
 // Generate JWT
 const generateToken = (id) => {
@@ -64,6 +79,7 @@ export const register = async (req, res) => {
       );
 
       // Store in Redis (TTL 15 mins = 900 seconds)
+      await deleteOldTokens('verify', user._id);
       await redisClient.setEx(`verify:${verifyToken}`, 900, user._id.toString());
 
       // Send Verification Email
@@ -89,15 +105,16 @@ export const register = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 export const login = async (req, res) => {
-  const { identifier, password } = req.body; // identifier can be email or phone, but we'll use email for now
+  const { identifier, email, password } = req.body; 
+  const userIdentifier = identifier || email;
 
-  if (!identifier || !password) {
+  if (!userIdentifier || !password) {
     return res.status(400).json({ message: 'Please provide email and password' });
   }
 
   try {
     // Check for user email
-    const user = await User.findOne({ email: identifier }).select('+password');
+    const user = await User.findOne({ email: userIdentifier }).select('+password');
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -238,6 +255,7 @@ export const resendVerification = async (req, res) => {
       { expiresIn: '15m' }
     );
     
+    await deleteOldTokens('verify', user._id);
     await redisClient.setEx(`verify:${verifyToken}`, 900, user._id.toString());
     await sendVerificationEmail(user.email, verifyToken);
     
@@ -245,6 +263,49 @@ export const resendVerification = async (req, res) => {
   } catch (error) {
     console.error('Resend verification error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Forgot Password Request
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    
+    // User requested: "when th user enters an email id which is not already and user the verify mail shoundt be send"
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with that email address.' });
+    }
+
+    // Generate reset token
+    const resetToken = jwt.sign(
+      { id: user._id, type: 'password_reset' }, 
+      process.env.JWT_SECRET || 'secret123', 
+      { expiresIn: '15m' }
+    );
+    
+    // Store in Redis
+    await deleteOldTokens('reset', user._id);
+    await redisClient.setEx(`reset:${resetToken}`, 900, user._id.toString());
+    
+    // Send email
+    const emailSent = await sendPasswordResetEmail(user.email, resetToken);
+    
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send password reset email.' });
+    }
+
+    res.json({ message: 'Password reset link sent to your email.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error during password reset request.' });
   }
 };
 
@@ -267,5 +328,65 @@ export const checkPhone = async (req, res) => {
   const formattedPhone = String(phone).replace(/[\s-]/g, '');
   const phoneExists = await CustomerProfile.findOne({ phone: formattedPhone });
   res.json({ available: !phoneExists });
+};
+
+// @desc    Reset Password via Token
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+export const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  
+  if (!token || !password) {
+    return res.status(400).json({ message: 'Token and new password are required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+    
+    if (decoded.type !== 'password_reset') {
+      return res.status(400).json({ message: 'Invalid token type' });
+    }
+
+    const userId = decoded.id;
+
+    // Check Redis
+    const redisKey = `reset:${token}`;
+    const storedUserId = await redisClient.get(redisKey);
+
+    if (!storedUserId) {
+      return res.status(400).json({ message: `Password reset link has expired or has already been used.` });
+    }
+    
+    if (storedUserId !== userId) {
+      return res.status(400).json({ message: `Redis: User mismatch. Expected ${userId}, got ${storedUserId}.` });
+    }
+
+    // Find the user (include password to check against the new one)
+    const user = await User.findById(userId).select('+password');
+    if (!user) {
+       return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Check if new password is the same as the current password
+    const isSamePassword = await user.matchPassword(password);
+    if (isSamePassword) {
+      return res.status(400).json({ 
+        message: 'Unable to update password. Please choose a different password and try again.' 
+      });
+    }
+
+    // Update password
+    user.password = password;
+    await user.save(); // This will trigger the pre-save hook to hash the new password
+
+    // Remove token from Redis
+    await redisClient.del(redisKey);
+
+    res.json({ message: 'Password has been successfully reset.' });
+  } catch (err) {
+    console.error('Password reset error:', err);
+    return res.status(400).json({ message: `Invalid or expired token.` });
+  }
 };
 

@@ -10,6 +10,7 @@ import CustomerSignup from './pages/Signup';
 import PendingVerification from './pages/PendingVerification';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 
 import VendorDashboard from './pages/VendorDashboard';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/signup" element={<SignupSelection />} />
             <Route path="/customer-signup" element={<CustomerSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             
             {/* Auth Utility Routes - Protected from authenticated users going back */}
             <Route path="/verify-email/pending" element={<PendingVerification />} />
