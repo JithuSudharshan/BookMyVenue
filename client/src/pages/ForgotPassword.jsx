@@ -5,6 +5,9 @@ import { Mail, ArrowLeft, Loader2, MailCheck, RefreshCw } from 'lucide-react';
 import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 
+import InputField from '../components/common/InputField';
+import SubmitButton from '../components/common/SubmitButton';
+
 const ForgotPassword = () => {
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -62,37 +65,24 @@ const ForgotPassword = () => {
               {apiError}
             </div>
           )}
-          {/* Email Input */}
-          <div className="space-y-base">
-            <label className="block font-label-sm text-label-sm text-on-surface" htmlFor="email">Email</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
-                <Mail className="w-5 h-5" />
-              </div>
-              <input 
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
-                })}
-                id="email" 
-                type="email" 
-                placeholder="Enter your email" 
-                className={`block w-full pl-10 pr-3 py-3 border ${errors.email ? 'border-error focus:ring-error' : 'border-outline-variant focus:ring-primary'} rounded-lg bg-surface font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2`}
-              />
-            </div>
-            {errors.email && <p className="text-error font-label-sm mt-1">{errors.email.message}</p>}
-          </div>
+          
+          <InputField 
+            id="email"
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            icon={Mail}
+            error={errors.email}
+            register={register}
+            registerOptions={{ 
+              required: 'Email is required',
+              pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
+            }}
+          />
 
           {/* Submit Action */}
           <div className="pt-stack-sm">
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md text-on-primary-container bg-primary-container hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
+            <SubmitButton text="Send Reset Link" loadingText="Sending..." loading={loading} />
           </div>
         </form>
       ) : (

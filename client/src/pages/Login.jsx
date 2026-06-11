@@ -6,8 +6,11 @@ import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
 
+import InputField from '../components/common/InputField';
+import PasswordInput from '../components/common/PasswordInput';
+import SubmitButton from '../components/common/SubmitButton';
+
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
@@ -49,55 +52,30 @@ const Login = () => {
           </div>
         )}
 
-        {/* Email Input */}
-        <div className="space-y-base">
-          <label className="block font-label-sm text-label-sm text-on-surface" htmlFor="email">Email</label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
-              <Mail className="w-5 h-5" />
-            </div>
-            <input 
-              {...register('email', { 
-                required: 'Email is required',
-                pattern: {
-                  value: /^\S+@\S+$/i,
-                  message: 'Invalid email format'
-                }
-              })}
-              id="email" 
-              type="text" 
-              placeholder="Enter your email" 
-              className={`block w-full pl-10 pr-3 py-3 border ${errors.email ? 'border-error focus:ring-error focus:border-error' : 'border-outline-variant focus:ring-primary focus:border-primary'} rounded-lg bg-surface font-body-md text-body-md text-on-surface placeholder:text-secondary-fixed-dim focus:outline-none focus:ring-2 transition-shadow`}
-            />
-          </div>
-          {errors.email && <p className="text-error font-label-sm mt-1">{errors.email.message}</p>}
-        </div>
+        <InputField 
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+          icon={Mail}
+          error={errors.email}
+          register={register}
+          registerOptions={{ 
+            required: 'Email is required',
+            pattern: {
+              value: /^\S+@\S+$/i,
+              message: 'Invalid email format'
+            }
+          }}
+        />
 
-        {/* Password Input */}
-        <div className="space-y-base">
-          <label className="block font-label-sm text-label-sm text-on-surface" htmlFor="password">Password</label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
-              <Lock className="w-5 h-5" />
-            </div>
-            <input 
-              {...register('password', { required: 'Password is required' })}
-              id="password" 
-              type={showPassword ? 'text' : 'password'} 
-              placeholder="••••••••" 
-              className={`block w-full pl-10 pr-10 py-3 border ${errors.password ? 'border-error focus:ring-error focus:border-error' : 'border-outline-variant focus:ring-primary focus:border-primary'} rounded-lg bg-surface font-body-md text-body-md text-on-surface placeholder:text-secondary-fixed-dim focus:outline-none focus:ring-2 transition-shadow`}
-            />
-            {/* Visibility Toggle */}
-            <button 
-              type="button" 
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-primary transition-colors focus:outline-none"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          </div>
-          {errors.password && <p className="text-error font-label-sm mt-1">{errors.password.message}</p>}
-        </div>
+        <PasswordInput 
+          id="password"
+          label="Password"
+          error={errors.password}
+          register={register}
+          registerOptions={{ required: 'Password is required' }}
+        />
 
         {/* Form Utilities */}
         <div className="flex items-center justify-between pt-2">
@@ -120,13 +98,7 @@ const Login = () => {
 
         {/* Submit Action */}
         <div className="pt-stack-sm">
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md text-on-primary-container bg-primary-container hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98] disabled:opacity-70"
-          >
-            {loading ? 'Signing in...' : 'Login'}
-          </button>
+          <SubmitButton text="Login" loadingText="Signing in..." loading={loading} />
         </div>
       </form>
 
