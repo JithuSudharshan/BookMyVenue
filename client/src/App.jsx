@@ -1,19 +1,22 @@
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/user/ProfilePage';
 
 function App() {
   return (
-    <div className="app-container">
-      <header className="header">
-        <h1>BookMyVenue</h1>
-        <p>Your one-stop destination for booking amazing venues.</p>
-      </header>
-      <main className="main-content">
-        <h2>Welcome to the Platform</h2>
-        <p>Start building your elegant UI here.</p>
-        <button className="cta-button">Explore Venues</button>
-      </main>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="user/profile" element={<ProfilePage />} />
+          {/* <Route path="vendor/profile" element={<VendorProfilePage />} /> */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
