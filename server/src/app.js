@@ -13,7 +13,11 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Import your routes here
-// app.use('/api/users', userRoutes);
+import userRoutes from './routes/userRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
+
+// Mount routes
+app.use('/api/users', userRoutes);
+app.use('/api/profile', profileRoutes);
 
 export default app;
