@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import redisClient from '../config/redis.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/sendEmail.js';
-import { validateSignupData } from '../validators/authValidator.js';
+import { validateSignupData, validateVendorSignupData } from '../validators/authValidator.js';
 import userRepository from '../repositories/userRepository.js';
 import AppError from '../utils/AppError.js';
 
@@ -86,6 +86,69 @@ class AuthService {
       console.error('User registration error:', error);
       if (error instanceof AppError) throw error;
       throw new AppError('Server error during registration', 500);
+    }
+  }
+
+  async registerVendor(data) {
+    const validation = validateVendorSignupData(data);
+    
+    if (!validation.isValid) {
+      throw new AppError(validation.errors[0], 400);
+    }
+
+    const { firstName, lastName, email, phone, password } = validation.sanitizedData;
+
+    const userExists = await userRepository.findUserByEmail(email);
+    if (userExists) {
+      throw new AppError('Email already in use', 400);
+    }
+
+    // Optional: We can check phone against VendorProfile or a general phone check
+    // Assuming checkPhoneAvailability checks CustomerProfile, we probably need a check for VendorProfile.
+    // For now we just create, and if it fails due to unique constraint, we catch it.
+    // Let's add a check for Vendor phone. We need a method in userRepository for this.
+    // We will assume phone is checked inside the creation block or we add it to the repo later.
+
+    let user;
+    try {
+      user = await userRepository.createUser({
+        email,
+        password,
+        role: 'vendor',
+      });
+
+      try {
+        await userRepository.createVendorProfile({
+          userId: user._id,
+          firstName,
+          lastName,
+          phone,
+        });
+
+        const verifyToken = jwt.sign(
+          { id: user._id, type: 'email_verification' }, 
+          process.env.JWT_SECRET || 'secret123', 
+          { expiresIn: '15m' }
+        );
+
+        await this.deleteOldTokens('verify', user._id);
+        await redisClient.setEx(`verify:${verifyToken}`, 900, user._id.toString());
+
+        await sendVerificationEmail(user.email, verifyToken);
+
+        return {
+          email: user.email,
+          message: 'Vendor registration successful. Please check your email to verify your account.',
+        };
+      } catch (profileError) {
+        await userRepository.findUserByIdWithoutPassword(user._id).then(u => u?.deleteOne());
+        console.error('Vendor profile creation failed, rolled back user:', profileError);
+        throw new AppError('Invalid profile data or phone number already in use', 400);
+      }
+    } catch (error) {
+      console.error('Vendor registration error:', error);
+      if (error instanceof AppError) throw error;
+      throw new AppError('Server error during vendor registration', 500);
     }
   }
 

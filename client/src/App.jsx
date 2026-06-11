@@ -12,6 +12,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
+import VendorSignup from './pages/VendorSignup';
 
 import VendorDashboard from './pages/VendorDashboard';
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignupSelection />} />
             <Route path="/customer-signup" element={<CustomerSignup />} />
+            <Route path="/vendor-signup" element={<VendorSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             

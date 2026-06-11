@@ -18,6 +18,11 @@ export const authApi = {
     return response.data;
   },
 
+  registerVendor: async (vendorData) => {
+    const response = await axiosInstance.post('/auth/register-vendor', vendorData);
+    return response.data;
+  },
+
   login: async (credentials) => {
     const response = await axiosInstance.post('/auth/login', credentials);
     return response.data;

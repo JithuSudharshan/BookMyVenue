@@ -12,6 +12,18 @@ export const register = async (req, res) => {
   }
 };
 
+// @desc    Register a new vendor
+// @route   POST /api/auth/register-vendor
+// @access  Public
+export const registerVendor = async (req, res) => {
+  try {
+    const result = await authService.registerVendor(req.body);
+    res.status(201).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message, errors: error.errors });
+  }
+};
+
 // @desc    Authenticate a user
 // @route   POST /api/auth/login
 // @access  Public

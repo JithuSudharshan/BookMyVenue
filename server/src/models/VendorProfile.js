@@ -8,14 +8,13 @@ const vendorProfileSchema = new mongoose.Schema(
       required: true,
       unique: true, // One-to-one relationship
     },
-    businessName: {
+    firstName: {
       type: String,
-      required: [true, 'Please add a business name'],
+      required: [true, 'Please add a first name'],
       trim: true,
     },
-    ownerName: {
+    lastName: {
       type: String,
-      required: [true, 'Please add the owner name'],
       trim: true,
     },
     phone: {
