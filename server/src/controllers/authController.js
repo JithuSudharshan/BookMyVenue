@@ -32,16 +32,25 @@ export const login = async (req, res) => {
     const { identifier, email, password } = req.body; 
     const result = await authService.loginUser(identifier || email, password);
     
-    // Set the token inside an HttpOnly cookie
-    res.cookie('jwt', result.token, {
+    // Set the accessToken inside an HttpOnly cookie
+    res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
-    // Remove token from response body before sending
-    const { token, ...userData } = result;
+    // Set the refreshToken inside an HttpOnly cookie
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    // Remove tokens from response body before sending
+    const { accessToken, refreshToken, ...userData } = result;
     
     res.json(userData);
   } catch (error) {
@@ -53,12 +62,54 @@ export const login = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 export const logout = async (req, res) => {
-  res.clearCookie('jwt', {
+  const refreshToken = req.cookies.refreshToken;
+  await authService.logoutUser(refreshToken);
+
+  res.clearCookie('accessToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict'
   });
+  
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/api/auth/refresh'
+  });
+
   res.json({ message: 'Logged out successfully' });
+};
+
+// @desc    Refresh Access Token
+// @route   POST /api/auth/refresh
+// @access  Public
+export const refreshToken = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+    const result = await authService.refreshAccessToken(token);
+
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    res.json({ message: 'Tokens refreshed' });
+  } catch (error) {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+    res.status(error.statusCode || 401).json({ message: error.message });
+  }
 };
 
 // @desc    Get user data
@@ -80,16 +131,25 @@ export const verifyEmail = async (req, res) => {
   try {
     const result = await authService.verifyEmailToken(req.params.token);
 
-    // Set the token inside an HttpOnly cookie
-    res.cookie('jwt', result.token, {
+    // Set the accessToken inside an HttpOnly cookie
+    res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
-    // Remove token from response body before sending
-    const { token, ...userData } = result;
+    // Set the refreshToken inside an HttpOnly cookie
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    // Remove tokens from response body before sending
+    const { accessToken, refreshToken, ...userData } = result;
 
     res.json(userData);
   } catch (error) {
@@ -170,11 +230,19 @@ export const googleAuthCallback = async (req, res) => {
     }
 
     // Login successful
-    res.cookie('jwt', result.token, {
+    res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000
+      maxAge: 15 * 60 * 1000
+    });
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     res.redirect(`http://localhost:5173/oauth-success`);
@@ -191,14 +259,22 @@ export const completeGoogleSignup = async (req, res) => {
     const { token, role } = req.body;
     const result = await authService.completeGoogleSignup(token, role);
 
-    res.cookie('jwt', result.token, {
+    res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000
+      maxAge: 15 * 60 * 1000
     });
 
-    const { token: _, ...userData } = result;
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    const { accessToken, refreshToken, ...userData } = result;
     res.json(userData);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });

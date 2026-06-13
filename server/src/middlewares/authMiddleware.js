@@ -5,9 +5,9 @@ import User from '../models/User.js';
 export const protect = async (req, res, next) => {
   let token;
 
-  // Read token from the 'jwt' cookie
-  if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
+  // Read token from the 'accessToken' cookie
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
   }
 
   if (token) {

@@ -5,16 +5,65 @@ const axiosInstance = axios.create({
   withCredentials: true, // Automatically send and receive HttpOnly cookies
 });
 
-// Response Interceptor: Handle global errors (e.g., 401 Unauthorized)
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response Interceptor: Handle global errors and token refresh
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    // If the token is invalid or expired
-    if (error.response && error.response.status === 401) {
-      // The context handles fetching user, so we don't necessarily redirect here 
-      // unless we want to force them out on 401 globally.
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If the error is 401 and we haven't retried yet
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      // If the failing request was the refresh token route itself, reject immediately
+      if (originalRequest.url === '/auth/refresh' || originalRequest.url === '/auth/login') {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Queue the request until the token is refreshed
+        return new Promise(function(resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then(() => {
+          return axiosInstance(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        // Attempt to refresh the token
+        await axiosInstance.post('/auth/refresh');
+        
+        isRefreshing = false;
+        processQueue(null);
+        
+        // Retry the original request
+        return axiosInstance(originalRequest);
+      } catch (err) {
+        isRefreshing = false;
+        processQueue(err);
+        
+        // Dispatch custom event to notify AuthContext to clear state
+        window.dispatchEvent(new Event('auth-logout'));
+        
+        return Promise.reject(err);
+      }
     }
     return Promise.reject(error);
   }

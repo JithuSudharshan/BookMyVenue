@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { register, registerVendor, login, logout, getMe, verifyEmail, resendVerification, checkEmail, checkPhone, forgotPassword, resetPassword, googleAuthCallback, completeGoogleSignup } from '../controllers/authController.js';
+import { register, registerVendor, login, logout, refreshToken, getMe, verifyEmail, resendVerification, checkEmail, checkPhone, forgotPassword, resetPassword, googleAuthCallback, completeGoogleSignup } from '../controllers/authController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.post('/register', register);
 router.post('/register-vendor', registerVendor);
 router.post('/login', login);
 router.post('/logout', logout);
+router.post('/refresh', refreshToken);
 router.get('/me', protect, getMe);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification', resendVerification);

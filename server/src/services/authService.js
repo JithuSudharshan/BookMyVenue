@@ -20,9 +20,15 @@ class AuthService {
     }
   }
 
-  generateToken(id) {
+  generateAccessToken(id) {
     return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
-      expiresIn: '30d',
+      expiresIn: '15m',
+    });
+  }
+
+  generateRefreshToken(id) {
+    return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET || 'refreshSecret123', {
+      expiresIn: '7d',
     });
   }
 
@@ -184,11 +190,16 @@ class AuthService {
     user.lastLogin = Date.now();
     await userRepository.saveUser(user);
 
+    const accessToken = this.generateAccessToken(user._id);
+    const refreshToken = this.generateRefreshToken(user._id);
+    await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
+
     return {
       _id: user.id,
       email: user.email,
       role: user.role,
-      token: this.generateToken(user._id),
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -250,10 +261,13 @@ class AuthService {
 
     await redisClient.del(redisKey);
 
-    const authToken = this.generateToken(user._id);
+    const accessToken = this.generateAccessToken(user._id);
+    const refreshToken = this.generateRefreshToken(user._id);
+    await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
     
     return { 
-      token: authToken, 
+      accessToken,
+      refreshToken,
       user: {
         _id: user._id,
         email: user.email,
@@ -393,11 +407,16 @@ class AuthService {
       userProfile.lastLogin = Date.now();
       await userRepository.saveUser(userProfile);
 
+      const accessToken = this.generateAccessToken(userProfile._id);
+      const refreshToken = this.generateRefreshToken(userProfile._id);
+      await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, userProfile._id.toString());
+
       return {
         _id: userProfile.id,
         email: userProfile.email,
         role: userProfile.role,
-        token: this.generateToken(userProfile._id),
+        accessToken,
+        refreshToken,
       };
     }
 
@@ -435,11 +454,16 @@ class AuthService {
         });
       }
 
+      const accessToken = this.generateAccessToken(user._id);
+      const refreshToken = this.generateRefreshToken(user._id);
+      await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
+
       return {
         _id: user.id,
         email: user.email,
         role: user.role,
-        token: this.generateToken(user._id),
+        accessToken,
+        refreshToken,
       };
     } catch (error) {
       if (user) await userRepository.findUserByIdWithoutPassword(user._id).then(u => u?.deleteOne());
@@ -469,6 +493,61 @@ class AuthService {
     }
 
     return await this.createGoogleAccount(email, googleId, role, firstName, lastName, profileImage);
+  }
+  async refreshAccessToken(refreshToken) {
+    if (!refreshToken) {
+      throw new AppError('No refresh token provided', 401);
+    }
+
+    // Check Redis for active refresh token
+    const redisKey = `refresh:${refreshToken}`;
+    const storedUserId = await redisClient.get(redisKey);
+
+    if (!storedUserId) {
+      throw new AppError('Refresh token expired or invalid', 401);
+    }
+
+    // Verify token structure and expiration (even though Redis is the source of truth, it's good practice)
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refreshSecret123');
+    } catch (error) {
+      // If token is invalid/expired, remove from Redis
+      await redisClient.del(redisKey);
+      throw new AppError('Refresh token invalid', 401);
+    }
+
+    if (decoded.id !== storedUserId) {
+      await redisClient.del(redisKey);
+      throw new AppError('Token mismatch', 401);
+    }
+
+    const user = await userRepository.findUserById(storedUserId);
+    if (!user || user.isBlocked) {
+      await redisClient.del(redisKey);
+      throw new AppError('User not found or blocked', 403);
+    }
+
+    // Token Rotation: Invalidate old token and issue new ones
+    await redisClient.del(redisKey);
+    
+    const newAccessToken = this.generateAccessToken(user._id);
+    const newRefreshToken = this.generateRefreshToken(user._id);
+    
+    // Store new refresh token
+    await redisClient.setEx(`refresh:${newRefreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken
+    };
+  }
+
+  async logoutUser(refreshToken) {
+    if (refreshToken) {
+      await redisClient.del(`refresh:${refreshToken}`);
+    }
+    return { message: 'Logged out successfully' };
   }
 }
 

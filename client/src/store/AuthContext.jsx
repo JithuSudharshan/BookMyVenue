@@ -21,6 +21,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     fetchUser();
+
+    const handleAuthLogout = () => {
+      setUser(null);
+    };
+
+    window.addEventListener('auth-logout', handleAuthLogout);
+    
+    return () => {
+      window.removeEventListener('auth-logout', handleAuthLogout);
+    };
   }, []);
 
   const login = () => {
