@@ -31,10 +31,34 @@ export const login = async (req, res) => {
   try {
     const { identifier, email, password } = req.body; 
     const result = await authService.loginUser(identifier || email, password);
-    res.json(result);
+    
+    // Set the token inside an HttpOnly cookie
+    res.cookie('jwt', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    // Remove token from response body before sending
+    const { token, ...userData } = result;
+    
+    res.json(userData);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
+};
+
+// @desc    Logout a user
+// @route   POST /api/auth/logout
+// @access  Public
+export const logout = async (req, res) => {
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  res.json({ message: 'Logged out successfully' });
 };
 
 // @desc    Get user data
@@ -55,7 +79,19 @@ export const getMe = async (req, res) => {
 export const verifyEmail = async (req, res) => {
   try {
     const result = await authService.verifyEmailToken(req.params.token);
-    res.json(result);
+
+    // Set the token inside an HttpOnly cookie
+    res.cookie('jwt', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    // Remove token from response body before sending
+    const { token, ...userData } = result;
+
+    res.json(userData);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }

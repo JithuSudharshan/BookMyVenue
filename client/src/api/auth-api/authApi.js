@@ -28,6 +28,11 @@ export const authApi = {
     return response.data;
   },
 
+  logout: async () => {
+    const response = await axiosInstance.post('/auth/logout');
+    return response.data;
+  },
+
   // Email Verification
   verifyEmail: async (token) => {
     const response = await axiosInstance.get(`/auth/verify-email/${token}`);

@@ -2,21 +2,8 @@ import axios from 'axios';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:5001/api',
+  withCredentials: true, // Automatically send and receive HttpOnly cookies
 });
-
-// Request Interceptor: Attach token automatically
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 // Response Interceptor: Handle global errors (e.g., 401 Unauthorized)
 axiosInstance.interceptors.response.use(
@@ -24,10 +11,10 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    // If the token is invalid or expired, we could trigger a logout here
+    // If the token is invalid or expired
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      // window.location.href = '/login'; // Optional: force redirect on 401
+      // The context handles fetching user, so we don't necessarily redirect here 
+      // unless we want to force them out on 401 globally.
     }
     return Promise.reject(error);
   }

@@ -8,18 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await authApi.getMe();
       setUser(res);
     } catch (error) {
-      console.error('Error fetching user:', error);
-      localStorage.removeItem('token');
+      // If 401, user is just not logged in (no valid cookie)
       setUser(null);
     } finally {
       setLoading(false);
@@ -30,15 +23,18 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  const login = (data) => {
-    localStorage.setItem('token', data.token);
+  const login = () => {
     setLoading(true);
-    fetchUser();
+    fetchUser(); // This will fetch the user since the cookie is now set
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authApi.logout();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
   };
 
   return (

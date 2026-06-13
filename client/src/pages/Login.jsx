@@ -26,9 +26,9 @@ const Login = () => {
         email: data.email.trim().toLowerCase(),
         password: data.password
       });
-      login(res);
+      login();
       
-      const role = res.user.role;
+      const role = res.role;
       if (role === 'admin') navigate('/admin-dashboard');
       else if (role === 'vendor') navigate('/vendor-dashboard');
       else navigate('/home');
