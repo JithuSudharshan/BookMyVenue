@@ -5,13 +5,13 @@ import { Mail, Lock, EyeOff, Eye, User, Phone, Loader2 } from 'lucide-react';
 import { authApi } from '../../api/auth-api/authApi';
 import AuthLayout from '../../layouts/AuthLayout';
 import PasswordStrengthMeter from '../common/PasswordStrengthMeter';
+import { toast } from 'sonner';
 
 import InputField from '../common/InputField';
 import PasswordInput from '../common/PasswordInput';
 import SubmitButton from '../common/SubmitButton';
 
 const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
-  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Custom states for async validation
@@ -67,7 +67,6 @@ const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
   };
 
   const onSubmit = async (data) => {
-    setApiError('');
     setLoading(true);
     try {
       const res = await apiCall({
@@ -77,11 +76,12 @@ const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
         phone: data.phone.replace(/[\s-]/g, ''),
         password: data.password
       });
+      toast.success('Registration successful! Please verify your email.');
       // Start 60s cooldown for resend email
       localStorage.setItem(`resendTimer_${data.email.trim().toLowerCase()}`, Date.now().toString());
       navigate('/verify-email/pending', { state: { email: data.email } });
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Registration failed. Please try again.');
+      toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -90,12 +90,6 @@ const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
   return (
     <AuthLayout title={title} subtitle={subtitle}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-stack-md">
-
-        {apiError && (
-          <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm mb-4">
-            {apiError}
-          </div>
-        )}
 
         <div className="flex gap-4">
           <div className="w-1/2">

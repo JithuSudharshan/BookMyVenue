@@ -5,13 +5,13 @@ import { Mail, Lock, EyeOff, Eye } from 'lucide-react';
 import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
+import { toast } from 'sonner';
 
 import InputField from '../components/common/InputField';
 import PasswordInput from '../components/common/PasswordInput';
 import SubmitButton from '../components/common/SubmitButton';
 
 const Login = () => {
-  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -20,14 +20,13 @@ const Login = () => {
   useEffect(() => {
     const errorParam = searchParams.get('error');
     if (errorParam) {
-      setApiError(errorParam);
+      toast.error(errorParam);
     }
   }, [searchParams]);
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
-    setApiError('');
     setLoading(true);
     try {
       const res = await authApi.login({
@@ -35,13 +34,14 @@ const Login = () => {
         password: data.password
       });
       login();
+      toast.success('Logged in successfully!');
       
       const role = res.role;
       if (role === 'admin') navigate('/admin-dashboard');
       else if (role === 'vendor') navigate('/vendor-dashboard');
       else navigate('/home');
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      toast.error(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -58,12 +58,6 @@ const Login = () => {
       subtitle="Please enter your details to sign in to your account."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-stack-md">
-        
-        {apiError && (
-          <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm mb-4">
-            {apiError}
-          </div>
-        )}
 
         <InputField 
           id="email"

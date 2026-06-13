@@ -5,6 +5,7 @@ import { Lock, EyeOff, Eye, Loader2, CheckCircle2 } from 'lucide-react';
 import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
 import PasswordStrengthMeter from '../components/common/PasswordStrengthMeter';
+import { toast } from 'sonner';
 
 import PasswordInput from '../components/common/PasswordInput';
 import SubmitButton from '../components/common/SubmitButton';
@@ -12,8 +13,6 @@ import SubmitButton from '../components/common/SubmitButton';
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-
-  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -24,13 +23,13 @@ const ResetPassword = () => {
   const passwordValue = watch('password', '');
 
   const onSubmit = async (data) => {
-    setApiError('');
     setLoading(true);
     try {
       await authApi.resetPassword(token, data.password);
       setSuccess(true);
+      toast.success('Password successfully reset.');
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Failed to reset password. The link might be expired.');
+      toast.error(err.response?.data?.message || 'Failed to reset password. The link might be expired.');
     } finally {
       setLoading(false);
     }
@@ -68,12 +67,6 @@ const ResetPassword = () => {
       subtitle="Your new password must be different from previous used passwords."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-stack-md mt-6">
-
-        {apiError && (
-          <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm mb-4">
-            {apiError}
-          </div>
-        )}
 
         {/* Password Input */}
         <div className="space-y-base">

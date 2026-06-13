@@ -17,11 +17,23 @@ import OAuthSuccess from './pages/OAuthSuccess';
 
 import VendorDashboard from './pages/VendorDashboard';
 
+import { Toaster } from 'sonner';
+
 const Unauthorized = () => <div className="p-8 text-error">You are not authorized to view this page.</div>;
 
 function App() {
   return (
     <AuthProvider>
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          className: 'bg-surface-container-low text-on-surface font-body-md border border-outline-variant shadow-md rounded-xl',
+          classNames: {
+            success: 'bg-success/10 text-success border-success/20',
+            error: 'bg-error-container text-on-error-container border-error/20',
+          }
+        }}
+      />
       <Router>
         <Routes>
           {/* Root Redirect */}

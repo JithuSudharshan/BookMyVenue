@@ -4,29 +4,29 @@ import { Building2, UserCircle2, Store, ArrowRight, Loader2 } from 'lucide-react
 import AuthLayout from '../layouts/AuthLayout';
 import { authApi } from '../api/auth-api/authApi';
 import { AuthContext } from '../store/AuthContext';
+import { toast } from 'sonner';
 
 const SignupSelection = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const googleToken = searchParams.get('google_token');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
 
   const handleSelection = async (role) => {
     if (googleToken) {
       // User is completing Google Signup
       setLoading(true);
-      setError('');
       try {
         await authApi.completeGoogleSignup(googleToken, role);
         login(); // Context login to load user and set state
+        toast.success('Account created successfully!');
         
         if (role === 'admin') navigate('/admin-dashboard', { replace: true });
         else if (role === 'vendor') navigate('/vendor-dashboard', { replace: true });
         else navigate('/home', { replace: true });
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to complete Google Sign-Up.');
+        toast.error(err.response?.data?.message || 'Failed to complete Google Sign-Up.');
         setLoading(false);
       }
     } else {
@@ -42,12 +42,6 @@ const SignupSelection = () => {
       subtitle={googleToken ? "You're almost there! Choose your account type to finish Google Sign-In." : "How would you like to use our platform?"}
     >
       <div className="space-y-6 mt-4">
-        
-        {error && (
-          <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm mb-4">
-            {error}
-          </div>
-        )}
 
         {/* Customer Selection Card */}
         <button 

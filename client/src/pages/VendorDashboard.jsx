@@ -1,14 +1,24 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../store/AuthContext';
 import { Building2, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 
 const VendorDashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeVendor');
+    if (!hasSeenWelcome) {
+      toast.success('Welcome to the Vendor Portal! You have successfully authenticated.');
+      sessionStorage.setItem('hasSeenWelcomeVendor', 'true');
+    }
+  }, []);
+
   const handleLogout = () => {
     logout();
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 

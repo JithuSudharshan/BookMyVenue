@@ -4,6 +4,7 @@ import { authApi } from '../api/auth-api/authApi';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
+import { toast } from 'sonner';
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -22,9 +23,12 @@ const VerifyEmail = () => {
         const res = await authApi.verifyEmail(token);
         setStatus('success');
         setUserData(res);
+        toast.success('Email verified successfully!');
       } catch (err) {
         setStatus('error');
-        setMessage(err.response?.data?.message || 'Verification failed. The link may be expired or already used.');
+        const errorMessage = err.response?.data?.message || 'Verification failed. The link may be expired or already used.';
+        setMessage(errorMessage);
+        toast.error(errorMessage);
       }
     };
 

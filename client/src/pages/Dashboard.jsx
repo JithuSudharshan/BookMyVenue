@@ -2,22 +2,24 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../store/AuthContext';
 import { Building2, LogOut, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [showNotification, setShowNotification] = useState(true);
 
-  // Auto-hide the welcome notification after 5 seconds
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowNotification(false);
-    }, 5000);
-    return () => clearTimeout(timer);
+    // Only show toast if they just logged in (we could check state, but for now we'll just show it once)
+    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
+    if (!hasSeenWelcome) {
+      toast.success('Welcome to homepage! You have successfully authenticated.');
+      sessionStorage.setItem('hasSeenWelcome', 'true');
+    }
   }, []);
 
   const handleLogout = () => {
     logout();
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 
@@ -46,21 +48,6 @@ const Dashboard = () => {
 
       <main className="max-w-container-max mx-auto p-margin-mobile md:p-margin-desktop mt-8 relative">
         
-        {/* Welcome Notification */}
-        {showNotification && (
-          <div className="absolute top-0 right-margin-mobile md:right-margin-desktop animate-fade-in-down">
-            <div className="bg-success-container border border-success/20 shadow-lg rounded-lg p-4 flex items-start space-x-3 max-w-sm">
-              <CheckCircle2 className="w-6 h-6 text-success shrink-0" />
-              <div>
-                <h3 className="font-label-md text-label-md text-on-surface">Welcome to homepage!</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                  You have successfully authenticated.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Dashboard Content */}
         <div className="bg-surface rounded-2xl p-8 border border-outline-variant shadow-sm mt-16 md:mt-0">
           <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">

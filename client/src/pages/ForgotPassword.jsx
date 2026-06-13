@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2, MailCheck, RefreshCw } from 'lucide-react';
 import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
+import { toast } from 'sonner';
 
 import InputField from '../components/common/InputField';
 import SubmitButton from '../components/common/SubmitButton';
@@ -11,7 +12,6 @@ import SubmitButton from '../components/common/SubmitButton';
 const ForgotPassword = () => {
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -35,13 +35,13 @@ const ForgotPassword = () => {
 
   const sendResetLink = async (email) => {
     setLoading(true);
-    setApiError('');
     try {
       await authApi.forgotPassword(email);
       setSubmittedEmail(email);
       setResendTimer(60); // 60 seconds cooldown
+      toast.success('Reset link sent to your email.');
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
+      toast.error(err.response?.data?.message || 'Failed to send reset link. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -60,12 +60,6 @@ const ForgotPassword = () => {
     >
       {!submittedEmail ? (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-stack-md mt-6">
-          {apiError && (
-            <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm mb-4">
-              {apiError}
-            </div>
-          )}
-          
           <InputField 
             id="email"
             label="Email"
@@ -100,12 +94,6 @@ const ForgotPassword = () => {
               Please check your spam folder if you don't see it within a few minutes.
             </p>
           </div>
-
-          {apiError && (
-            <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm w-full">
-              {apiError}
-            </div>
-          )}
 
           <button 
             onClick={handleResend}
