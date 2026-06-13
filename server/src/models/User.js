@@ -14,9 +14,19 @@ const userSchema = new mongoose.Schema(
         'Please add a valid email',
       ],
     },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
     password: {
       type: String,
-      required: [true, 'Please add a password'],
+      required: function() { return this.authProvider === 'local'; },
       minlength: 8,
       select: false, // Don't return password by default
     },

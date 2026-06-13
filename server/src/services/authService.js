@@ -163,6 +163,10 @@ class AuthService {
       throw new AppError('Invalid credentials', 401);
     }
 
+    if (user.authProvider === 'google') {
+      throw new AppError('This account was created using Google. Please continue with Google Sign-In.', 400);
+    }
+
     if (user.isBlocked) {
       throw new AppError('Your account has been blocked', 403);
     }
@@ -361,6 +365,104 @@ class AuthService {
     const formattedPhone = String(phone).replace(/[\s-]/g, '');
     const phoneExists = await userRepository.findCustomerProfileByPhone(formattedPhone);
     return { available: !phoneExists };
+  }
+
+  async handleGoogleAuth(userProfile) {
+    // If it's a completely new user who came from the login page, they need to select a role.
+    if (userProfile.isNewGoogleUser && userProfile.needsRoleSelection) {
+      const tempToken = jwt.sign(
+        { googleId: userProfile.googleId, email: userProfile.email, firstName: userProfile.firstName, lastName: userProfile.lastName, profileImage: userProfile.profileImage },
+        process.env.JWT_SECRET || 'secret123',
+        { expiresIn: '15m' }
+      );
+      // We can use Redis to store it too, but JWT is stateless and sufficient here since they will just return it.
+      return { needsRoleSelection: true, tempToken };
+    }
+
+    // If it's an existing user just logging in
+    if (!userProfile.isNewGoogleUser) {
+      if (userProfile.isBlocked) {
+        throw new AppError('Your account has been blocked', 403);
+      }
+      userProfile.lastLogin = Date.now();
+      await userRepository.saveUser(userProfile);
+
+      return {
+        _id: userProfile.id,
+        email: userProfile.email,
+        role: userProfile.role,
+        token: this.generateToken(userProfile._id),
+      };
+    }
+
+    // If it's a new user who came from Signup with Google (role is already selected)
+    // Create the account immediately.
+    return await this.createGoogleAccount(userProfile.email, userProfile.googleId, userProfile.requestedRole, userProfile.firstName, userProfile.lastName, userProfile.profileImage);
+  }
+
+  async createGoogleAccount(email, googleId, role, firstName, lastName, profileImage) {
+    let user;
+    try {
+      user = await userRepository.createUser({
+        email,
+        authProvider: 'google',
+        googleId,
+        role,
+        isEmailVerified: true, // Google emails are already verified
+      });
+
+      if (role === 'vendor') {
+        await userRepository.createVendorProfile({
+          userId: user._id,
+          firstName,
+          lastName,
+          phone: '0000000000', // Placeholder, vendor will need to update
+          profileImage
+        });
+      } else {
+        await userRepository.createCustomerProfile({
+          userId: user._id,
+          firstName,
+          lastName,
+          phone: '0000000000', // Placeholder
+          profileImage
+        });
+      }
+
+      return {
+        _id: user.id,
+        email: user.email,
+        role: user.role,
+        token: this.generateToken(user._id),
+      };
+    } catch (error) {
+      if (user) await userRepository.findUserByIdWithoutPassword(user._id).then(u => u?.deleteOne());
+      console.error('Google user creation failed:', error);
+      throw new AppError('Failed to create account via Google.', 500);
+    }
+  }
+
+  async completeGoogleSignup(tempToken, role) {
+    if (!tempToken || !role) {
+      throw new AppError('Token and role are required', 400);
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET || 'secret123');
+    } catch (err) {
+      throw new AppError('Session expired. Please try Google Sign-In again.', 400);
+    }
+
+    const { email, googleId, firstName, lastName, profileImage } = decoded;
+
+    // Double check email availability just in case
+    const existingUser = await userRepository.findUserByEmail(email);
+    if (existingUser) {
+      throw new AppError('An account with this email was created while you were choosing a role.', 400);
+    }
+
+    return await this.createGoogleAccount(email, googleId, role, firstName, lastName, profileImage);
   }
 }
 

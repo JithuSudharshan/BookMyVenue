@@ -9,6 +9,7 @@ const VendorSignup = () => {
       subtitle="Partner with BookMyVenue to list and manage your premium venues."
       buttonText="Create Vendor Account"
       apiCall={authApi.registerVendor}
+      googleRole="vendor"
     />
   );
 };

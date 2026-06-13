@@ -9,6 +9,7 @@ const CustomerSignup = () => {
       subtitle="Join BookMyVenue to find and book premium event spaces."
       buttonText="Create Account"
       apiCall={authApi.register}
+      googleRole="user"
     />
   );
 };

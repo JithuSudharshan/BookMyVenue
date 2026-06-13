@@ -156,3 +156,51 @@ export const resetPassword = async (req, res) => {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
+
+// @desc    Handle Google OAuth callback
+// @route   GET /api/auth/google/callback
+// @access  Public
+export const googleAuthCallback = async (req, res) => {
+  try {
+    const result = await authService.handleGoogleAuth(req.user);
+
+    if (result.needsRoleSelection) {
+      // Redirect to frontend role selection page with the temp token
+      return res.redirect(`http://localhost:5173/signup?google_token=${result.tempToken}`);
+    }
+
+    // Login successful
+    res.cookie('jwt', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    res.redirect(`http://localhost:5173/oauth-success`);
+  } catch (error) {
+    res.redirect(`http://localhost:5173/login?error=${encodeURIComponent(error.message)}`);
+  }
+};
+
+// @desc    Complete Google Signup after role selection
+// @route   POST /api/auth/google/complete-signup
+// @access  Public
+export const completeGoogleSignup = async (req, res) => {
+  try {
+    const { token, role } = req.body;
+    const result = await authService.completeGoogleSignup(token, role);
+
+    res.cookie('jwt', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    const { token: _, ...userData } = result;
+    res.json(userData);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};

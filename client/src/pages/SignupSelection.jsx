@@ -1,22 +1,59 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Building2, UserCircle2, Store, ArrowRight } from 'lucide-react';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Building2, UserCircle2, Store, ArrowRight, Loader2 } from 'lucide-react';
 import AuthLayout from '../layouts/AuthLayout';
+import { authApi } from '../api/auth-api/authApi';
+import { AuthContext } from '../store/AuthContext';
 
 const SignupSelection = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const googleToken = searchParams.get('google_token');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useContext(AuthContext);
+
+  const handleSelection = async (role) => {
+    if (googleToken) {
+      // User is completing Google Signup
+      setLoading(true);
+      setError('');
+      try {
+        await authApi.completeGoogleSignup(googleToken, role);
+        login(); // Context login to load user and set state
+        
+        if (role === 'admin') navigate('/admin-dashboard', { replace: true });
+        else if (role === 'vendor') navigate('/vendor-dashboard', { replace: true });
+        else navigate('/home', { replace: true });
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to complete Google Sign-Up.');
+        setLoading(false);
+      }
+    } else {
+      // Normal flow
+      if (role === 'user') navigate('/customer-signup');
+      else if (role === 'vendor') navigate('/vendor-signup');
+    }
+  };
 
   return (
     <AuthLayout 
       title="Join BookMyVenue" 
-      subtitle="How would you like to use our platform?"
+      subtitle={googleToken ? "You're almost there! Choose your account type to finish Google Sign-In." : "How would you like to use our platform?"}
     >
       <div className="space-y-6 mt-4">
         
+        {error && (
+          <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm mb-4">
+            {error}
+          </div>
+        )}
+
         {/* Customer Selection Card */}
         <button 
-          onClick={() => navigate('/customer-signup')}
-          className="w-full text-left bg-surface-container-low border border-outline-variant hover:border-primary hover:shadow-md transition-all p-6 rounded-xl group relative overflow-hidden"
+          onClick={() => handleSelection('user')}
+          disabled={loading}
+          className="w-full text-left bg-surface-container-low border border-outline-variant hover:border-primary hover:shadow-md transition-all p-6 rounded-xl group relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <div className="flex items-start">
             <div className="bg-primary/10 p-3 rounded-lg text-primary mr-4 group-hover:bg-primary group-hover:text-on-primary transition-colors">
@@ -26,16 +63,17 @@ const SignupSelection = () => {
               <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">I am a Customer</h3>
               <p className="font-body-sm text-body-sm text-on-surface-variant">I want to find, book, and manage premium venues for my upcoming events.</p>
             </div>
-            <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity self-center">
-              <ArrowRight className="w-6 h-6" />
+            <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity self-center flex items-center">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <ArrowRight className="w-6 h-6" />}
             </div>
           </div>
         </button>
 
         {/* Vendor Selection Card */}
         <button 
-          onClick={() => navigate('/vendor-signup')}
-          className="w-full text-left bg-surface-container-low border border-outline-variant hover:border-primary hover:shadow-md transition-all p-6 rounded-xl group relative overflow-hidden"
+          onClick={() => handleSelection('vendor')}
+          disabled={loading}
+          className="w-full text-left bg-surface-container-low border border-outline-variant hover:border-primary hover:shadow-md transition-all p-6 rounded-xl group relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <div className="flex items-start">
             <div className="bg-primary/10 p-3 rounded-lg text-primary mr-4 group-hover:bg-primary group-hover:text-on-primary transition-colors">
@@ -45,8 +83,8 @@ const SignupSelection = () => {
               <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">I am a Vendor</h3>
               <p className="font-body-sm text-body-sm text-on-surface-variant">I own or manage a venue and want to list it for customers to book.</p>
             </div>
-            <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity self-center">
-              <ArrowRight className="w-6 h-6" />
+            <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity self-center flex items-center">
+               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <ArrowRight className="w-6 h-6" />}
             </div>
           </div>
         </button>

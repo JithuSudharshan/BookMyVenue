@@ -23,6 +23,11 @@ export const authApi = {
     return response.data;
   },
 
+  completeGoogleSignup: async (token, role) => {
+    const response = await axiosInstance.post('/auth/google/complete-signup', { token, role });
+    return response.data;
+  },
+
   login: async (credentials) => {
     const response = await axiosInstance.post('/auth/login', credentials);
     return response.data;

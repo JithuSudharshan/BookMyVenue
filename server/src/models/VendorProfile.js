@@ -22,6 +22,10 @@ const vendorProfileSchema = new mongoose.Schema(
       required: [true, 'Please add a business phone number'],
       trim: true,
     },
+    profileImage: {
+      type: String,
+      default: 'default.jpg',
+    },
     description: {
       type: String,
       trim: true,

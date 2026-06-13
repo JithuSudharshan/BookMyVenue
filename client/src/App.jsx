@@ -13,6 +13,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import VendorSignup from './pages/VendorSignup';
+import OAuthSuccess from './pages/OAuthSuccess';
 
 import VendorDashboard from './pages/VendorDashboard';
 
@@ -38,6 +39,7 @@ function App() {
             {/* Auth Utility Routes - Protected from authenticated users going back */}
             <Route path="/verify-email/pending" element={<PendingVerification />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/oauth-success" element={<OAuthSuccess />} />
           </Route>
 
           {/* Protected Routes for Customers */}
