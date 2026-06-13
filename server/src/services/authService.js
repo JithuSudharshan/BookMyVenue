@@ -290,6 +290,10 @@ class AuthService {
       throw new AppError('No account found with that email address.', 404);
     }
 
+    if (user.authProvider === 'google') {
+      throw new AppError('This account is authenticated via Google. Password reset is not available.', 400);
+    }
+
     const resetToken = jwt.sign(
       { id: user._id, type: 'password_reset' }, 
       process.env.JWT_SECRET || 'secret123', 
