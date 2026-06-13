@@ -42,11 +42,11 @@ class UserRepository {
   }
 
   async findCustomerProfileByUserId(userId) {
-    return await CustomerProfile.findOne({ user: userId });
+    return await CustomerProfile.findOne({ userId });
   }
 
   async findVendorProfileByUserId(userId) {
-    return await VendorProfile.findOne({ user: userId });
+    return await VendorProfile.findOne({ userId });
   }
 
   async saveUser(userDoc) {

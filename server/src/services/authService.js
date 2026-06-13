@@ -201,6 +201,8 @@ class AuthService {
     let profile = null;
     if (user.role === 'user') {
       profile = await userRepository.findCustomerProfileByUserId(user._id);
+    } else if (user.role === 'vendor') {
+      profile = await userRepository.findVendorProfileByUserId(user._id);
     }
 
     return {

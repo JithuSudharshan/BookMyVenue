@@ -32,16 +32,31 @@ const Dashboard = () => {
           <span className="font-headline-sm text-headline-sm tracking-tight font-bold">BookMyVenue</span>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <span className="hidden md:inline font-body-sm text-on-surface-variant">
-            {user?.email}
-          </span>
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
+            {user?.profile?.profileImage && user.profile.profileImage !== 'default.jpg' ? (
+              <img src={user.profile.profileImage} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-sm" />
+            ) : (
+              <div className="w-9 h-9 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container font-label-md font-bold shadow-sm">
+                {user?.profile?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <div className="hidden md:flex flex-col text-left">
+              <span className="font-label-md text-on-surface leading-tight">
+                {user?.profile?.firstName || 'User'}
+              </span>
+              <span className="font-body-sm text-on-surface-variant text-xs">
+                {user?.email}
+              </span>
+            </div>
+          </div>
+          <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
           <button 
             onClick={handleLogout}
             className="flex items-center space-x-2 px-4 py-2 rounded-lg font-label-md text-label-md text-error hover:bg-error-container transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>

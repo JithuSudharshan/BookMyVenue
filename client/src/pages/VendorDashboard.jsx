@@ -24,15 +24,39 @@ const VendorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-surface-container-lowest">
-      <header className="bg-surface border-b border-outline-variant px-margin-mobile md:px-margin-desktop py-4 flex items-center justify-between">
+      <header className="bg-surface border-b border-outline-variant px-margin-mobile md:px-margin-desktop py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center space-x-2 text-primary">
           <Building2 className="w-8 h-8" />
-          <span className="font-headline-sm text-headline-sm font-bold">Vendor Portal</span>
+          <span className="font-headline-sm text-headline-sm tracking-tight font-bold">Vendor Portal</span>
         </div>
-        <button onClick={handleLogout} className="flex items-center space-x-2 px-4 py-2 text-error">
-          <LogOut className="w-4 h-4" />
-          <span>Logout</span>
-        </button>
+        
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
+            {user?.profile?.profileImage && user.profile.profileImage !== 'default.jpg' ? (
+              <img src={user.profile.profileImage} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-sm" />
+            ) : (
+              <div className="w-9 h-9 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container font-label-md font-bold shadow-sm">
+                {user?.profile?.firstName?.charAt(0)?.toUpperCase() || 'V'}
+              </div>
+            )}
+            <div className="hidden md:flex flex-col text-left">
+              <span className="font-label-md text-on-surface leading-tight">
+                {user?.profile?.firstName || 'Vendor'}
+              </span>
+              <span className="font-body-sm text-on-surface-variant text-xs">
+                {user?.email}
+              </span>
+            </div>
+          </div>
+          <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg font-label-md text-label-md text-error hover:bg-error-container transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
+        </div>
       </header>
 
       <main className="max-w-container-max mx-auto p-margin-desktop mt-8">
