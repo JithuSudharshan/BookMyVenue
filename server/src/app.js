@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 
+import userRoutes from "./routes/user/index.js";
+
 const app = express();
 
 // Middlewares
@@ -13,7 +15,6 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Import your routes here
-// app.use('/api/users', userRoutes);
+app.use("/api", userRoutes);
 
 export default app;
