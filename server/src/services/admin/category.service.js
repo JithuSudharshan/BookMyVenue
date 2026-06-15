@@ -1,9 +1,19 @@
-import { normalizeName } from "../../utils/normalize-name.js"
+import { normalizeName } from "../../utils/normalize-name.js";
+
 import {
     createCategoryRepository,
     getCategoriesRepository,
-    getCategoryByNameRepository
+    getCategoryByNameRepository,
+    getCategoryByIdRepository,
+    updateCategoryRepository,
+    toggleCategoryStatusRepository
 } from "../../repositories/admin/category.repository.js";
+
+import {
+    blockAllSubcategoriesByCategoryRepository
+} from "../../repositories/admin/subcategory.repository.js";
+
+
 
 export const createCategoryService = async ({
     name,
@@ -11,11 +21,20 @@ export const createCategoryService = async ({
     description
 }) => {
 
-    if (!name || !image) {
-        throw new Error("Category name and image are required");
+    if (!name?.trim()) {
+        throw new Error(
+            "Category name is required"
+        );
     }
 
-    const normalizedName = normalizeName(name);
+    if (!image?.trim()) {
+        throw new Error(
+            "Category image is required"
+        );
+    }
+
+    const normalizedName =
+        normalizeName(name);
 
     const existingCategory =
         await getCategoryByNameRepository(
@@ -28,18 +47,100 @@ export const createCategoryService = async ({
         );
     }
 
-    const categoryData = {
+    return await createCategoryRepository({
         name: normalizedName,
         image,
         description
-    };
-
-    return await createCategoryRepository(
-        categoryData
-    );
+    });
 };
+
+
 
 export const getCategoriesService =
     async () => {
+
         return await getCategoriesRepository();
+    };
+
+
+
+export const updateCategoryService =
+    async (
+        categoryId,
+        updateData
+    ) => {
+
+        const category =
+            await getCategoryByIdRepository(
+                categoryId
+            );
+
+        if (!category) {
+            throw new Error(
+                "Category not found"
+            );
+        }
+
+        if (updateData.name) {
+
+            updateData.name =
+                normalizeName(
+                    updateData.name
+                );
+
+            const existingCategory =
+                await getCategoryByNameRepository(
+                    updateData.name
+                );
+
+            if (
+                existingCategory &&
+                existingCategory._id.toString() !==
+                categoryId
+            ) {
+                throw new Error(
+                    "Category already exists"
+                );
+            }
+        }
+
+        return await updateCategoryRepository(
+            categoryId,
+            updateData
+        );
+    };
+
+
+
+export const toggleCategoryStatusService =
+    async (
+        categoryId,
+        isActive
+    ) => {
+
+        const category =
+            await getCategoryByIdRepository(
+                categoryId
+            );
+
+        if (!category) {
+            throw new Error(
+                "Category not found"
+            );
+        }
+
+        const updatedCategory =
+            await toggleCategoryStatusRepository(
+                categoryId,
+                isActive
+            );
+
+        if (!isActive) {
+
+            await blockAllSubcategoriesByCategoryRepository(
+                categoryId
+            );
+        }
+
+        return updatedCategory;
     };

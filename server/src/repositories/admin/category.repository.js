@@ -49,3 +49,34 @@ export const getCategoryByIdRepository = async (categoryId) => {
 export const getCategoryByNameRepository = async (name) => {
     return await Category.findOne({ name }).lean();
 };
+
+export const updateCategoryRepository = async (
+    categoryId,
+    updateData
+) => {
+    return await Category.findByIdAndUpdate(
+        categoryId,
+        updateData,
+        {
+            new: true,
+            runValidators: true
+        }
+    ).lean();
+};
+
+export const toggleCategoryStatusRepository =
+    async (
+        categoryId,
+        isActive
+    ) => {
+
+        return await Category.findByIdAndUpdate(
+            categoryId,
+            {
+                isActive
+            },
+            {
+                new: true
+            }
+        ).lean();
+};

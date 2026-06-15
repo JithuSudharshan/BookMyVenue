@@ -2,7 +2,9 @@ import express from "express";
 
 import {
     createSubcategory,
-    getSubcategories
+    getSubcategories,
+    updateSubcategory,
+    toggleSubcategoryStatus
 } from "../../controllers/admin/subcategory.controller.js";
 
 const router = express.Router();
@@ -10,5 +12,15 @@ const router = express.Router();
 router.post("/", createSubcategory);
 
 router.get("/", getSubcategories);
+
+router.patch(
+    "/:subcategoryId",
+    updateSubcategory
+);
+
+router.patch(
+    "/:subcategoryId/status",
+    toggleSubcategoryStatus
+);
 
 export default router;
