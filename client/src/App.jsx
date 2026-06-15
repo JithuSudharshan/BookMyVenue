@@ -16,6 +16,7 @@ import VendorSignup from './pages/VendorSignup';
 import OAuthSuccess from './pages/OAuthSuccess';
 
 import VendorDashboard from './pages/VendorDashboard';
+import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
 
 import { Toaster } from 'sonner';
 
@@ -62,6 +63,7 @@ function App() {
           {/* Protected Routes for Vendors */}
           <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
             <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+            <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
           </Route>
           
           <Route path="/unauthorized" element={<Unauthorized />} />

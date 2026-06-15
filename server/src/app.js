@@ -5,6 +5,8 @@ import passport from 'passport';
 import './config/passport.js'; // Initialize passport strategies
 import authRoutes from './routes/authRoutes.js';
 
+import vendorRoutes from './routes/vendorRoutes.js';
+
 const app = express();
 
 // Middlewares
@@ -19,6 +21,7 @@ app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/vendor', vendorRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
