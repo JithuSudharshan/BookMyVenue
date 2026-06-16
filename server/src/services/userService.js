@@ -1,4 +1,5 @@
 import * as userRepository from '../repositories/userRepository.js';
+import CustomerProfile from '../models/CustomerProfile.js';
 
 // Resolve active user profile, auto-seeding if collection is empty
 export const getOrSeedUser = async (userId) => {
@@ -73,6 +74,31 @@ export const updateUserProfile = async (userId, updateData) => {
   if (updateData.addressCountry !== undefined) user.addressCountry = updateData.addressCountry;
 
   await user.save();
+
+  // Keep CustomerProfile in sync
+  try {
+    await CustomerProfile.findOneAndUpdate(
+      { userId: user._id },
+      {
+        $set: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          profileImage: user.profileImage,
+          address: {
+            street: user.addressStreet,
+            city: user.addressCity,
+            state: user.addressState,
+            zipCode: user.addressZipCode,
+            country: user.addressCountry,
+          },
+        },
+      },
+      { upsert: false }
+    );
+  } catch (err) {
+    console.error('Failed to sync CustomerProfile:', err);
+  }
   
   const userObj = user.toObject();
   delete userObj.password;

@@ -1,5 +1,6 @@
 import * as userRepository from '../repositories/userRepository.js';
 import cloudinary from '../config/cloudinary.js';
+import CustomerProfile from '../models/CustomerProfile.js';
 
 // Helper to retrieve active user identifier from request context/headers
 const getUserIdFromRequest = (req) => {
@@ -59,6 +60,13 @@ export const updateAvatar = async (req, res) => {
     user.profileImage = imageUrl;
     await user.save();
 
+    // Sync CustomerProfile
+    try {
+      await CustomerProfile.findOneAndUpdate({ userId: user._id }, { $set: { profileImage: imageUrl } });
+    } catch (syncError) {
+      console.error('Failed to sync avatar with CustomerProfile:', syncError);
+    }
+
     res.status(200).json({
       success: true,
       message: 'Avatar updated successfully.',
@@ -100,6 +108,13 @@ export const deleteAvatar = async (req, res) => {
       }
       user.profileImage = '';
       await user.save();
+
+      // Sync CustomerProfile
+      try {
+        await CustomerProfile.findOneAndUpdate({ userId: user._id }, { $set: { profileImage: 'default.jpg' } });
+      } catch (syncError) {
+        console.error('Failed to remove avatar from CustomerProfile:', syncError);
+      }
     }
 
     res.status(200).json({
