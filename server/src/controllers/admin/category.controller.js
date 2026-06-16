@@ -34,12 +34,14 @@ export const createCategory = async (req, res) => {
 export const getCategories = async (req, res) => {
     try {
 
-        const categories =
-            await getCategoriesService();
+        const result =
+            await getCategoriesService(req.query);
 
         res.status(200).json({
             success: true,
-            data: categories
+            message:
+                "Categories fetched successfully",
+            data: result
         });
 
     } catch (error) {

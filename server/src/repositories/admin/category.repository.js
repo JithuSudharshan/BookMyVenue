@@ -4,8 +4,22 @@ export const createCategoryRepository = async (categoryData) => {
     return await Category.create(categoryData);
 };
 
-export const getCategoriesRepository = async () => {
-    return await Category.aggregate([
+
+export const getCategoriesRepository = async ({
+    search,
+    status,
+    sort,
+    skip,
+    limit
+}) => {
+
+    const matchStage = {};
+
+    if (status && status !== "all") {
+        matchStage.isActive = status === "active";
+    }
+
+    const pipeline = [
         {
             $lookup: {
                 from: "subcategories",
@@ -13,7 +27,37 @@ export const getCategoriesRepository = async () => {
                 foreignField: "categoryId",
                 as: "subcategories"
             }
-        },
+        }
+    ];
+
+    if (search) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    {
+                        name: {
+                            $regex: search,
+                            $options: "i"
+                        }
+                    },
+                    {
+                        "subcategories.name": {
+                            $regex: search,
+                            $options: "i"
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
+    if (Object.keys(matchStage).length) {
+        pipeline.push({
+            $match: matchStage
+        });
+    }
+
+    pipeline.push(
         {
             $project: {
                 name: 1,
@@ -21,14 +65,14 @@ export const getCategoriesRepository = async () => {
                 description: 1,
                 isActive: 1,
                 createdAt: 1,
-
                 subcategories: {
                     $map: {
                         input: "$subcategories",
                         as: "subcategory",
                         in: {
                             _id: "$$subcategory._id",
-                            name: "$$subcategory.name"
+                            name: "$$subcategory.name",
+                            isActive: "$$subcategory.isActive"
                         }
                     }
                 }
@@ -36,11 +80,79 @@ export const getCategoriesRepository = async () => {
         },
         {
             $sort: {
-                createdAt: -1
+                createdAt: sort === "oldest" ? 1 : -1
+            }
+        },
+        {
+            $skip: skip
+        },
+        {
+            $limit: limit
+        }
+    );
+
+    return await Category.aggregate(pipeline);
+};
+
+
+export const getCategoriesCountRepository = async ({
+    search,
+    status
+}) => {
+
+    const match = {};
+
+    if (status && status !== "all") {
+        match.isActive = status === "active";
+    }
+
+    const pipeline = [
+        {
+            $lookup: {
+                from: "subcategories",
+                localField: "_id",
+                foreignField: "categoryId",
+                as: "subcategories"
             }
         }
-    ]);
+    ];
+
+    if (search) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    {
+                        name: {
+                            $regex: search,
+                            $options: "i"
+                        }
+                    },
+                    {
+                        "subcategories.name": {
+                            $regex: search,
+                            $options: "i"
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
+    if (Object.keys(match).length) {
+        pipeline.push({
+            $match: match
+        });
+    }
+
+    pipeline.push({
+        $count: "total"
+    });
+
+    const result = await Category.aggregate(pipeline);
+
+    return result[0]?.total || 0;
 };
+
 
 export const getCategoryByIdRepository = async (categoryId) => {
     return await Category.findById(categoryId);

@@ -3,6 +3,7 @@ import { normalizeName } from "../../utils/normalize-name.js";
 import {
     createCategoryRepository,
     getCategoriesRepository,
+    getCategoriesCountRepository,
     getCategoryByNameRepository,
     getCategoryByIdRepository,
     updateCategoryRepository,
@@ -55,12 +56,44 @@ export const createCategoryService = async ({
 };
 
 
+export const getCategoriesService = async (query) => {
 
-export const getCategoriesService =
-    async () => {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 6;
 
-        return await getCategoriesRepository();
+    const search = query.search?.trim() || "";
+    const status = query.status || "all";
+    const sort = query.sort || "newest";
+
+    const skip = (page - 1) * limit;
+
+    const categories = await getCategoriesRepository({
+        search,
+        status,
+        sort,
+        skip,
+        limit
+    });
+
+    const totalCategories =
+        await getCategoriesCountRepository({
+            search,
+            status
+        });
+
+    return {
+        categories,
+
+        pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(
+                totalCategories / limit
+            ),
+            totalCategories,
+            limit
+        }
     };
+};
 
 
 
