@@ -1,11 +1,13 @@
 import { Routes, Route } from 'react-router-dom'
 import UserRoutes from './routes/UserRoutes'
 import VendorRoutes from './routes/VendorRoutes'
+import AdminRoutes from './routes/AdminRoutes'
 
 function App() {
   return (
     <div className="font-sans antialiased text-dark bg-background min-h-screen">
       <Routes>
+        <Route path="/admin/*" element={<AdminRoutes />} />
         <Route path="/vendor/*" element={<VendorRoutes />} />
         <Route path="/*" element={<UserRoutes />} />
       </Routes>
