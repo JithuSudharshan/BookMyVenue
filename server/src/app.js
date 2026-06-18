@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 
 import userRoutes from "./routes/user/index.js";
-import adminRoutes from "./routes/admin/index.js"
+import adminRoutes from "./routes/admin/index.js";
+import vendorRoutes from "./routes/vendor/index.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 });
 
 app.use("/api", userRoutes);
-app.use("/api/admin", adminRoutes)
+app.use("/api/admin", adminRoutes);
+app.use("/api/vendor", vendorRoutes);
 
 export default app;
