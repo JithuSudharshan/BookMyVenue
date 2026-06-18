@@ -10,7 +10,6 @@ const venueSchema = new mongoose.Schema({
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
-    required: true,
   },
   subcategoryId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -18,18 +17,16 @@ const venueSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true,
     trim: true,
   },
   slug: {
     type: String,
-    required: true,
     unique: true,
+    sparse: true, // Allow multiple drafts with no slug or undefined slug
     trim: true,
   },
   description: {
     type: String,
-    required: true,
   },
   images: [
     {
@@ -44,26 +41,23 @@ const venueSchema = new mongoose.Schema({
     }
   ],
   location: {
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    pincode: { type: String, required: true }
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    pincode: { type: String }
   },
   capacity: {
     type: Number,
-    required: true,
   },
   amenities: [
     { type: String }
   ],
   price: {
     type: Number,
-    required: true,
   },
   bookingModel: {
     type: String,
     enum: BOOKING_MODELS,
-    required: true,
   },
   bookingConfig: {
     openingTime: { type: String },

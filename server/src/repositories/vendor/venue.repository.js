@@ -1,4 +1,4 @@
-import Venue from '../models/venue.model.js';
+import Venue from '../../models/venue.model.js';
 
 export const createVenue = async (venueData) => {
     const venue = new Venue(venueData);
@@ -25,4 +25,20 @@ export const updateVenueStatus = async (venueId, statusField, newStatus) => {
     const updateQuery = {};
     updateQuery[statusField] = newStatus;
     return await Venue.findByIdAndUpdate(venueId, updateQuery, { new: true, runValidators: true });
+};
+
+export const saveDraft = async (venueData) => {
+    const venue = new Venue(venueData);
+    return await venue.save();
+};
+
+export const updateDraft = async (venueId, updateData) => {
+    return await Venue.findByIdAndUpdate(venueId, updateData, { new: true, runValidators: true });
+};
+
+export const findDrafts = async (vendorId) => {
+    return await Venue.find({
+        vendorId,
+        'approval.status': { $in: ['draft', 'rejected'] }
+    }).sort({ updatedAt: -1 });
 };
