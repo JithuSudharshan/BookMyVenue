@@ -15,3 +15,11 @@ export const create = async (userData) => {
 export const update = async (id, updateData) => {
   return await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 };
+
+export const findOneWithPassword = async (filter) => {
+  return await User.findOne(filter).select('+password');
+};
+
+export const deleteById = async (id) => {
+  return await User.findByIdAndDelete(id);
+};
