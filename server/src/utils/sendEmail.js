@@ -23,7 +23,7 @@ export const sendVerificationEmail = async (email, token) => {
 
     if (!transporter) throw new Error("Production SMTP not configured");
 
-    const verifyUrl = `http://localhost:5174/verify-email/${token}`;
+    const verifyUrl = `http://localhost:5173/verify-email/${token}`;
 
     const info = await transporter.sendMail({
       from: '"BookMyVenue Support" <noreply@bookmyvenue.com>',
