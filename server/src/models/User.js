@@ -3,16 +3,6 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      trim: true,
-      minlength: [2, 'First name must be at least 2 characters']
-    },
-    lastName: {
-      type: String,
-      trim: true,
-      minlength: [2, 'Last name must be at least 2 characters']
-    },
     email: {
       type: String,
       required: [true, 'Please add an email'],
@@ -24,55 +14,26 @@ const userSchema = new mongoose.Schema(
         'Please add a valid email',
       ],
     },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
     password: {
       type: String,
-      required: [true, 'Please add a password'],
-      minlength: [8, 'Password must be at least 8 characters'],
+      required: function() { return this.authProvider === 'local'; },
+      minlength: 8,
       select: false, // Don't return password by default
-    },
-    phone: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    profileImage: {
-      type: String,
-      default: ''
-    },
-    addressStreet: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    addressCity: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    addressDistrict: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    addressState: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    addressZipCode: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    addressCountry: {
-      type: String,
-      trim: true,
-      default: 'India'
     },
     role: {
       type: String,
-      enum: ['user', 'vendor', 'admin'],
-      default: 'user',
+      enum: ['customer', 'vendor', 'admin'],
+      default: 'customer',
     },
     isEmailVerified: {
       type: Boolean,
@@ -94,7 +55,7 @@ const userSchema = new mongoose.Schema(
 // Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
 
   const salt = await bcrypt.genSalt(10);
