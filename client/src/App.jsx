@@ -15,7 +15,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import VendorDashboard from './pages/VendorDashboard';
 import HomePage from './pages/HomePage';
-import ProfilePage from './pages/user/ProfilePage';
+import ProfilePage from './pages/customer/ProfilePage';
 
 const Unauthorized = () => <div className="p-8 text-error">You are not authorized to view this page.</div>;
 
@@ -40,10 +40,10 @@ function App() {
           </Route>
 
           {/* Protected Routes for Customers */}
-          <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
             <Route path="/home" element={<Dashboard />} />
             <Route element={<MainLayout />}>
-              <Route path="/user/profile" element={<ProfilePage />} />
+              <Route path="/customer/profile" element={<ProfilePage />} />
               <Route path="/homepage" element={<HomePage />} />
             </Route>
           </Route>

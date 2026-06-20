@@ -11,8 +11,8 @@ function HomePage() {
         </p>
         <div className="hero-actions">
           <button className="cta-button explore-btn">Explore Venues</button>
-          <Link to="/user/profile" className="secondary-btn manage-profile-btn">
-            User Profile
+          <Link to="/customer/profile" className="secondary-btn manage-profile-btn">
+            Customer Profile
           </Link>
           {/* <Link to="/vendor/profile" className="secondary-btn manage-profile-btn" style={{ borderColor: '#7c3aed', color: '#7c3aed' }}>
             Vendor Profile
