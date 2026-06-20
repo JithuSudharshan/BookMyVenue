@@ -35,13 +35,29 @@ function ProfileView({ profile, onEditClick }) {
 
         <div className="profile-section-card">
           <h3 className="headline-sm section-title">Primary Address</h3>
-          <div className="details-stack">
-            <DetailItem label="Street Address" value={addressStreet} />
-            <DetailItem label="City" value={addressCity} />
-            <DetailItem label="District" value={addressDistrict} />
-            <DetailItem label="State" value={addressState} />
-            <DetailItem label="PIN Code" value={addressZipCode} />
-          </div>
+          {addressStreet || addressCity || addressDistrict || addressState || addressZipCode ? (
+            <div className="details-stack">
+              <DetailItem label="Street Address" value={addressStreet} />
+              <DetailItem label="City" value={addressCity} />
+              <DetailItem label="District" value={addressDistrict} />
+              <DetailItem label="State" value={addressState} />
+              <DetailItem label="PIN Code" value={addressZipCode} />
+            </div>
+          ) : (
+            <div className="empty-address-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100% - 44px)', minHeight: '160px', padding: '16px', textAlign: 'center' }}>
+              <p className="body-md text-muted" style={{ marginBottom: '16px', maxWidth: '240px' }}>
+                Complete your profile setup to add your primary address.
+              </p>
+              <button 
+                type="button" 
+                className="cta-button setup-address-btn" 
+                onClick={onEditClick}
+                style={{ fontSize: '13px', padding: '8px 16px' }}
+              >
+                Complete Profile Setup
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

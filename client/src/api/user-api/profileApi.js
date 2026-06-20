@@ -6,7 +6,7 @@ import axiosInstance from '../axiosConfig.js';
  */
 export const getProfile = async () => {
   try {
-    const response = await axiosInstance.get('/users/profile');
+    const response = await axiosInstance.get('/customer/profile');
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch user profile.');
@@ -20,7 +20,7 @@ export const getProfile = async () => {
  */
 export const updateProfile = async (updatedData) => {
   try {
-    const response = await axiosInstance.put('/users/profile', updatedData);
+    const response = await axiosInstance.put('/customer/profile', updatedData);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to update user profile.');
@@ -36,7 +36,7 @@ export const uploadAvatar = async (file) => {
   try {
     const formData = new FormData();
     formData.append('avatar', file);
-    const response = await axiosInstance.patch('/profile/avatar', formData, {
+    const response = await axiosInstance.patch('/customer/profile/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -53,7 +53,7 @@ export const uploadAvatar = async (file) => {
  */
 export const deleteAvatar = async () => {
   try {
-    const response = await axiosInstance.delete('/profile/avatar');
+    const response = await axiosInstance.delete('/customer/profile/avatar');
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to remove avatar.');
