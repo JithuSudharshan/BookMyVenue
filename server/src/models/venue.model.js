@@ -1,94 +1,180 @@
 import mongoose from 'mongoose';
-import { BOOKING_MODELS, APPROVAL_STATUS, VENUE_STATUS } from '../utils/venue.constants.js';
+import { BOOKING_MODELS } from '../utils/venue.constants.js';
 
-const venueSchema = new mongoose.Schema({
-  vendorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Assuming the vendor is managed in the User model or a separate Vendor model
-    required: true,
-  },
-  categoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-  },
-  subcategoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Subcategory',
-  },
-  name: {
-    type: String,
-    trim: true,
-  },
-  slug: {
-    type: String,
-    unique: true,
-    sparse: true, // Allow multiple drafts with no slug or undefined slug
-    trim: true,
-  },
-  description: {
-    type: String,
-  },
-  images: [
-    {
-      url: {
-        type: String,
-        required: true,
-      },
-      isPrimary: {
-        type: Boolean,
-        default: false,
-      }
-    }
-  ],
-  location: {
-    address: { type: String },
-    city: { type: String },
-    state: { type: String },
-    pincode: { type: String }
-  },
-  capacity: {
-    type: Number,
-  },
-  amenities: [
-    { type: String }
-  ],
-  price: {
-    type: Number,
-  },
-  bookingModel: {
-    type: String,
-    enum: BOOKING_MODELS,
-  },
-  bookingConfig: {
-    openingTime: { type: String },
-    closingTime: { type: String }
-  },
-  rules: [
-    { type: String }
-  ],
-  approval: {
-    status: {
-      type: String,
-      enum: APPROVAL_STATUS,
-      default: 'draft',
+function isStrict() {
+    // Only enforce required fields if the venue is NOT a draft or rejected
+    return ['submitted', 'under_review', 'approved'].includes(this.approval?.status);
+}
+
+const venueSchema = new mongoose.Schema(
+  {
+    // ─── Ownership ───────────────────────────────────────────
+    vendorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'VendorProfile',
+      required: true,
+      index: true,
     },
-    rejectionReason: {
-      type: String,
-    }
-  },
-  venueStatus: {
-    type: String,
-    enum: VENUE_STATUS,
-    default: 'inactive', // New venues can default to inactive until approved or manually activated
-  }
-}, { timestamps: true });
 
-// Add Indexes for fast querying
-venueSchema.index({ vendorId: 1 });
-venueSchema.index({ categoryId: 1 });
-venueSchema.index({ subcategoryId: 1 });
-venueSchema.index({ 'approval.status': 1 });
-venueSchema.index({ venueStatus: 1 });
+    // ─── Categorization ──────────────────────────────────────
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [isStrict, 'Category is required for submission'],
+      index: true,
+    },
+
+    subcategoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SubCategory',
+      required: [isStrict, 'Subcategory is required for submission'],
+      index: true,
+    },
+
+    // ─── Basic Info ──────────────────────────────────────────
+    name: {
+      type: String,
+      required: [isStrict, 'Please add a venue name'],
+      trim: true,
+      maxlength: 200,
+    },
+
+    slug: {
+      type: String,
+      required: [isStrict, 'Slug is required for submission'],
+      trim: true,
+      lowercase: true,
+      unique: true,
+      sparse: true, // Allow multiple drafts with undefined slugs
+    },
+
+    description: {
+      type: String,
+      required: [isStrict, 'Please add a description'],
+      maxlength: 2000,
+    },
+
+    // ─── Gallery ─────────────────────────────────────────────
+    images: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        isPrimary: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+
+    // ─── Location ────────────────────────────────────────────
+    location: {
+      address: {
+        type: String,
+        required: [isStrict, 'Address is required for submission'],
+      },
+      city: {
+        type: String,
+        required: [isStrict, 'City is required for submission'],
+      },
+      state: {
+        type: String,
+        required: [isStrict, 'State is required for submission'],
+      },
+      pincode: {
+        type: String,
+        required: [isStrict, 'Pincode is required for submission'],
+      },
+    },
+
+    // ─── Venue Details ───────────────────────────────────────
+    capacity: {
+      type: Number,
+      required: [isStrict, 'Capacity is required for submission'],
+      min: 1,
+    },
+
+    amenities: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+
+    price: {
+      type: Number,
+      required: [isStrict, 'Price is required for submission'],
+      min: 0,
+    },
+
+    // ─── Booking Configuration ───────────────────────────────
+    bookingModel: {
+      type: String,
+      enum: BOOKING_MODELS,
+      default: 'daily',
+    },
+
+    bookingConfig: {
+      openingTime: String,
+      closingTime: String,
+    },
+
+    // ─── Rules ───────────────────────────────────────────────
+    rules: [
+      {
+        type: String,
+      },
+    ],
+
+    // ─── Admin Approval ──────────────────────────────────────
+    approval: {
+      status: {
+        type: String,
+        enum: ['draft', 'submitted', 'under_review', 'approved', 'rejected'],
+        default: 'draft',
+        index: true,
+      },
+      submittedAt: {
+        type: Date,
+        default: null,
+      },
+      reviewedAt: {
+        type: Date,
+        default: null,
+      },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+      },
+      rejectionReason: {
+        type: String,
+        default: null,
+      },
+    },
+
+    // ─── Visibility ──────────────────────────────────────────
+    venueStatus: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'inactive',
+      index: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Custom validation for images length when submitted
+venueSchema.pre('validate', function(next) {
+    if (isStrict.call(this) && (!this.images || this.images.length === 0)) {
+        this.invalidate('images', 'At least one image is required for submission');
+    }
+    next();
+});
 
 const Venue = mongoose.model('Venue', venueSchema);
+
 export default Venue;

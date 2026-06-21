@@ -14,6 +14,7 @@ router.patch('/:id/draft', venueController.saveDraft); // For updating draft
 router.post('/', venueController.createVenue);
 router.get('/', venueController.getVendorVenues); // Also handles ?status=draft
 router.get('/:id', venueController.getVenueById); // Also acts as continueDraft
+router.patch('/:id/submit', venueController.submitVenue);
 router.patch('/:id', venueController.updateVenue);
 router.patch('/:id/block', venueController.blockVenue);
 router.patch('/:id/unblock', venueController.unblockVenue);

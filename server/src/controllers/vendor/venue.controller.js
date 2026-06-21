@@ -44,9 +44,6 @@ export const getVenueById = async (req, res) => {
 };
 
 export const getVendorVenues = async (req, res) => {
-    if (req.query.status === 'draft') {
-        return getDrafts(req, res);
-    }
 
     try {
         const vendorId = req.user?.id || req.body.vendorId;
@@ -75,6 +72,26 @@ export const updateVenue = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Venue updated successfully",
+            data: venue
+        });
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        res.status(statusCode).json({
+            success: false,
+            message: error.message || "Internal Server Error"
+        });
+    }
+};
+
+export const submitVenue = async (req, res) => {
+    try {
+        const vendorId = req.user?.id || req.body.vendorId;
+        const { id } = req.params;
+        const venue = await venueService.submitVenueService(vendorId, id);
+        
+        res.status(200).json({
+            success: true,
+            message: "Venue submitted for review successfully",
             data: venue
         });
     } catch (error) {

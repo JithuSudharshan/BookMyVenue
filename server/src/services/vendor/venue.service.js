@@ -4,7 +4,6 @@ import Subcategory from '../../models/subcategory.model.js';
 import Venue from '../../models/venue.model.js';
 import { generateSlug } from '../../utils/generateSlug.js';
 import ApiError from '../../utils/ApiError.js';
-import { BOOKING_MODELS } from '../../utils/venue.constants.js';
 
 const validateTimeRange = (opening, closing) => {
     const openDate = new Date(`1970-01-01T${opening}:00Z`);
@@ -12,45 +11,28 @@ const validateTimeRange = (opening, closing) => {
     return openDate < closeDate;
 };
 
-// Strict validation for submission
-export const validateVenueSubmission = async (venueData) => {
-    const { name, price, capacity, categoryId, subcategoryId, bookingModel, bookingConfig, location, description, images } = venueData;
+// Complex business validation (Mongoose handles basics like required, min, max, trim conditionally)
+export const validateVenueBusinessRules = async (venueData) => {
+    const { categoryId, subcategoryId, bookingModel, bookingConfig } = venueData;
 
-    if (!name || name.trim() === "") throw new ApiError(400, "Name cannot be empty");
-    if (!description || description.trim() === "") throw new ApiError(400, "Description is required");
-    
-    if (price === undefined || price === null || price < 0) throw new ApiError(400, "Valid price is required");
-    if (capacity === undefined || capacity === null || capacity <= 0) throw new ApiError(400, "Valid capacity is required");
+    if (categoryId) {
+        const category = await Category.findById(categoryId);
+        if (!category) throw new ApiError(400, "Category does not exist");
 
-    if (!location || !location.address || !location.city || !location.state || !location.pincode) {
-        throw new ApiError(400, "Complete location information is required");
-    }
-
-    if (!images || images.length === 0) {
-        throw new ApiError(400, "At least one image is required for submission");
-    }
-
-    if (!categoryId) throw new ApiError(400, "Category is required");
-    const category = await Category.findById(categoryId);
-    if (!category) throw new ApiError(400, "Category does not exist");
-
-    if (!subcategoryId) throw new ApiError(400, "Subcategory is required");
-    const subcategory = await Subcategory.findById(subcategoryId);
-    if (!subcategory) throw new ApiError(400, "Subcategory does not exist");
-    if (subcategory.categoryId.toString() !== categoryId.toString()) {
-        throw new ApiError(400, "Subcategory must belong to selected category");
-    }
-
-    if (!bookingModel || !BOOKING_MODELS.includes(bookingModel)) {
-        throw new ApiError(400, "Valid Booking Model is required");
+        if (subcategoryId) {
+            const subcategory = await Subcategory.findById(subcategoryId);
+            if (!subcategory) throw new ApiError(400, "Subcategory does not exist");
+            if (subcategory.categoryId.toString() !== categoryId.toString()) {
+                throw new ApiError(400, "Subcategory must belong to selected category");
+            }
+        }
     }
 
     if (bookingModel === 'hourly') {
-        if (!bookingConfig || !bookingConfig.openingTime || !bookingConfig.closingTime) {
-            throw new ApiError(400, "Opening and closing time required for hourly model");
-        }
-        if (!validateTimeRange(bookingConfig.openingTime, bookingConfig.closingTime)) {
-            throw new ApiError(400, "Invalid time range. Closing time must be after opening time.");
+        if (bookingConfig && bookingConfig.openingTime && bookingConfig.closingTime) {
+            if (!validateTimeRange(bookingConfig.openingTime, bookingConfig.closingTime)) {
+                throw new ApiError(400, "Invalid time range. Closing time must be after opening time.");
+            }
         }
     }
 };
@@ -60,60 +42,53 @@ export const validateVenueSubmission = async (venueData) => {
 export const saveDraft = async (vendorId, venueId, venueData) => {
     if (!vendorId) throw new ApiError(401, "Unauthorized");
 
+    let venue;
     if (venueId) {
-        const venue = await venueRepository.findVenueById(venueId);
+        venue = await venueRepository.findVenueById(venueId);
         if (!venue) throw new ApiError(404, "Draft not found");
         if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
 
         if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
             throw new ApiError(400, "Venue is already submitted or approved and cannot be saved as a draft");
         }
+    }
 
-        if (venueData.name && venueData.name.trim() !== "") {
-            const slug = generateSlug(venueData.name);
-            if (slug && slug !== venue.slug) {
-                const existingVenue = await Venue.findOne({ slug, _id: { $ne: venueId } });
-                if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
-                venueData.slug = slug;
-            } else if (!slug) {
-                venueData.slug = undefined;
-            }
-        } else if (venueData.name === "") {
+    if (venueData.name && venueData.name.trim() !== "") {
+        const slug = generateSlug(venueData.name);
+        if (slug && (!venue || slug !== venue.slug)) {
+            const query = { slug };
+            if (venueId) query._id = { $ne: venueId };
+            const existingVenue = await Venue.findOne(query);
+            if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
+            venueData.slug = slug;
+        } else if (!slug) {
             venueData.slug = undefined;
         }
+    } else if (venueData.name === "") {
+        venueData.slug = undefined;
+    }
 
-        delete venueData.approval;
-        delete venueData.venueStatus;
+    delete venueData.approval;
+    delete venueData.venueStatus;
 
-        return await venueRepository.updateDraft(venueId, venueData);
+    await validateVenueBusinessRules(venueData);
+
+    if (venueId) {
+        venue.set(venueData);
+        return await venue.save();
     } else {
-        if (venueData.name && venueData.name.trim() !== "") {
-            const slug = generateSlug(venueData.name);
-            if (slug) {
-                const existingVenue = await Venue.findOne({ slug });
-                if (existingVenue) {
-                    throw new ApiError(400, "A venue with this name already exists");
-                }
-                venueData.slug = slug;
-            } else {
-                venueData.slug = undefined;
-            }
-        } else {
-            venueData.slug = undefined;
-        }
-
         venueData.vendorId = vendorId;
-        
-        if (!venueData.approval) venueData.approval = {};
-        venueData.approval.status = 'draft';
+        venueData.approval = { status: 'draft' };
         venueData.venueStatus = 'inactive';
-
         return await venueRepository.saveDraft(venueData);
     }
 };
 
 export const getDrafts = async (vendorId) => {
-    return await venueRepository.findDrafts(vendorId);
+    return await venueRepository.findVendorVenuesSSFP({
+        vendorId,
+        approvalStatus: ['draft', 'rejected']
+    });
 };
 
 export const continueDraft = async (vendorId, venueId) => {
@@ -121,7 +96,6 @@ export const continueDraft = async (vendorId, venueId) => {
     if (!venue) throw new ApiError(404, "Draft not found");
     if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
 
-    // Only allow continuing if it is a draft or rejected
     if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
         throw new ApiError(400, "This venue is not a draft");
     }
@@ -131,20 +105,40 @@ export const continueDraft = async (vendorId, venueId) => {
 
 // --- SUBMISSION LOGIC ---
 
+export const submitVenueService = async (vendorId, venueId) => {
+    const venue = await venueRepository.findVenueById(venueId);
+    if (!venue) throw new ApiError(404, "Venue not found");
+    if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+
+    if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
+        throw new ApiError(400, "Only drafts or rejected venues can be submitted");
+    }
+
+    // Set approval status to trigger strict Mongoose validation on save()
+    venue.approval.status = 'submitted';
+    venue.approval.submittedAt = new Date();
+    
+    // Using .save() triggers Mongoose's full document validation (which now uses isStrict())
+    return await venue.save();
+};
+
 export const createVenueService = async (vendorId, venueData) => {
     if (!vendorId) throw new ApiError(401, "Unauthorized");
 
-    await validateVenueSubmission(venueData);
+    await validateVenueBusinessRules(venueData);
 
-    const slug = generateSlug(venueData.name);
-    const existingVenue = await Venue.findOne({ slug });
-    if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
+    if (venueData.name) {
+        const slug = generateSlug(venueData.name);
+        const existingVenue = await Venue.findOne({ slug });
+        if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
+        venueData.slug = slug;
+    }
 
-    venueData.slug = slug;
     venueData.vendorId = vendorId;
-    
-    if (!venueData.approval) venueData.approval = {};
-    venueData.approval.status = 'submitted';
+    venueData.approval = { 
+        status: 'submitted',
+        submittedAt: new Date()
+    };
     venueData.venueStatus = 'inactive';
 
     return await venueRepository.createVenue(venueData);
@@ -155,32 +149,23 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
     if (!venue) throw new ApiError(404, "Venue not found");
     if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
 
-    // Merge deeply for nested objects to validate full submission state
-    const mergedData = { ...venue.toObject(), ...updateData };
-    if (updateData.location && venue.location) {
-        mergedData.location = { ...venue.location, ...updateData.location };
-    }
-    if (updateData.bookingConfig && venue.bookingConfig) {
-        mergedData.bookingConfig = { ...venue.bookingConfig, ...updateData.bookingConfig };
-    }
-
-    await validateVenueSubmission(mergedData);
-
-    if (!updateData.approval) updateData.approval = {};
-    updateData.approval.status = 'submitted';
-
+    // Protect core status fields from generic updates
+    delete updateData.approval;
     delete updateData.venueStatus;
 
     if (updateData.name) {
         const slug = generateSlug(updateData.name);
-        if (slug && slug !== venue.slug) {
+        if (slug !== venue.slug) {
             const existingVenue = await Venue.findOne({ slug, _id: { $ne: venueId } });
             if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
             updateData.slug = slug;
         }
     }
 
-    return await venueRepository.updateVenue(venueId, updateData);
+    await validateVenueBusinessRules(updateData);
+
+    venue.set(updateData);
+    return await venue.save();
 };
 
 export const getVenueByIdService = async (vendorId, venueId) => {
@@ -191,10 +176,64 @@ export const getVenueByIdService = async (vendorId, venueId) => {
 };
 
 export const getVendorVenuesService = async (vendorId, queryParams = {}) => {
-    if (queryParams.status === 'draft') {
-        return await getDrafts(vendorId);
+    // 1. Extract params
+    const search = queryParams.search ? queryParams.search.trim() : null;
+    const venueStatus = queryParams.venueStatus || null;
+    const bookingModel = queryParams.bookingModel || null;
+    let approvalStatus = queryParams.approvalStatus || null;
+    const sort = queryParams.sort || 'new'; // 'new', 'old', 'price_low', 'price_high'
+    const page = parseInt(queryParams.page) || 1;
+    const limit = parseInt(queryParams.limit) || 6;
+
+    // 2. Validate and Default
+    let sortField = 'updatedAt';
+    let sortOrder = -1;
+
+    switch (sort) {
+        case 'old':
+            sortField = 'updatedAt';
+            sortOrder = 1;
+            break;
+        case 'price_low':
+            sortField = 'price';
+            sortOrder = 1;
+            break;
+        case 'price_high':
+            sortField = 'price';
+            sortOrder = -1;
+            break;
+        case 'new':
+        default:
+            sortField = 'updatedAt';
+            sortOrder = -1;
+            break;
     }
-    return await venueRepository.findVendorVenues(vendorId);
+
+    const skip = Math.max(0, (page - 1) * limit);
+    const validLimit = Math.max(1, Math.min(limit, 50)); // Cap at 50
+
+    // Default to 'approved' if no tab is selected on opening page
+    if (!approvalStatus && !queryParams.status) {
+        approvalStatus = 'approved';
+    }
+
+    // Compatibility for old `?status=draft` query
+    if (queryParams.status === 'draft') {
+        approvalStatus = ['draft', 'rejected'];
+    }
+
+    // 3. Call Repository
+    return await venueRepository.findVendorVenuesSSFP({
+        vendorId,
+        search,
+        venueStatus,
+        bookingModel,
+        approvalStatus,
+        sortField,
+        sortOrder,
+        skip,
+        limit: validLimit
+    });
 };
 
 export const blockVenueService = async (vendorId, venueId) => {
