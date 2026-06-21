@@ -49,7 +49,7 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     // Redirect to the backend OAuth initialization endpoint without a specific role
-    window.location.href = 'http://localhost:5001/api/auth/google';
+    window.location.href = 'http://localhost:5002/api/auth/google';
   };
 
   return (
