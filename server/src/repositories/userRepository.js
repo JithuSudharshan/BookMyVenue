@@ -1,25 +1,58 @@
 import User from '../models/User.js';
+import CustomerProfile from '../models/CustomerProfile.js';
+import VendorProfile from '../models/VendorProfile.js';
 
-export const findById = async (id) => {
-  return await User.findById(id);
-};
+class UserRepository {
+  async findUserByEmail(email) {
+    return await User.findOne({ email });
+  }
 
-export const findOne = async (filter) => {
-  return await User.findOne(filter);
-};
+  async findUserByEmailWithPassword(email) {
+    return await User.findOne({ email }).select('+password');
+  }
 
-export const create = async (userData) => {
-  return await User.create(userData);
-};
+  async findUserById(id, includePassword = false) {
+    if (includePassword) {
+      return await User.findById(id).select('+password');
+    }
+    return await User.findById(id);
+  }
 
-export const update = async (id, updateData) => {
-  return await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
-};
+  async findUserByIdWithoutPassword(id) {
+    return await User.findById(id).select('-password');
+  }
 
-export const findOneWithPassword = async (filter) => {
-  return await User.findOne(filter).select('+password');
-};
+  async createUser(userData) {
+    const user = new User(userData);
+    return await user.save();
+  }
 
-export const deleteById = async (id) => {
-  return await User.findByIdAndDelete(id);
-};
+  async createCustomerProfile(profileData) {
+    const profile = new CustomerProfile(profileData);
+    return await profile.save();
+  }
+
+  async createVendorProfile(profileData) {
+    const profile = new VendorProfile(profileData);
+    return await profile.save();
+  }
+
+  async findCustomerProfileByPhone(phone) {
+    return await CustomerProfile.findOne({ phone });
+  }
+
+  async findCustomerProfileByUserId(userId) {
+    return await CustomerProfile.findOne({ userId });
+  }
+
+  async findVendorProfileByUserId(userId) {
+    return await VendorProfile.findOne({ userId });
+  }
+
+  async saveUser(userDoc) {
+    return await userDoc.save();
+  }
+}
+
+export default new UserRepository();
+

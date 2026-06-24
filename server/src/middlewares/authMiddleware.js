@@ -5,14 +5,13 @@ import * as userRepository from '../repositories/userRepository.js';
 export const protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      // Get token from header
-      token = req.headers.authorization.split(' ')[1];
+  // Read token from the 'accessToken' cookie
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
 
+  if (token) {
+    try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
 

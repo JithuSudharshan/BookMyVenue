@@ -2,22 +2,24 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../store/AuthContext';
 import { Building2, LogOut, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [showNotification, setShowNotification] = useState(true);
 
-  // Auto-hide the welcome notification after 5 seconds
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowNotification(false);
-    }, 5000);
-    return () => clearTimeout(timer);
+    // Only show toast if they just logged in (we could check state, but for now we'll just show it once)
+    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
+    if (!hasSeenWelcome) {
+      toast.success('Welcome to homepage! You have successfully authenticated.');
+      sessionStorage.setItem('hasSeenWelcome', 'true');
+    }
   }, []);
 
   const handleLogout = () => {
     logout();
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 
@@ -30,37 +32,37 @@ const Dashboard = () => {
           <span className="font-headline-sm text-headline-sm tracking-tight font-bold">BookMyVenue</span>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <span className="hidden md:inline font-body-sm text-on-surface-variant">
-            {user?.email}
-          </span>
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
+            {user?.profile?.profileImage && user.profile.profileImage !== 'default.jpg' ? (
+              <img src={user.profile.profileImage} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-sm" />
+            ) : (
+              <div className="w-9 h-9 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container font-label-md font-bold shadow-sm">
+                {user?.profile?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <div className="hidden md:flex flex-col text-left">
+              <span className="font-label-md text-on-surface leading-tight">
+                {user?.profile?.firstName || 'User'}
+              </span>
+              <span className="font-body-sm text-on-surface-variant text-xs">
+                {user?.email}
+              </span>
+            </div>
+          </div>
+          <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
           <button 
             onClick={handleLogout}
             className="flex items-center space-x-2 px-4 py-2 rounded-lg font-label-md text-label-md text-error hover:bg-error-container transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>
 
       <main className="max-w-container-max mx-auto p-margin-mobile md:p-margin-desktop mt-8 relative">
         
-        {/* Welcome Notification */}
-        {showNotification && (
-          <div className="absolute top-0 right-margin-mobile md:right-margin-desktop animate-fade-in-down">
-            <div className="bg-success-container border border-success/20 shadow-lg rounded-lg p-4 flex items-start space-x-3 max-w-sm">
-              <CheckCircle2 className="w-6 h-6 text-success shrink-0" />
-              <div>
-                <h3 className="font-label-md text-label-md text-on-surface">Welcome to homepage!</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                  You have successfully authenticated.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Dashboard Content */}
         <div className="bg-surface rounded-2xl p-8 border border-outline-variant shadow-sm mt-16 md:mt-0">
           <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">

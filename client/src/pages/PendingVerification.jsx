@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, RefreshCw, ArrowLeft } from 'lucide-react';
 import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
+import { toast } from 'sonner';
 
 const PendingVerification = () => {
   const location = useLocation();
@@ -10,8 +11,6 @@ const PendingVerification = () => {
   const email = location.state?.email || 'your email';
   
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
 
   // Initialize timer from localStorage
@@ -51,23 +50,21 @@ const PendingVerification = () => {
 
   const handleResend = async () => {
     if (email === 'your email') {
-      setError('Email address not found. Please try logging in or signing up again.');
+      toast.error('Email address not found. Please try logging in or signing up again.');
       return;
     }
 
     setLoading(true);
-    setMessage('');
-    setError('');
 
     try {
       await authApi.resendVerification(email);
-      setMessage('Verification link resent! Please check your inbox.');
+      toast.success('Verification link resent! Please check your inbox.');
       
       // Start 60s cooldown
       localStorage.setItem(`resendTimer_${email}`, Date.now().toString());
       setTimeLeft(60);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to resend. Please try again later.');
+      toast.error(err.response?.data?.message || 'Failed to resend. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -92,18 +89,6 @@ const PendingVerification = () => {
         <p className="font-body-sm text-secondary-fixed-dim">
           Click the link in the email to activate your account. The link expires in 15 minutes.
         </p>
-
-        {message && (
-          <div className="bg-success-container text-success p-3 rounded-lg font-body-sm">
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-error-container text-on-error-container p-3 rounded-lg font-body-sm">
-            {error}
-          </div>
-        )}
 
         <div className="pt-6 space-y-4">
           <button 

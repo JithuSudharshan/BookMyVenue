@@ -1,17 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, MailCheck, RefreshCw } from 'lucide-react';
+import { authApi } from '../api/auth-api/authApi';
 import AuthLayout from '../layouts/AuthLayout';
+import { toast } from 'sonner';
+
+import InputField from '../components/common/InputField';
+import SubmitButton from '../components/common/SubmitButton';
 
 const ForgotPassword = () => {
-  const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  
   const { register, handleSubmit, formState: { errors } } = useForm();
 
+  // Handle the countdown timer
+  useEffect(() => {
+    let interval = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
   const onSubmit = async (data) => {
-    // Placeholder for actual API call
-    console.log('Reset link sent to:', data.email);
-    setSubmitted(true);
+    await sendResetLink(data.email.trim().toLowerCase());
+  };
+
+  const sendResetLink = async (email) => {
+    setLoading(true);
+    try {
+      await authApi.forgotPassword(email);
+      setSubmittedEmail(email);
+      setResendTimer(60); // 60 seconds cooldown
+      toast.success('Reset link sent to your email.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send reset link. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = () => {
+    if (resendTimer === 0 && submittedEmail) {
+      sendResetLink(submittedEmail);
+    }
   };
 
   return (
@@ -19,50 +58,62 @@ const ForgotPassword = () => {
       title="Reset Password" 
       subtitle="Enter your email address and we'll send you a link to reset your password."
     >
-      {!submitted ? (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-stack-md">
-          {/* Email Input */}
-          <div className="space-y-base">
-            <label className="block font-label-sm text-label-sm text-on-surface" htmlFor="email">Email</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
-                <Mail className="w-5 h-5" />
-              </div>
-              <input 
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
-                })}
-                id="email" 
-                type="text" 
-                placeholder="Enter your email" 
-                className={`block w-full pl-10 pr-3 py-3 border ${errors.email ? 'border-error focus:ring-error' : 'border-outline-variant focus:ring-primary'} rounded-lg bg-surface font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2`}
-              />
-            </div>
-            {errors.email && <p className="text-error font-label-sm mt-1">{errors.email.message}</p>}
-          </div>
+      {!submittedEmail ? (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-stack-md mt-6">
+          <InputField 
+            id="email"
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            icon={Mail}
+            error={errors.email}
+            register={register}
+            registerOptions={{ 
+              required: 'Email is required',
+              pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
+            }}
+          />
 
           {/* Submit Action */}
           <div className="pt-stack-sm">
-            <button 
-              type="submit" 
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md text-on-primary-container bg-primary-container hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98]"
-            >
-              Send Reset Link
-            </button>
+            <SubmitButton text="Send Reset Link" loadingText="Sending..." loading={loading} />
           </div>
         </form>
       ) : (
-        <div className="bg-success/10 text-success p-6 rounded-lg text-center space-y-4">
-          <p className="font-body-md">We've sent a password reset link to your email.</p>
-          <p className="font-body-sm opacity-80">Please check your spam folder if you don't see it within a few minutes.</p>
+        <div className="mt-8 flex flex-col items-center text-center space-y-6">
+          <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center text-success mb-2">
+            <MailCheck className="w-10 h-10" />
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="font-title-lg text-on-surface">Check your email</h3>
+            <p className="font-body-md text-on-surface-variant">
+              We've sent a password reset link to <span className="font-semibold text-primary">{submittedEmail}</span>.
+            </p>
+            <p className="font-body-sm opacity-80 text-on-surface-variant pt-2">
+              Please check your spam folder if you don't see it within a few minutes.
+            </p>
+          </div>
+
+          <button 
+            onClick={handleResend}
+            disabled={resendTimer > 0 || loading}
+            className="flex items-center justify-center gap-2 font-label-md text-label-md text-primary hover:text-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed pt-4 focus:outline-none"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className={`w-4 h-4 ${resendTimer > 0 ? '' : 'hover:rotate-180 transition-transform duration-500'}`} />
+            )}
+            {resendTimer > 0 ? `Resend email in ${resendTimer}s` : 'Click to resend'}
+          </button>
         </div>
       )}
 
       {/* Back to Login */}
-      <div className="mt-stack-lg flex justify-center">
-        <Link to="/login" className="flex items-center text-primary hover:text-primary-container transition-colors font-semibold font-label-sm text-label-sm">
-            <ArrowLeft className="w-4 h-4 mr-1" />
+      <div className="mt-8 pt-6 flex justify-center w-full border-t border-outline-variant/20">
+        <Link to="/login" className="flex items-center text-on-surface-variant hover:text-primary transition-colors font-semibold font-label-sm text-label-sm group">
+            <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
             Back to Login
         </Link>
       </div>

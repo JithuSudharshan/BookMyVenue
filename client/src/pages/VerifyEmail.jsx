@@ -4,12 +4,13 @@ import { authApi } from '../api/auth-api/authApi';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import AuthLayout from '../layouts/AuthLayout';
 import { AuthContext } from '../store/AuthContext';
+import { toast } from 'sonner';
 
 const VerifyEmail = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
-  
+
   const [status, setStatus] = useState('loading'); // 'loading', 'success', 'error'
   const [message, setMessage] = useState('');
   const [userData, setUserData] = useState(null);
@@ -22,9 +23,12 @@ const VerifyEmail = () => {
         const res = await authApi.verifyEmail(token);
         setStatus('success');
         setUserData(res);
+        toast.success('Email verified successfully!');
       } catch (err) {
         setStatus('error');
-        setMessage(err.response?.data?.message || 'Verification failed. The link may be expired or already used.');
+        const errorMessage = err.response?.data?.message || 'Verification failed. The link may be expired or already used.';
+        setMessage(errorMessage);
+        toast.error(errorMessage);
       }
     };
 
@@ -36,9 +40,9 @@ const VerifyEmail = () => {
 
   const handleContinue = () => {
     if (userData) {
-      // Auto-login since the backend provided an auth token
-      login(userData);
-      
+      // Auto-login since the backend provided an HttpOnly auth cookie
+      login();
+
       // Explicitly route to the correct dashboard since this page is not under PublicRoute
       const role = userData.user?.role;
       if (role === 'admin') {
@@ -54,12 +58,12 @@ const VerifyEmail = () => {
   };
 
   return (
-    <AuthLayout 
-      title={status === 'loading' ? 'Verifying...' : status === 'success' ? 'Email Verified Successfully' : 'Verification Failed'} 
+    <AuthLayout
+      title={status === 'loading' ? 'Verifying...' : status === 'success' ? 'Email Verified Successfully' : 'Verification Failed'}
       subtitle={status === 'loading' ? 'Please wait while we verify your account.' : ''}
     >
       <div className="text-center space-y-6 mt-8 flex flex-col items-center">
-        
+
         {status === 'loading' && (
           <Loader2 className="w-16 h-16 text-primary animate-spin" />
         )}
@@ -73,7 +77,7 @@ const VerifyEmail = () => {
               Your account has been activated. You are ready to explore premium venues!
             </p>
             <div className="pt-6 w-full">
-              <button 
+              <button
                 onClick={handleContinue}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md text-on-primary-container bg-primary-container hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98]"
               >
@@ -92,7 +96,7 @@ const VerifyEmail = () => {
               {message}
             </p>
             <div className="pt-6 w-full">
-              <button 
+              <button
                 onClick={() => navigate('/login')}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-md text-label-md text-on-primary-container bg-primary-container hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98]"
               >
@@ -101,7 +105,7 @@ const VerifyEmail = () => {
             </div>
           </>
         )}
-        
+
       </div>
     </AuthLayout>
   );
