@@ -46,7 +46,7 @@ class AuthService {
       throw new AppError('Email already in use', 400);
     }
 
-    const phoneExists = await userRepository.findCustomerProfileByPhone(phone);
+    const phoneExists = await userRepository.findCustomerByPhone(phone);
     if (phoneExists) {
       throw new AppError('Phone number already in use', 400);
     }
@@ -56,11 +56,11 @@ class AuthService {
       user = await userRepository.createUser({
         email,
         password,
-        role: 'user',
+        role: 'customer',
       });
 
       try {
-        await userRepository.createCustomerProfile({
+        await userRepository.createCustomer({
           userId: user._id,
           firstName,
           lastName,
@@ -124,7 +124,7 @@ class AuthService {
       });
 
       try {
-        await userRepository.createVendorProfile({
+        await userRepository.createVendor({
           userId: user._id,
           firstName,
           lastName,
@@ -210,10 +210,10 @@ class AuthService {
     }
 
     let profile = null;
-    if (user.role === 'user') {
-      profile = await userRepository.findCustomerProfileByUserId(user._id);
+    if (user.role === 'customer') {
+      profile = await userRepository.findCustomerByUserId(user._id);
     } else if (user.role === 'vendor') {
-      profile = await userRepository.findVendorProfileByUserId(user._id);
+      profile = await userRepository.findVendorByUserId(user._id);
     }
 
     return {
@@ -385,7 +385,7 @@ class AuthService {
   async checkPhoneAvailability(phone) {
     if (!phone) throw new AppError('Phone is required', 400);
     const formattedPhone = String(phone).replace(/[\s-]/g, '');
-    const phoneExists = await userRepository.findCustomerProfileByPhone(formattedPhone);
+    const phoneExists = await userRepository.findCustomerByPhone(formattedPhone);
     return { available: !phoneExists };
   }
 
@@ -439,7 +439,7 @@ class AuthService {
       });
 
       if (role === 'vendor') {
-        await userRepository.createVendorProfile({
+        await userRepository.createVendor({
           userId: user._id,
           firstName,
           lastName,
@@ -447,7 +447,7 @@ class AuthService {
           profileImage
         });
       } else {
-        await userRepository.createCustomerProfile({
+        await userRepository.createCustomer({
           userId: user._id,
           firstName,
           lastName,
