@@ -14,7 +14,7 @@ export const getProfile = async () => {
 };
 
 /**
- * Update Customer Profile on Express Backend
+ * Update full Customer Profile on Express Backend (legacy)
  * @param {Object} updatedData 
  * @returns {Promise<Object>}
  */
@@ -24,6 +24,34 @@ export const updateProfile = async (updatedData) => {
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to update user profile.');
+  }
+};
+
+/**
+ * Update Personal Information (firstName, lastName, phone)
+ * @param {Object} data - { firstName, lastName, phone }
+ * @returns {Promise<Object>}
+ */
+export const updatePersonalInfo = async (data) => {
+  try {
+    const response = await axiosInstance.put('/customer/profile/personal', data);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed to update personal information.');
+  }
+};
+
+/**
+ * Update Address Information
+ * @param {Object} data - { street, city, district, state, pinCode, country }
+ * @returns {Promise<Object>}
+ */
+export const updateAddress = async (data) => {
+  try {
+    const response = await axiosInstance.put('/customer/profile/address', data);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed to update address.');
   }
 };
 

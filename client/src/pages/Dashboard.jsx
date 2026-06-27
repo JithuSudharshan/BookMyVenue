@@ -33,12 +33,16 @@ const Dashboard = () => {
         </div>
         
         <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-3">
+          <button
+            onClick={() => navigate('/customer/profile')}
+            className="flex items-center space-x-3 rounded-xl px-2 py-1 hover:bg-surface-container transition-colors cursor-pointer"
+            title="Go to profile"
+          >
             {user?.profile?.profileImage && user.profile.profileImage !== 'default.jpg' ? (
               <img src={user.profile.profileImage} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-sm" />
             ) : (
               <div className="w-9 h-9 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container font-label-md font-bold shadow-sm">
-                {user?.profile?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                {(user?.profile?.firstName?.charAt(0)?.toUpperCase() || '') + (user?.profile?.lastName?.charAt(0)?.toUpperCase() || '') || 'U'}
               </div>
             )}
             <div className="hidden md:flex flex-col text-left">
@@ -49,7 +53,7 @@ const Dashboard = () => {
                 {user?.email}
               </span>
             </div>
-          </div>
+          </button>
           <div className="h-6 w-px bg-outline-variant hidden md:block"></div>
           <button 
             onClick={handleLogout}

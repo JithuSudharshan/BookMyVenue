@@ -5,48 +5,62 @@ const alphaSpacesRegex = /^[a-zA-Z\s]+$/;
 const phoneRegex = /^[6-9]\d{9}$/;
 const pinRegex = /^\d{6}$/;
 
-export const profileSchema = z.object({
+/**
+ * Schema for personal information fields only.
+ */
+export const personalInfoSchema = z.object({
   firstName: z
     .string()
     .trim()
     .min(2, { message: 'First name must be at least 2 characters.' })
     .max(50, { message: 'First name must not exceed 50 characters.' })
-    .regex(nameRegex, { message: 'First name must contain only letters, single spaces, hyphens, or apostrophes, and cannot start or end with spaces.' }),
+    .regex(nameRegex, { message: 'First name must contain only letters, single spaces, hyphens, or apostrophes.' }),
   lastName: z
     .string()
     .trim()
     .min(2, { message: 'Last name must be at least 2 characters.' })
     .max(50, { message: 'Last name must not exceed 50 characters.' })
-    .regex(nameRegex, { message: 'Last name must contain only letters, single spaces, hyphens, or apostrophes, and cannot start or end with spaces.' }),
+    .regex(nameRegex, { message: 'Last name must contain only letters, single spaces, hyphens, or apostrophes.' }),
   phone: z
     .string()
     .trim()
     .regex(phoneRegex, { message: 'Phone number must be a valid 10-digit Indian mobile number (e.g. 9876543210).' }),
-  addressStreet: z
+});
+
+/**
+ * Schema for address fields only.
+ */
+export const addressSchema = z.object({
+  street: z
     .string()
     .trim()
     .min(3, { message: 'Street address must be at least 3 characters.' })
     .max(100, { message: 'Street address must not exceed 100 characters.' }),
-  addressCity: z
+  city: z
     .string()
     .trim()
     .min(2, { message: 'City name must be at least 2 characters.' })
     .max(50, { message: 'City name must not exceed 50 characters.' })
     .regex(alphaSpacesRegex, { message: 'City must contain only letters and spaces.' }),
-  addressDistrict: z
+  district: z
     .string()
     .trim()
     .min(2, { message: 'District name must be at least 2 characters.' })
     .max(50, { message: 'District name must not exceed 50 characters.' })
     .regex(alphaSpacesRegex, { message: 'District must contain only letters and spaces.' }),
-  addressState: z
+  state: z
     .string()
     .trim()
     .min(2, { message: 'State name must be at least 2 characters.' })
     .max(50, { message: 'State name must not exceed 50 characters.' })
     .regex(alphaSpacesRegex, { message: 'State must contain only letters and spaces.' }),
-  addressZipCode: z
+  pinCode: z
     .string()
     .trim()
-    .regex(pinRegex, { message: 'PIN Code must be exactly 6 digits (e.g. 682001).' })
+    .regex(pinRegex, { message: 'PIN Code must be exactly 6 digits (e.g. 682001).' }),
 });
+
+/**
+ * Combined schema (legacy — kept for backward compatibility).
+ */
+export const profileSchema = personalInfoSchema.merge(addressSchema);

@@ -4,6 +4,7 @@ import { AuthProvider } from './store/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
 import MainLayout from './layouts/MainLayout';
+import CustomerDashboardLayout from './layouts/CustomerDashboardLayout';
 
 // Pages
 import Login from './pages/Login';
@@ -17,6 +18,9 @@ import Dashboard from './pages/Dashboard';
 import VendorDashboard from './pages/VendorDashboard';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/customer/ProfilePage';
+import BookingsPage from './pages/customer/BookingsPage';
+import WishlistPage from './pages/customer/WishlistPage';
+import WalletPage from './pages/customer/WalletPage';
 import VendorSignup from './pages/VendorSignup';
 import OAuthSuccess from './pages/OAuthSuccess';
 import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
@@ -60,9 +64,15 @@ function App() {
           {/* Protected Routes for Customers */}
           <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
             <Route path="/home" element={<Dashboard />} />
-            <Route element={<MainLayout />}>
+            <Route path="/homepage" element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+            </Route>
+            {/* Customer Dashboard — with sidebar layout */}
+            <Route element={<CustomerDashboardLayout />}>
               <Route path="/customer/profile" element={<ProfilePage />} />
-              <Route path="/homepage" element={<HomePage />} />
+              <Route path="/customer/bookings" element={<BookingsPage />} />
+              <Route path="/customer/wishlist" element={<WishlistPage />} />
+              <Route path="/customer/wallet" element={<WalletPage />} />
             </Route>
           </Route>
 
