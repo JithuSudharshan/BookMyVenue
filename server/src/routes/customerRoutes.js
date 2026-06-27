@@ -1,7 +1,7 @@
 import express from 'express';
-import { getUserProfile, updateUserProfile, updateAvatar, deleteAvatar } from '../controllers/customerController.js';
+import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar } from '../controllers/customerController.js';
 import { validateBody } from '../middlewares/validationMiddleware.js';
-import { customerProfileSchema } from '../validators/customerValidator.js';
+import { customerProfileSchema, personalInfoSchema, addressSchema } from '../validators/customerValidator.js';
 import { uploadAvatarMiddleware, handleUploadError } from '../middlewares/uploadMiddleware.js';
 import { protect, authorize } from '../middlewares/authMiddleware.js';
 
@@ -16,6 +16,12 @@ router
   .route('/profile')
   .get(getUserProfile)
   .put(validateBody(customerProfileSchema), updateUserProfile);
+
+// Route: /api/customers/profile/personal
+router.put('/profile/personal', validateBody(personalInfoSchema), updatePersonalInfo);
+
+// Route: /api/customers/profile/address
+router.put('/profile/address', validateBody(addressSchema), updateAddress);
 
 // Route: /api/customers/profile/avatar
 router

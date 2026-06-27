@@ -22,7 +22,43 @@ export const getUserProfile = async (req, res) => {
       data: profile
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Update personal information (firstName, lastName, phone)
+ * @route   PUT /api/customers/profile/personal
+ * @access  Private
+ */
+export const updatePersonalInfo = async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    const updatedProfile = await customerService.updatePersonalInfo(userId, req.body);
+    res.status(200).json({
+      success: true,
+      data: updatedProfile
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Update address information
+ * @route   PUT /api/customers/profile/address
+ * @access  Private
+ */
+export const updateAddress = async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    const updatedProfile = await customerService.updateAddress(userId, req.body);
+    res.status(200).json({
+      success: true,
+      data: updatedProfile
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -40,7 +76,7 @@ export const updateUserProfile = async (req, res) => {
       data: updatedProfile
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -59,8 +95,7 @@ export const updateAvatar = async (req, res) => {
       data: result
     });
   } catch (error) {
-    const status = error.status || 500;
-    res.status(status).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -79,7 +114,6 @@ export const deleteAvatar = async (req, res) => {
       data: result
     });
   } catch (error) {
-    const status = error.status || 500;
-    res.status(status).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };

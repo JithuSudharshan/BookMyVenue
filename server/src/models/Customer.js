@@ -24,7 +24,7 @@ const customerSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
-      default: 'default.jpg',
+      default: null,
     },
     wishlist: [
       {

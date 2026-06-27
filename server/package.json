@@ -9,6 +9,7 @@
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
+    "axios-cookiejar-support": "^7.0.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
@@ -24,6 +25,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "redis": "^6.0.0",
+    "tough-cookie": "^6.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
