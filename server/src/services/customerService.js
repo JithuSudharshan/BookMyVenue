@@ -1,6 +1,9 @@
 import cloudinary from '../config/cloudinary.js';
 import userRepository from '../repositories/userRepository.js';
 import * as customerRepository from '../repositories/customerRepository.js';
+import Booking from '../models/Booking.js';
+import '../models/Venue.js'; // Register Venue schema for populate
+import * as wishlistRepository from '../repositories/wishlistRepository.js';
 import AppError from '../utils/AppError.js';
 
 /**
@@ -26,6 +29,7 @@ const extractPublicId = (url) => {
  * @param {Object} customer - The customer profile document
  * @returns {Object} - Flattened customer profile
  */
+
 const formatCustomerProfile = (user, customer) => {
   const customerObj = customer?.toObject ? customer.toObject() : (customer || {});
   const address = customerObj.address || {};
@@ -262,4 +266,82 @@ export const deleteAvatar = async (userId) => {
   }
 
   return { profileImage: null };
+};
+
+/**
+ * Fetch paginated bookings for a customer.
+ * @param {string} userId - The unique identifier of the user
+ * @param {number} page - Page number
+ * @param {number} limit - Number of records per page
+ * @returns {Promise<Object>} - Paginated bookings
+ */
+export const getBookings = async (userId, page = 1, limit = 10) => {
+  if (!userId) {
+    throw new AppError('Unauthorized. User ID not found.', 401);
+  }
+
+  const skip = (page - 1) * limit;
+
+  const bookings = await Booking.find({ userId })
+    .populate('venueId', 'name location images pricing capacity description')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Booking.countDocuments({ userId });
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    bookings,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
+};
+
+// ─── Wishlist Services ────────────────────────────────────────────────────────
+
+/**
+ * Fetch all wishlist entries for a user (venue details populated).
+ * @param {string} userId
+ * @returns {Promise<Array>}
+ */
+export const getWishlist = async (userId) => {
+  if (!userId) throw new AppError('Unauthorized. User ID not found.', 401);
+  return await wishlistRepository.findByUserId(userId);
+};
+
+/**
+ * Add a venue to the customer's wishlist.
+ * @param {string} userId
+ * @param {string} venueId
+ * @returns {Promise<Object>}
+ */
+export const addToWishlist = async (userId, venueId) => {
+  if (!userId) throw new AppError('Unauthorized. User ID not found.', 401);
+  if (!venueId) throw new AppError('Venue ID is required.', 400);
+
+  const existing = await wishlistRepository.findOne(userId, venueId);
+  if (existing) throw new AppError('Venue already in wishlist.', 409);
+
+  return await wishlistRepository.create(userId, venueId);
+};
+
+/**
+ * Remove a venue from the customer's wishlist.
+ * @param {string} userId
+ * @param {string} venueId
+ * @returns {Promise<Object>}
+ */
+export const removeFromWishlist = async (userId, venueId) => {
+  if (!userId) throw new AppError('Unauthorized. User ID not found.', 401);
+  if (!venueId) throw new AppError('Venue ID is required.', 400);
+
+  const deleted = await wishlistRepository.deleteOne(userId, venueId);
+  if (!deleted) throw new AppError('Wishlist entry not found.', 404);
+
+  return { message: 'Removed from wishlist.' };
 };

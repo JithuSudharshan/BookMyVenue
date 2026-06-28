@@ -117,3 +117,75 @@ export const deleteAvatar = async (req, res) => {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * @desc    Get customer bookings with pagination
+ * @route   GET /api/customers/bookings
+ * @access  Private
+ */
+export const getCustomerBookings = async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    
+    const data = await customerService.getBookings(userId, page, limit);
+    
+    res.status(200).json({
+      success: true,
+      data: data.bookings,
+      pagination: data.pagination
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+// ─── Wishlist Controllers ──────────────────────────────────────────────────────
+
+/**
+ * @desc    Get customer wishlist
+ * @route   GET /api/customers/wishlist
+ * @access  Private
+ */
+export const getWishlist = async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    const wishlist = await customerService.getWishlist(userId);
+    res.status(200).json({ success: true, data: wishlist });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Add a venue to customer wishlist
+ * @route   POST /api/customers/wishlist/:venueId
+ * @access  Private
+ */
+export const addToWishlist = async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    const { venueId } = req.params;
+    const entry = await customerService.addToWishlist(userId, venueId);
+    res.status(201).json({ success: true, data: entry });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Remove a venue from customer wishlist
+ * @route   DELETE /api/customers/wishlist/:venueId
+ * @access  Private
+ */
+export const removeFromWishlist = async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    const { venueId } = req.params;
+    const result = await customerService.removeFromWishlist(userId, venueId);
+    res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};

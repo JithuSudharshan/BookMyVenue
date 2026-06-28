@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar } from '../controllers/customerController.js';
+import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, getWishlist, addToWishlist, removeFromWishlist } from '../controllers/customerController.js';
 import { validateBody } from '../middlewares/validationMiddleware.js';
 import { customerProfileSchema, personalInfoSchema, addressSchema } from '../validators/customerValidator.js';
 import { uploadAvatarMiddleware, handleUploadError } from '../middlewares/uploadMiddleware.js';
@@ -28,5 +28,13 @@ router
   .route('/profile/avatar')
   .patch(uploadAvatarMiddleware, handleUploadError, updateAvatar)
   .delete(deleteAvatar);
+
+// Route: /api/customers/bookings
+router.get('/bookings', getCustomerBookings);
+
+// Routes: /api/customers/wishlist
+router.get('/wishlist', getWishlist);
+router.post('/wishlist/:venueId', addToWishlist);
+router.delete('/wishlist/:venueId', removeFromWishlist);
 
 export default router;
