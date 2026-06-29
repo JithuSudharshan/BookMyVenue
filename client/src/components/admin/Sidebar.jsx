@@ -1,5 +1,6 @@
 import {
   Building2,
+  CalendarCheck,
   CircleHelp,
   Gauge,
   LogOut,
@@ -16,6 +17,7 @@ const navItems = [
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/vendors', label: 'Vendors', icon: Building2 },
   { to: '/admin/vendor-approvals', label: 'Vendor Verification', icon: ShieldCheck },
+  { to: '/admin/venues', label: 'Venues', icon: CalendarCheck },
 ];
 
 function Sidebar() {

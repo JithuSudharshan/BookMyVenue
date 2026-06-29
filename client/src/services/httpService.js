@@ -38,6 +38,10 @@ export const request = async (path, options = {}) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401 && !window.location.pathname.includes('/login')) {
+      clearAdminSession();
+      window.location.href = '/admin/login';
+    }
     const error = new Error(data.message || 'Something went wrong. Please try again.');
     error.data = data;
     throw error;
@@ -45,3 +49,6 @@ export const request = async (path, options = {}) => {
 
   return data;
 };
+
+
+

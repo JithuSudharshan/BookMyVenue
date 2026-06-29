@@ -1,5 +1,6 @@
-import { Building2, ShieldCheck, ShieldOff, SlidersHorizontal } from 'lucide-react';
+import { Building2, ShieldCheck, ShieldOff, SlidersHorizontal, Eye } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import MetricCard from '../../components/admin/MetricCard';
 import Pagination from '../../components/admin/Pagination';
@@ -8,22 +9,38 @@ import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
 import usePagination from '../../hooks/usePagination';
-import { blockUser, getVendors, unblockUser, updateVendorVerification } from '../../services/adminService';
+import { updateUserBlockStatus, getVendors, updateVendorVerification, getDashboardStats } from '../../services/adminService';
 import { formatDate, vendorEmail, vendorUserId } from '../../utils/formatters';
 
 function VendorManagement() {
   const [vendors, setVendors] = useState([]);
   const [query, setQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState(null);
+  const [stats, setStats] = useState(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   const loadVendors = async () => {
     setLoading(true);
     try {
-      setVendors(await getVendors());
+      const res = await getVendors({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch,
+        accountStatus: statusFilter
+      });
+      setVendors(res.data || []);
+      setTotalItems(res.pagination?.totalItems || 0);
+      setTotalPages(res.pagination?.totalPages || 1);
       setError('');
     } catch (err) {
       setError(err.message);
@@ -32,46 +49,44 @@ function VendorManagement() {
     }
   };
 
+  const loadStats = async () => {
+    try {
+      const res = await getDashboardStats();
+      setStats(res);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(query);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
+
+  // Load data when page, search query, or account status filter changes
   useEffect(() => {
     loadVendors();
-  }, []);
-
-  const filteredVendors = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return vendors.filter((vendor) => {
-      const matchesSearch =
-        vendor.businessName?.toLowerCase().includes(normalized) ||
-        vendor.ownerName?.toLowerCase().includes(normalized) ||
-        vendorEmail(vendor).toLowerCase().includes(normalized);
-
-      const blocked = Boolean(vendor.userId?.isBlocked);
-      const matchesStatus =
-        statusFilter === 'All' ||
-        (statusFilter === 'Active' && !blocked) ||
-        (statusFilter === 'Suspended' && blocked);
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [query, vendors, statusFilter]);
-
-  const { currentPage, totalPages, paginatedItems: pagedVendors, goToPage, resetPage, totalItems, itemsPerPage } = usePagination(filteredVendors);
-
-  useEffect(() => {
-    resetPage();
-  }, [query, statusFilter]);
-
-  const pendingCount = vendors.filter((vendor) => vendor.verificationStatus === 'pending').length;
-  const topVendor = vendors[0];
+    loadStats();
+  }, [currentPage, debouncedSearch, statusFilter]);
 
   const handleConfirm = async () => {
     try {
       if (pendingAction.type === 'block') {
-        await blockUser(vendorUserId(pendingAction.vendor));
+        await updateUserBlockStatus(vendorUserId(pendingAction.vendor), true);
         setToast({ type: 'success', message: 'Vendor suspended successfully.' });
       }
 
       if (pendingAction.type === 'unblock') {
-        await unblockUser(vendorUserId(pendingAction.vendor));
+        await updateUserBlockStatus(vendorUserId(pendingAction.vendor), false);
         setToast({ type: 'success', message: 'Vendor restored successfully.' });
       }
 
@@ -85,10 +100,15 @@ function VendorManagement() {
 
       setPendingAction(null);
       await loadVendors();
+      await loadStats();
     } catch (err) {
       setToast({ type: 'error', message: err.message });
     }
   };
+
+  const pendingCount = stats?.pendingVerifications || 0;
+  const totalCount = stats?.totalVendors || vendors.length;
+  const topVendor = vendors[0];
 
   return (
     <div className="page-stack">
@@ -102,7 +122,7 @@ function VendorManagement() {
       </div>
 
       <section className="metric-grid three">
-        <MetricCard title="Total Vendors" value={vendors.length} detail="+12% this month" icon={Building2} tone="green" />
+        <MetricCard title="Total Vendors" value={totalCount} detail="+12% this month" icon={Building2} tone="green" />
         <MetricCard title="Pending Verifications" value={pendingCount} detail="Requires attention" icon={ShieldOff} tone="amber" />
         <MetricCard
           title="Top Performing"
@@ -161,7 +181,7 @@ function VendorManagement() {
                 </tr>
               </thead>
               <tbody>
-                {pagedVendors.map((vendor) => {
+                {vendors.map((vendor) => {
                   const blocked = Boolean(vendor.userId?.isBlocked);
                   return (
                     <tr key={vendor._id}>
@@ -175,29 +195,39 @@ function VendorManagement() {
                         {vendorEmail(vendor)}
                       </td>
                       <td>
-                        <StatusBadge status={vendor.verificationStatus} />
+                        <StatusBadge status={vendor.onboardingStatus} />
                       </td>
                       <td>
                         <StatusBadge status={blocked ? 'Suspended' : 'Active'} />
                       </td>
                       <td>
-                        <button
-                          className={blocked ? 'icon-text-button approve' : 'icon-text-button danger'}
-                          type="button"
-                          disabled={!vendorUserId(vendor)}
-                          onClick={() => setPendingAction({ type: blocked ? 'unblock' : 'block', vendor })}
-                        >
-                          {blocked ? <ShieldCheck size={15} /> : <ShieldOff size={15} />}
-                          <span>{blocked ? 'Activate' : 'Suspend'}</span>
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <Link
+                             to={`/admin/vendors/${vendor._id}`}
+                             className="icon-text-button secondary-button"
+                             style={{ textDecoration: 'none' }}
+                          >
+                            <Eye size={15} />
+                            <span>View</span>
+                          </Link>
+                          <button
+                            className={blocked ? 'icon-text-button approve' : 'icon-text-button danger'}
+                            type="button"
+                            disabled={!vendorUserId(vendor)}
+                            onClick={() => setPendingAction({ type: blocked ? 'unblock' : 'block', vendor })}
+                          >
+                            {blocked ? <ShieldCheck size={15} /> : <ShieldOff size={15} />}
+                            <span>{blocked ? 'Activate' : 'Suspend'}</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-            {!filteredVendors.length ? <StateBlock title="No vendors found" message="Try a different business or email search." /> : null}
-            <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={goToPage} />
+            {!vendors.length ? <StateBlock title="No vendors found" message="Try a different business or email search." /> : null}
+            <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
           </div>
         ) : null}
       </section>

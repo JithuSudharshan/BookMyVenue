@@ -25,7 +25,6 @@ function usePagination(items, itemsPerPage = 4) {
     goToPage,
     resetPage,
     totalItems: items.length,
-    itemsPerPage,
   };
 }
 

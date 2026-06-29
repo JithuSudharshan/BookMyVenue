@@ -11,22 +11,41 @@ export const loginAdmin = async (credentials) => {
 
 export const getDashboardStats = () => request('/admin/dashboard');
 
-export const getUsers = () => request('/admin/users');
+export const getUsers = (params = {}) => {
+  const queryStr = new URLSearchParams(params).toString();
+  return request(`/admin/users${queryStr ? `?${queryStr}` : ''}`);
+};
 
-export const getVendors = () => request('/admin/vendors');
+export const getUserById = (userId) => request(`/admin/users/${userId}`);
 
-export const blockUser = (userId) =>
-  request(`/admin/users/${userId}/block`, {
+export const getVendors = (params = {}) => {
+  const queryStr = new URLSearchParams(params).toString();
+  return request(`/admin/vendors${queryStr ? `?${queryStr}` : ''}`);
+};
+
+export const getVendorById = (vendorId) => request(`/admin/vendors/${vendorId}`);
+
+export const updateUserBlockStatus = (userId, isBlocked) =>
+  request(`/admin/users/${userId}/block-status`, {
     method: 'PATCH',
+    body: JSON.stringify({ isBlocked }),
   });
 
-export const unblockUser = (userId) =>
-  request(`/admin/users/${userId}/unblock`, {
-    method: 'PATCH',
-  });
-
-export const updateVendorVerification = (vendorId, status, rejectReason) =>
+export const updateVendorVerification = (vendorId, status, adminRemarks) =>
   request(`/admin/vendors/${vendorId}/verify`, {
     method: 'PATCH',
-    body: JSON.stringify({ status, ...(rejectReason && { rejectReason }) }),
+    body: JSON.stringify({ status, ...(adminRemarks && { adminRemarks }) }),
+  });
+
+export const getAdminVenues = (params = {}) => {
+  const queryStr = new URLSearchParams(params).toString();
+  return request(`/admin/venues${queryStr ? `?${queryStr}` : ''}`);
+};
+
+export const getAdminVenueById = (venueId) => request(`/admin/venues/${venueId}`);
+
+export const updateVenueStatus = (venueId, status, rejectionReason) =>
+  request(`/admin/venues/${venueId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, ...(rejectionReason && { rejectionReason }) }),
   });

@@ -18,23 +18,55 @@ export const verifyVendorSchema = z.object({
     id: objectIdSchema,
   }),
   body: z.object({
-    status: z.enum(["approved", "rejected", "pending"], {
-      errorMap: () => ({ message: "Status must be 'approved', 'rejected', or 'pending'" }),
+    status: z.enum(["approved", "rejected", "pending", "changes_requested"], {
+      errorMap: () => ({ message: "Status must be 'approved', 'rejected', 'pending', or 'changes_requested'" }),
     }),
-    rejectReason: z.string().optional(),
+    adminRemarks: z.string().optional(),
   }).refine((data) => {
-    if (data.status === "rejected") {
-      return !!data.rejectReason && data.rejectReason.trim().length > 0;
+    if (data.status === "rejected" || data.status === "changes_requested") {
+      return !!data.adminRemarks && data.adminRemarks.trim().length > 0;
     }
     return true;
   }, {
-    message: "Reason for rejection is required",
-    path: ["rejectReason"],
+    message: "Admin remarks are required when rejecting or requesting changes",
+    path: ["adminRemarks"],
+  }),
+});
+
+export const updateUserBlockStatusSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+  body: z.object({
+    isBlocked: z.boolean({
+      required_error: "isBlocked is required",
+      invalid_type_error: "isBlocked must be a boolean",
+    }),
   }),
 });
 
 export const mongoIdParamSchema = z.object({
   params: z.object({
     id: objectIdSchema,
+  }),
+});
+
+export const updateVenueStatusSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+  body: z.object({
+    status: z.enum(["approved", "rejected", "under_review"], {
+      errorMap: () => ({ message: "Status must be 'approved', 'rejected', or 'under_review'" }),
+    }),
+    rejectionReason: z.string().optional(),
+  }).refine((data) => {
+    if (data.status === "rejected") {
+      return !!data.rejectionReason && data.rejectionReason.trim().length > 0;
+    }
+    return true;
+  }, {
+    message: "Reason for rejection is required",
+    path: ["rejectionReason"],
   }),
 });

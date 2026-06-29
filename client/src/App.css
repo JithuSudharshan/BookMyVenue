@@ -501,6 +501,8 @@ td {
 }
 
 .status-pending,
+.status-under_review,
+.status-submitted,
 .status-pending.review {
   color: #b45309;
   background: #fef3c7;

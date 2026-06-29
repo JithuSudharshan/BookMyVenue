@@ -8,70 +8,104 @@ const vendorProfileSchema = new mongoose.Schema(
       required: true,
       unique: true, // One-to-one relationship
     },
-    businessName: {
+
+    // --- Onboarding Flow ---
+    onboardingStatus: {
       type: String,
-      required: [true, 'Please add a business name'],
+      enum: ['incomplete', 'pending', 'approved', 'rejected', 'changes_requested'],
+      default: 'incomplete',
+    },
+    onboardingStep: {
+      type: Number,
+      default: 0,
+    },
+
+    // --- Step 1: Personal & Contact ---
+    // firstName/lastName kept for compatibility with signup flow & dashboard display
+    firstName: {
+      type: String,
       trim: true,
     },
-    ownerName: {
+    lastName: {
       type: String,
-      required: [true, 'Please add the owner name'],
       trim: true,
+    },
+    // fullName is the single source of truth collected during onboarding
+    fullName: {
+      type: String,
+      trim: true,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other', 'prefer_not_to_say'],
     },
     phone: {
       type: String,
-      required: [true, 'Please add a business phone number'],
       trim: true,
     },
-    description: {
+    alternatePhone: {
       type: String,
       trim: true,
     },
-    GSTNumber: {
+    email: {
       type: String,
       trim: true,
     },
-    verificationStatus: {
+    profileImage: {
       type: String,
-      enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
+      default: 'default.jpg',
     },
-    rejectReason: {
-      type: String,
-      trim: true,
-    },
-    documents: [
-      {
-        name: String,
-        url: String, // Path or URL to the uploaded document
-      },
-    ],
-    location: {
-      street: String,
+
+    // --- Step 2: Address & Role ---
+    address: {
+      line1: String,
+      line2: String,
       city: String,
       state: String,
-      zipCode: String,
       country: String,
-      // GeoJSON could be added here for map features
+      pincode: String,
     },
-    amenities: [String],
-    rating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
+    roleInBusiness: {
+      type: String,
+      enum: ['owner', 'co-owner', 'partner', 'manager', 'authorized_representative'],
+    },
+
+    // --- Step 3: Identity Verification ---
+    identity: {
+      documentType: {
+        type: String,
+        enum: ['aadhar', 'pan', 'driving_license', 'passport', 'voter_id'],
+      },
+      documentNumber: String,
+      documentUrl: String, // Cloudinary URL
+    },
+
+    // --- Admin Review ---
+    adminRemarks: {
+      type: String,
+    },
+    reviewedAt: {
+      type: Date,
+    },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
+
+vendorProfileSchema.virtual('ownerName').get(function() {
+  return this.fullName || `${this.firstName || ''} ${this.lastName || ''}`.trim() || 'N/A';
+});
 
 const VendorProfile = mongoose.model('VendorProfile', vendorProfileSchema);
 
 export default VendorProfile;
-
-
-
-
-
