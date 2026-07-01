@@ -3,8 +3,16 @@ import Wishlist from '../models/Wishlist.js';
 /**
  * Find all wishlist entries for a user.
  */
-export const findByUserId = async (userId) => {
-  return await Wishlist.find({ userId }).populate('venueId', 'name location images pricing capacity description');
+export const findByUserId = async (userId, skip = 0, limit = 20) => {
+  return await Wishlist.find({ userId })
+    .populate('venueId', 'name location images pricing capacity description')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+};
+
+export const countByUserId = async (userId) => {
+  return await Wishlist.countDocuments({ userId });
 };
 
 /**

@@ -4,9 +4,9 @@ import axiosInstance from '../axiosConfig.js';
  * Fetch the customer's wishlist
  * @returns {Promise<Object>}
  */
-export const getWishlist = async () => {
+export const getWishlist = async (page = 1, limit = 20) => {
   try {
-    const response = await axiosInstance.get('/customer/wishlist');
+    const response = await axiosInstance.get(`/customer/wishlist?page=${page}&limit=${limit}`);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch wishlist.');

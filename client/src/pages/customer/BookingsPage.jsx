@@ -1,6 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { CalendarDays, MapPin, Users, IndianRupee, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { 
+  CalendarDays, MapPin, Users, IndianRupee, 
+  Clock, ChevronLeft, ChevronRight,
+  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Image as ImageIcon
+} from 'lucide-react';
 import { getCustomerBookings } from "../../api/user-api/bookingApi";
+import './BookingsPage.css';
 
 function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -8,21 +13,26 @@ function BookingsPage() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalBookingsCount, setTotalBookingsCount] = useState(0);
+  
+  // Local UI state for filtering
+  const [filter, setFilter] = useState('All');
 
   const limit = 5;
 
   useEffect(() => {
-    fetchBookings(page);
-  }, [page]);
+    fetchBookings(page, filter);
+  }, [page, filter]);
 
-  const fetchBookings = async (currentPage) => {
+  const fetchBookings = async (currentPage, currentFilter) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await getCustomerBookings(currentPage, limit);
+      const res = await getCustomerBookings(currentPage, limit, currentFilter);
       if (res.success) {
         setBookings(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
+        setTotalBookingsCount(res.pagination?.total || 0);
       }
     } catch (err) {
       setError(err.message || 'Failed to load bookings');
@@ -38,6 +48,13 @@ function BookingsPage() {
   const handlePrevPage = () => {
     if (page > 1) setPage(page - 1);
   };
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    setPage(1);
+  };
+
+
 
   const getStatusBadgeColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -55,24 +72,37 @@ function BookingsPage() {
     }
   };
 
+  const getStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'confirmed':
+      case 'completed':
+        return <CheckCircle size={14} />;
+      case 'pending':
+        return <Clock size={14} />;
+      case 'cancelled':
+      case 'refunded':
+        return <XCircle size={14} />;
+      default:
+        return null;
+    }
+  };
+
   if (loading && bookings.length === 0) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
+      <div className="bk-page" style={{ textAlign: 'center', paddingTop: 80 }}>
         <p style={{ color: '#717171' }}>Loading bookings...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.3px' }}>
-          My Bookings
-        </h1>
-        <p style={{ color: '#717171', marginTop: 6, fontSize: 15 }}>
-          View and manage all your venue bookings in one place.
-        </p>
+    <div className="bk-page">
+      <div className="bk-header">
+        <h1 className="bk-title">My Bookings</h1>
+        <p className="bk-subtitle">View and manage all your venue bookings in one place.</p>
       </div>
+
+
 
       {error && (
         <div style={{ padding: 16, background: '#fce8e6', color: '#d93025', borderRadius: 8, marginBottom: 24 }}>
@@ -80,217 +110,163 @@ function BookingsPage() {
         </div>
       )}
 
+      {/* Filters */}
+      {totalBookingsCount > 0 && (
+        <div className="bk-filters">
+          {['All', 'Upcoming', 'Completed', 'Cancelled'].map(f => (
+            <button 
+              key={f}
+              className={`bk-filter-btn ${filter === f ? 'active' : ''}`}
+              onClick={() => handleFilterChange(f)}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      )}
+
       {bookings.length === 0 && !loading && !error ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 360,
-            background: '#ffffff',
-            borderRadius: 16,
-            border: '1px solid #ebebeb',
-            gap: 16,
-            padding: 48,
-          }}
-        >
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: '50%',
-              background: '#fff1f3',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <CalendarDays size={32} color="#ff385c" />
+        <div className="bk-empty">
+          <div className="bk-empty-icon">
+            <CalendarDays size={32} />
           </div>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#1a1a1a' }}>No bookings yet</h2>
-          <p style={{ fontSize: 14, color: '#717171', textAlign: 'center', maxWidth: 320 }}>
+          <h2 className="bk-empty-title">No bookings yet</h2>
+          <p className="bk-empty-subtitle">
             You haven't booked any venues yet. Explore venues and make your first booking!
           </p>
-          <a
-            href="/home"
-            style={{
-              marginTop: 8,
-              padding: '12px 28px',
-              background: '#ff385c',
-              color: '#fff',
-              borderRadius: 10,
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: 14,
-              transition: 'background 150ms',
-            }}
-          >
+          <a href="/home" className="bk-btn bk-btn-primary" style={{ marginTop: 20, textDecoration: 'none' }}>
             Explore Venues
           </a>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="bk-list">
+          {bookings.length === 0 && !loading && (
+            <div style={{ padding: 40, textAlign: 'center', color: '#717171' }}>
+              No bookings found for the selected filter.
+            </div>
+          )}
+          
           {bookings.map((booking) => {
             const bookingStatusStyle = getStatusBadgeColor(booking.bookingStatus);
             const paymentStatusStyle = getStatusBadgeColor(booking.paymentStatus);
             const bookingDate = new Date(booking.bookingDate).toLocaleDateString('en-US', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
+              weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
             });
-            const venueName = booking.venueId?.name || 'Unknown Venue';
+            const venue = booking.venueId || {};
+            const venueName = venue.name || 'Unknown Venue';
+            const location = venue.location ? `${venue.location.city}, ${venue.location.state}` : '';
+            const image = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
 
             return (
-              <div
-                key={booking._id}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: 16,
-                  border: '1px solid #ebebeb',
-                  padding: 24,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-                  <div>
-                    <h3 style={{ fontSize: 18, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>
-                      {venueName}
-                    </h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#717171', fontSize: 14 }}>
-                      <CalendarDays size={16} />
-                      <span>{bookingDate}</span>
-                      {booking.slotIds && booking.slotIds.length > 0 && (
-                        <>
-                          <span style={{ margin: '0 4px' }}>•</span>
-                          <Clock size={16} />
-                          <span>{booking.slotIds.length} Slot(s)</span>
-                        </>
-                      )}
-                    </div>
+              <div key={booking._id} className="bk-card">
+                <div className="bk-card-main">
+                  {/* Venue Image */}
+                  <div className="bk-card-img-wrap">
+                    {image ? (
+                      <img src={image} alt={venueName} className="bk-card-img" />
+                    ) : (
+                      <div className="bk-card-no-img" style={{ width: '100%', height: '100%', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0a0a0' }}>
+                        <ImageIcon size={32} />
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <span
-                      style={{
-                        padding: '4px 12px',
-                        borderRadius: 20,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        background: bookingStatusStyle.bg,
-                        color: bookingStatusStyle.text,
-                      }}
-                    >
-                      {booking.bookingStatus}
-                    </span>
+                  
+                  {/* Content */}
+                  <div className="bk-card-content">
+                    <div className="bk-card-header">
+                      <div>
+                        <h3 className="bk-venue-name">{venueName}</h3>
+                        {location && (
+                          <div className="bk-venue-loc">
+                            <MapPin size={14} />
+                            {location}
+                          </div>
+                        )}
+                      </div>
+                      <div className="bk-badges" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', color: '#717171', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Booking</span>
+                          <span className="bk-badge" style={{ background: bookingStatusStyle.bg, color: bookingStatusStyle.text }}>
+                            {getStatusIcon(booking.bookingStatus)} {booking.bookingStatus}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', color: '#717171', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payment</span>
+                          <span className="bk-badge" style={{ background: paymentStatusStyle.bg, color: paymentStatusStyle.text }}>
+                            {booking.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bk-info-grid">
+                      <div className="bk-info-chip">
+                        <div className="bk-info-icon"><CalendarDays size={18} /></div>
+                        <div className="bk-info-text">
+                          <span className="bk-info-label">Date</span>
+                          <span className="bk-info-val">{bookingDate}</span>
+                        </div>
+                      </div>
+                      
+                      {booking.slotIds && booking.slotIds.length > 0 && (
+                        <div className="bk-info-chip">
+                          <div className="bk-info-icon"><Clock size={18} /></div>
+                          <div className="bk-info-text">
+                            <span className="bk-info-label">Slots</span>
+                            <span className="bk-info-val">{booking.slotIds.length} Slot(s)</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="bk-info-chip">
+                        <div className="bk-info-icon"><Users size={18} /></div>
+                        <div className="bk-info-text">
+                          <span className="bk-info-label">Guests</span>
+                          <span className="bk-info-val">{booking.guestCount}</span>
+                        </div>
+                      </div>
+
+                      <div className="bk-info-chip">
+                        <div className="bk-info-icon"><IndianRupee size={18} /></div>
+                        <div className="bk-info-text">
+                          <span className="bk-info-label">Total Amount</span>
+                          <span className="bk-info-val">₹{booking.totalAmount}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: '#ebebeb', margin: '16px 0' }} />
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#f7f7f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Users size={18} color="#484848" />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, color: '#717171', marginBottom: 2 }}>Guests</p>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#222' }}>{booking.guestCount}</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#f7f7f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <IndianRupee size={18} color="#484848" />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, color: '#717171', marginBottom: 2 }}>Total Amount</p>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#222' }}>₹{booking.totalAmount}</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#f7f7f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <IndianRupee size={18} color="#ff385c" />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, color: '#717171', marginBottom: 2 }}>Advance Paid</p>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#222' }}>₹{booking.advanceAmount}</p>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: paymentStatusStyle.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 10, fontWeight: 'bold', color: paymentStatusStyle.text }}>PAY</span>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, color: '#717171', marginBottom: 2 }}>Payment</p>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: paymentStatusStyle.text }}>{booking.paymentStatus}</p>
-                    </div>
-                  </div>
+                {/* Actions Footer */}
+                <div className="bk-card-footer">
+                  <button className="bk-btn bk-btn-outline" onClick={() => console.log('Contact Venue')}>
+                    <MessageSquare size={16} /> Contact Venue
+                  </button>
+                  <button className="bk-btn bk-btn-outline" onClick={() => console.log('Download Receipt')}>
+                    <FileText size={16} /> Receipt
+                  </button>
+                  <button className="bk-btn bk-btn-primary" onClick={() => console.log('View Details')}>
+                    View Details
+                  </button>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 24, gap: 16 }}>
-              <button
-                onClick={handlePrevPage}
-                disabled={page === 1}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  border: '1px solid #ebebeb',
-                  background: page === 1 ? '#f7f7f9' : '#fff',
-                  color: page === 1 ? '#b0b0b0' : '#222',
-                  cursor: page === 1 ? 'not-allowed' : 'pointer',
-                  transition: 'background 0.2s',
-                }}
-              >
-                <ChevronLeft size={20} />
-              </button>
-              
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#222' }}>
-                Page {page} of {totalPages}
-              </span>
-              
-              <button
-                onClick={handleNextPage}
-                disabled={page === totalPages}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  border: '1px solid #ebebeb',
-                  background: page === totalPages ? '#f7f7f9' : '#fff',
-                  color: page === totalPages ? '#b0b0b0' : '#222',
-                  cursor: page === totalPages ? 'not-allowed' : 'pointer',
-                  transition: 'background 0.2s',
-                }}
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="bk-pagination">
+          <button className="bk-page-btn" onClick={handlePrevPage} disabled={page === 1}>
+            <ChevronLeft size={20} />
+          </button>
+          <span className="bk-page-text">
+            Page {page} of {totalPages}
+          </span>
+          <button className="bk-page-btn" onClick={handleNextPage} disabled={page === totalPages}>
+            <ChevronRight size={20} />
+          </button>
         </div>
       )}
     </div>

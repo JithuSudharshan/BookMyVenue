@@ -128,8 +128,9 @@ export const getCustomerBookings = async (req, res) => {
     const userId = getUserIdFromRequest(req);
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
+    const filter = req.query.filter || 'All';
     
-    const data = await customerService.getBookings(userId, page, limit);
+    const data = await customerService.getBookings(userId, page, limit, filter);
     
     res.status(200).json({
       success: true,
@@ -151,8 +152,15 @@ export const getCustomerBookings = async (req, res) => {
 export const getWishlist = async (req, res) => {
   try {
     const userId = getUserIdFromRequest(req);
-    const wishlist = await customerService.getWishlist(userId);
-    res.status(200).json({ success: true, data: wishlist });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+
+    const data = await customerService.getWishlist(userId, page, limit);
+    res.status(200).json({ 
+      success: true, 
+      data: data.wishlist,
+      pagination: data.pagination
+    });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }

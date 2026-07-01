@@ -39,6 +39,7 @@ const formatCustomerProfile = (user, customer) => {
     email: user.email,
     role: user.role,
     isEmailVerified: user.isEmailVerified,
+    status: user.isBlocked ? 'Blocked' : 'Active',
     createdAt: user.createdAt,
     firstName: customerObj.firstName || '',
     lastName: customerObj.lastName || '',
@@ -275,20 +276,29 @@ export const deleteAvatar = async (userId) => {
  * @param {number} limit - Number of records per page
  * @returns {Promise<Object>} - Paginated bookings
  */
-export const getBookings = async (userId, page = 1, limit = 10) => {
+export const getBookings = async (userId, page = 1, limit = 10, filter = 'All') => {
   if (!userId) {
     throw new AppError('Unauthorized. User ID not found.', 401);
   }
 
+  const query = { userId };
+  if (filter === 'Upcoming') {
+    query.bookingStatus = { $in: ['Pending', 'Confirmed'] };
+  } else if (filter === 'Completed') {
+    query.bookingStatus = 'Completed';
+  } else if (filter === 'Cancelled') {
+    query.bookingStatus = 'Cancelled';
+  }
+
   const skip = (page - 1) * limit;
 
-  const bookings = await Booking.find({ userId })
+  const bookings = await Booking.find(query)
     .populate('venueId', 'name location images pricing capacity description')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
-  const total = await Booking.countDocuments({ userId });
+  const total = await Booking.countDocuments(query);
   const totalPages = Math.ceil(total / limit);
 
   return {
@@ -309,9 +319,22 @@ export const getBookings = async (userId, page = 1, limit = 10) => {
  * @param {string} userId
  * @returns {Promise<Array>}
  */
-export const getWishlist = async (userId) => {
+export const getWishlist = async (userId, page = 1, limit = 20) => {
   if (!userId) throw new AppError('Unauthorized. User ID not found.', 401);
-  return await wishlistRepository.findByUserId(userId);
+  const skip = (page - 1) * limit;
+  const wishlist = await wishlistRepository.findByUserId(userId, skip, limit);
+  const total = await wishlistRepository.countByUserId(userId);
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    wishlist,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
 };
 
 /**
