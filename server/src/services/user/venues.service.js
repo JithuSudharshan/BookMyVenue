@@ -1,165 +1,101 @@
-export const getVenuesService = async () => {
-    const venues = [
-        {
-            id: 1,
-            name: "Grant Plaza",
-            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToV67ZP2ZMiqsBouo4C6HMheenlG9S5pE9Bg&s",
-            location: {
-                city: "Tirur",
-                district: "Malappuram"
-            },
-            price: 50000,
-            rating: 4.8,
-            capacity: 5000,
+import { findPublicVenuesAggregation } from '../../repositories/user/venue.repository.js';
+import Category from '../../models/category.model.js';
 
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
+export const getVenuesService = async (queryParams) => {
+    const {
+        location,
+        guests,
+        category,
+        priceMin,
+        priceMax,
+        capacity, // range like '200-500' or '500+'
+        amenities,
+        sort,
+        page = 1,
+        limit = 10
+    } = queryParams;
 
-            isFeatured: false
-        },
-        {
-            id: 2,
-            name: "ABC cafe",
-            image: "https://thearchitectsdiary.com/wp-content/uploads/2022/03/Cafe-Design-Projected-Rays-Design-TAD-26.jpg",
-            location: {
-                city: "Fort kochi",
-                district: "Eranakulam"
-            },
-            price: 10000,
-            rating: 4.5,
-            capacity: 500,
+    const matchStage = {};
 
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
+    // 1. Search filters (Location)
+    if (location) {
+        const locationRegex = { $regex: location, $options: 'i' };
+        matchStage.$or = [
+            { 'location.city': locationRegex },
+            { 'location.state': locationRegex },
+            { 'location.address': locationRegex }
+        ];
+    }
 
-            isFeatured: false
-        },
-        {
-            id: 3,
-            name: "ABC Beach",
-            image: "https://onehorizonproductions.com/wp-content/uploads/2022/08/farmhouse-1.jpg",
-            location: {
-                city: "Bepur",
-                district: "Kozhikode"
-            },
-            price: 5000,
-            rating: 4.7,
-            capacity: 100,
-
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
-
-            isFeatured: false
-        },
-        {
-            id: 4,
-            name: "XYZ Hotel",
-            image: "https://thearchitectsdiary.com/wp-content/uploads/2022/03/Cafe-Design-Projected-Rays-Design-TAD-26.jpg",
-            location: {
-                city: "Fort kochi",
-                district: "Eranakulam"
-            },
-            price: 8000,
-            rating: 4.8,
-            capacity: 500,
-
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
-
-            isFeatured: false
-        },
-        {
-            id: 5,
-            name: "Grant Plaza",
-            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToV67ZP2ZMiqsBouo4C6HMheenlG9S5pE9Bg&s",
-            location: {
-                city: "Tirur",
-                district: "Malappuram"
-            },
-            price: 50000,
-            rating: 4.8,
-            capacity: 5000,
-
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
-
-            isFeatured: false
-        },
-        {
-            id: 6,
-            name: "ABC cafe",
-            image: "https://thearchitectsdiary.com/wp-content/uploads/2022/03/Cafe-Design-Projected-Rays-Design-TAD-26.jpg",
-            location: {
-                city: "Fort kochi",
-                district: "Eranakulam"
-            },
-            price: 10000,
-            rating: 4.5,
-            capacity: 500,
-
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
-
-            isFeatured: false
-        },
-        {
-            id: 7,
-            name: "ABC Beach",
-            image: "https://onehorizonproductions.com/wp-content/uploads/2022/08/farmhouse-1.jpg",
-            location: {
-                city: "Bepur",
-                district: "Kozhikode"
-            },
-            price: 5000,
-            rating: 4.7,
-            capacity: 100,
-
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
-
-            isFeatured: false
-        },
-        {
-            id: 8,
-            name: "XYZ Hotel",
-            image: "https://thearchitectsdiary.com/wp-content/uploads/2022/03/Cafe-Design-Projected-Rays-Design-TAD-26.jpg",
-            location: {
-                city: "Fort kochi",
-                district: "Eranakulam"
-            },
-            price: 8000,
-            rating: 4.8,
-            capacity: 500,
-
-            amenities: [
-                "Parking",
-                "AC",
-                "Wifi"
-            ],
-
-            isFeatured: false
+    // 2. Category Filter (Need to resolve name to ID first)
+    if (category && category !== 'All') {
+        const categoryDoc = await Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
+        if (categoryDoc) {
+            matchStage.categoryId = categoryDoc._id;
+        } else {
+            // If category not found, return empty results by matching an impossible condition
+            matchStage.categoryId = null;
         }
-    ];
-    return venues
-}
+    }
+
+    // 3. Guests Filter (Minimum Capacity required)
+    if (guests) {
+        matchStage.capacity = { ...matchStage.capacity, $gte: Number(guests) };
+    }
+
+    // 4. Capacity Range Filter (from chips)
+    if (capacity) {
+        if (capacity.includes('+')) {
+            const min = parseInt(capacity.replace('+', ''), 10);
+            matchStage.capacity = { ...matchStage.capacity, $gte: min };
+        } else if (capacity.includes('-')) {
+            const [min, max] = capacity.split('-').map(Number);
+            matchStage.capacity = { ...matchStage.capacity, $gte: min, $lte: max };
+        }
+    }
+
+    // 5. Price Filters
+    if (priceMin !== undefined || priceMax !== undefined) {
+        matchStage.price = {};
+        if (priceMin !== undefined) matchStage.price.$gte = Number(priceMin);
+        if (priceMax !== undefined) matchStage.price.$lte = Number(priceMax);
+    }
+
+    // 6. Amenities Filter
+    if (amenities) {
+        const amenitiesArray = amenities.split(',').map(a => a.trim());
+        matchStage.amenities = { $all: amenitiesArray };
+    }
+
+    // 7. Sorting
+    let sortStage = { createdAt: -1 }; // Default: Newest first (Recommended)
+    if (sort === 'price_asc') sortStage = { price: 1 };
+    else if (sort === 'price_desc') sortStage = { price: -1 };
+    // rating skipped for now as per requirements
+
+    // 8. Pagination math
+    const parsedPage = parseInt(page, 10) || 1;
+    const parsedLimit = parseInt(limit, 10) || 10;
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // 9. Execute Repository Query
+    const { totalCount, venues } = await findPublicVenuesAggregation({
+        matchStage,
+        sortStage,
+        skip,
+        limit: parsedLimit
+    });
+
+    // 10. Compute Pagination Metadata
+    const totalPages = Math.ceil(totalCount / parsedLimit);
+    
+    const pagination = {
+        totalVenues: totalCount,
+        totalPages,
+        currentPage: parsedPage,
+        hasNextPage: parsedPage < totalPages,
+        hasPrevPage: parsedPage > 1
+    };
+
+    return { venues, pagination };
+};

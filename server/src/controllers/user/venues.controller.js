@@ -2,14 +2,19 @@ import { getVenuesService } from "../../services/user/venues.service.js";
 
 export const LoadVenues = async (req, res) => {
     try {
-        const venues = await getVenuesService();
+        const { venues, pagination } = await getVenuesService(req.query);
 
         res.status(200).json({
             success: true,
-            data: venues
+            message: "Venues retrieved successfully",
+            data: {
+                venues,
+                pagination
+            }
         });
 
     } catch (error) {
+        console.error("Error in LoadVenues controller:", error);
         res.status(500).json({
             success: false,
             message: "Something went wrong"
