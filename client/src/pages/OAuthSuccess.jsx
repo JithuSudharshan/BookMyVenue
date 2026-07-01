@@ -19,7 +19,7 @@ const OAuthSuccess = () => {
       if (user.role === 'admin') {
         navigate('/admin-dashboard', { replace: true });
       } else if (user.role === 'vendor') {
-        navigate('/vendor-dashboard', { replace: true });
+        navigate('/vendor/dashboard', { replace: true });
       } else {
         navigate('/home', { replace: true });
       }

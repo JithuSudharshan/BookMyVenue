@@ -38,7 +38,7 @@ const Login = () => {
       
       const role = res.role;
       if (role === 'admin') navigate('/admin-dashboard');
-      else if (role === 'vendor') navigate('/vendor-dashboard');
+      else if (role === 'vendor') navigate('/vendor/dashboard');
       else navigate('/home');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed. Please check your credentials.');

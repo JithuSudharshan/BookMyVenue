@@ -47,8 +47,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (data) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        ...data,
+        ...(data.profile ? { profile: { ...prev.profile, ...data.profile } } : {})
+      };
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

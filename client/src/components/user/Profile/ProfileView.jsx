@@ -2,30 +2,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { personalInfoSchema, addressSchema } from '../../../validations/profile.validation.js';
-
-const FormField = React.forwardRef(({ label, id, required, error, ...rest }, ref) => {
-  return (
-    <div className="pf-input-group">
-      <label htmlFor={id} className="pf-label">
-        {label}{required && <span className="pf-required"> *</span>}
-      </label>
-      <input ref={ref} id={id} className={`pf-input${error ? ' error' : ''}`} {...rest} />
-      {error && <p className="pf-error-msg">{error.message}</p>}
-    </div>
-  );
-});
-
-/* ── Display row ── */
-function InfoRow({ label, value }) {
-  return (
-    <div className="pf-info-row">
-      <span className="pf-info-label">{label}</span>
-      <span className={`pf-info-value${!value ? ' empty' : ''}`}>
-        {value || <span className="pf-info-dash">—</span>}
-      </span>
-    </div>
-  );
-}
+import FormField from '../../common/ProfileUi/FormField';
+import InfoRow from '../../common/ProfileUi/InfoRow';
+import ProfilePanel from '../../common/ProfileUi/ProfilePanel';
 
 /* ── Inline edit: Personal Info ── */
 function PersonalInfoForm({ profile, onSave, onCancel }) {
@@ -163,19 +142,6 @@ function AddressForm({ profile, onSave, onCancel }) {
   );
 }
 
-/* ── Edit button (reusable) ── */
-function EditButton({ onClick, label = 'Edit' }) {
-  return (
-    <button className="pf-edit-btn" onClick={onClick} aria-label={label}>
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
-      {label}
-    </button>
-  );
-}
-
 /* ── Main ProfileView ── */
 function ProfileView({
   profile,
@@ -193,22 +159,17 @@ function ProfileView({
     <div className="pf-animate">
       <div className="pf-panels">
         {/* ── Personal Information Panel ── */}
-        <div className="pf-panel">
-          <div className="pf-panel-head">
-            <div className="pf-panel-title-row">
-              <div className="pf-panel-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </div>
-              <h3 className="pf-panel-title">Personal Information</h3>
-            </div>
-            {editingSection !== 'personal' && (
-              <EditButton onClick={onEditPersonal} label="Edit" />
-            )}
-          </div>
-
+        <ProfilePanel
+          icon={
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          }
+          title="Personal Information"
+          onEdit={onEditPersonal}
+          isEditing={editingSection === 'personal'}
+        >
           {editingSection === 'personal' ? (
             <PersonalInfoForm
               profile={profile}
@@ -216,32 +177,30 @@ function ProfileView({
               onCancel={onCancelEdit}
             />
           ) : (
-            <div className="pf-info-list">
-              <InfoRow label="First Name"    value={firstName} />
-              <InfoRow label="Last Name"     value={lastName}  />
-              <InfoRow label="Phone Number"  value={phone}     />
-              <InfoRow label="Account Email" value={email}     />
+            <div className="pf-panel-body">
+              <div className="pf-info-list" style={{ padding: 0 }}>
+                <InfoRow label="First Name"    value={firstName} />
+                <InfoRow label="Last Name"     value={lastName}  />
+                <InfoRow label="Phone Number"  value={phone}     />
+                <InfoRow label="Account Email" value={email}     />
+              </div>
             </div>
           )}
-        </div>
+        </ProfilePanel>
 
         {/* ── Address Panel ── */}
-        <div className="pf-panel">
-          <div className="pf-panel-head">
-            <div className="pf-panel-title-row">
-              <div className="pf-panel-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-              </div>
-              <h3 className="pf-panel-title">Primary Address</h3>
-            </div>
-            {editingSection !== 'address' && hasAddress && (
-              <EditButton onClick={onEditAddress} label="Edit" />
-            )}
-          </div>
-
+        <ProfilePanel
+          icon={
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          }
+          title="Primary Address"
+          onEdit={onEditAddress}
+          isEditing={editingSection === 'address'}
+          showEditButton={hasAddress}
+        >
           {editingSection === 'address' ? (
             <AddressForm
               profile={profile}
@@ -249,30 +208,32 @@ function ProfileView({
               onCancel={onCancelEdit}
             />
           ) : (
-            <div className="pf-info-list">
-              {hasAddress ? (
-                <>
-                  <InfoRow label="Street Address" value={street}   />
-                  <InfoRow label="City"           value={city}     />
-                  <InfoRow label="District"       value={district} />
-                  <InfoRow label="State"          value={state}    />
-                  <InfoRow label="PIN Code"       value={pinCode}  />
-                </>
-              ) : (
-                <div className="pf-empty-address">
-                  <div className="pf-empty-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                      <circle cx="12" cy="10" r="3"/>
-                    </svg>
+            <div className="pf-panel-body">
+              <div className="pf-info-list" style={{ padding: 0 }}>
+                {hasAddress ? (
+                  <>
+                    <InfoRow label="Street Address" value={street}   />
+                    <InfoRow label="City"           value={city}     />
+                    <InfoRow label="District"       value={district} />
+                    <InfoRow label="State"          value={state}    />
+                    <InfoRow label="PIN Code"       value={pinCode}  />
+                  </>
+                ) : (
+                  <div className="pf-empty-address">
+                    <div className="pf-empty-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                    </div>
+                    <p className="pf-empty-text">No address added yet. Complete your profile setup.</p>
+                    <button className="pf-edit-btn" onClick={onEditAddress}>Add Address</button>
                   </div>
-                  <p className="pf-empty-text">No address added yet. Complete your profile setup.</p>
-                  <button className="pf-edit-btn" onClick={onEditAddress}>Add Address</button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
-        </div>
+        </ProfilePanel>
       </div>
     </div>
   );
