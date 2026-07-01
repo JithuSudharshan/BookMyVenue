@@ -1,22 +1,19 @@
-import { getFeaturedVenuesService, getPopularCategoriesService, getPopularVenuesService } from "../../services/user/home.service.js";
+import { getHomeVenuesService } from "../../services/user/home.service.js";
 
 export const loadHome = async (req, res) => {
     try {
-        const popularCategories = await getPopularCategoriesService();
-        const featuredVenues = await getFeaturedVenuesService();
-        const popularVenues = await getPopularVenuesService();
+        const venues = await getHomeVenuesService();
 
         res.status(200).json({
             success: true,
             message: "Home data fetched successfully",
             data: {
-                popularCategories,
-                featuredVenues,
-                popularVenues
+                venues
             }
         });
 
     } catch (error) {
+        console.error("Error in loadHome controller:", error);
         res.status(500).json({
             success: false,
             message: "Something went wrong"
