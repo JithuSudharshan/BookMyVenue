@@ -5,11 +5,11 @@ import passport from 'passport';
 import './config/passport.js'; // Initialize passport strategies
 import authRoutes from './routes/authRoutes.js';
 
-import vendorRoutes from './routes/vendorRoutes.js';
+import vendorOnboardingRoutes from './routes/vendorRoutes.js';
 
 import userRoutes from "./routes/user/index.js";
 import adminRoutes from "./routes/admin/index.js";
-import vendorRoutes from "./routes/vendor/index.js";
+import vendorAppRoutes from "./routes/vendor/index.js";
 
 const app = express();
 
@@ -27,7 +27,8 @@ app.use(passport.initialize());
 app.use('/api/auth', authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/vendor", vendorRoutes);
+app.use("/api/vendor", vendorOnboardingRoutes);
+app.use("/api/vendor", vendorAppRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
