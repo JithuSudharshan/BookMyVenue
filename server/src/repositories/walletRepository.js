@@ -15,14 +15,26 @@ export const findOrCreateWallet = async (ownerId, ownerType) => {
 /**
  * Get paginated transactions for a wallet.
  */
-export const getTransactions = async (walletId, page = 1, limit = 10) => {
+export const getTransactions = async (walletId, page = 1, limit = 10, filter = 'All') => {
   const skip = (page - 1) * limit;
-  const transactions = await WalletTransaction.find({ walletId })
+  
+  const query = { walletId };
+  if (filter === 'Credit') {
+    query.transactionType = 'Credit';
+    query.description = { $not: /refund/i };
+  } else if (filter === 'Debit') {
+    query.transactionType = 'Debit';
+  } else if (filter === 'Refund') {
+    query.transactionType = 'Credit';
+    query.description = /refund/i;
+  }
+
+  const transactions = await WalletTransaction.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
-  const total = await WalletTransaction.countDocuments({ walletId });
+  const total = await WalletTransaction.countDocuments(query);
   return { transactions, total };
 };
 

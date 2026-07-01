@@ -9,11 +9,11 @@ import AppError from '../utils/AppError.js';
  * @param {number} page
  * @param {number} limit
  */
-export const getWalletData = async (userId, ownerType, page = 1, limit = 10) => {
+export const getWalletData = async (userId, ownerType, page = 1, limit = 10, filter = 'All') => {
   if (!userId) throw new AppError('Unauthorized. User ID not found.', 401);
 
   const wallet = await walletRepository.findOrCreateWallet(userId, ownerType);
-  const { transactions, total } = await walletRepository.getTransactions(wallet._id, page, limit);
+  const { transactions, total } = await walletRepository.getTransactions(wallet._id, page, limit, filter);
 
   const totalPages = Math.ceil(total / limit);
 

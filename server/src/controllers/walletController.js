@@ -16,14 +16,16 @@ export const getWalletDetails = async (req, res) => {
     const ownerType = req.user?.role || 'customer';
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
+    const filter = req.query.filter || 'All';
 
-    const data = await walletService.getWalletData(userId, ownerType, page, limit);
+    const data = await walletService.getWalletData(userId, ownerType, page, limit, filter);
 
     res.status(200).json({
       success: true,
       data: {
         wallet: data.wallet,
         transactions: data.transactions,
+        stats: data.stats,
       },
       pagination: data.pagination,
     });
