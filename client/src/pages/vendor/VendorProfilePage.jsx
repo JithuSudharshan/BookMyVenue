@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { getVendorProfile, uploadVendorAvatar } from '../../api/vendor-api/mockVendorProfileApi';
+import React, { useState, useEffect, useContext } from 'react';
+import { vendorApi } from '../../api/vendor-api/vendorApi';
+import { AuthContext } from '../../store/AuthContext';
 import VendorProfileView from '../../components/vendor/Profile/VendorProfileView';
 import AvatarUpload from '../../components/user/Profile/AvatarUpload';
-import ToastContainer from '../../components/common/ToastContainer';
-import LoadingState from '../../components/common/LoadingState';
-import ErrorState from '../../components/common/ErrorState';
+import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
 import { useToast } from '../../hooks/useToast';
 import { formatMemberSince } from '../../utils/dateFormatter';
 import '../../components/user/Profile/Profile.css';
@@ -13,12 +12,15 @@ function VendorProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const { toasts, addToast } = useToast();
+  const { updateUser } = useContext(AuthContext);
 
   const fetchVendorDetails = async () => {
     try {
-      const response = await getVendorProfile();
-      if (response.success) {
-        setProfile(response.data);
+      const response = await vendorApi.getProfile();
+      if (response && response.vendor) {
+        setProfile(response.vendor);
+      } else {
+        setProfile(response); // Fallback depending on API response structure
       }
     } catch (err) {
       addToast(err.message || 'Failed to load vendor details.', 'error');
@@ -31,77 +33,125 @@ function VendorProfilePage() {
     fetchVendorDetails();
   }, []);
 
-  const handleAvatarSuccess = (base64Image) => {
+  const handleAvatarSuccess = (imgUrl) => {
     setProfile((prev) => ({
       ...prev,
-      profileImage: base64Image
+      profileImage: imgUrl
     }));
+    updateUser({ profile: { profileImage: imgUrl } });
   };
 
-  if (loading) {
-    return <LoadingState message="Loading business profile..." />;
-  }
+  // Profile completion calculation based on Vendor model
+  const completionFields = [
+    profile?.fullName, profile?.phone, profile?.email, profile?.profileImage,
+    profile?.address?.line1, profile?.address?.city, profile?.address?.state, profile?.address?.pincode,
+    profile?.identity?.documentNumber
+  ];
+  const filled = completionFields.filter(Boolean).length;
+  const pct = Math.round((filled / completionFields.length) * 100);
+  
+  const location = [profile?.address?.city, profile?.address?.state].filter(Boolean).join(', ');
 
-  if (!profile) {
-    return (
-      <ErrorState
-        message="Could not load business details. Please try reloading."
-        onRetry={() => {
-          setLoading(true);
-          fetchVendorDetails();
-        }}
-      />
-    );
-  }
+  const getVerificationBadge = () => {
+    switch (profile?.onboardingStatus) {
+      case 'approved':
+        return (
+          <span key="status" className="pf-badge" style={{ background: '#d1fae5', color: '#059669' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            Verified
+          </span>
+        );
+      case 'under_review':
+        return <div className="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-700 rounded-full">Under Review</div>;
+      case 'requested':
+        return <div className="text-sm font-medium px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-full">Submitted</div>;
+      case 'rejected':
+        return (
+          <span key="status" className="pf-badge" style={{ background: '#f3f4f6', color: '#4b5563' }}>
+            Rejected
+          </span>
+        );
+      default:
+        return (
+          <span key="status" className="pf-badge" style={{ background: '#fef3c7', color: '#d97706' }}>
+            Incomplete
+          </span>
+        );
+    }
+  };
 
   return (
-    <div className="profile-theme-scope">
-      <div className="profile-page-wrapper">
-        <ToastContainer toasts={toasts} />
-
-        <header className="profile-page-header">
-          <h1 className="headline-lg">Vendor Control Center</h1>
-          <p className="body-md text-muted">Manage your business credentials, document approvals, venues, and wallet balances.</p>
-        </header>
-
-        <div className="profile-page-grid">
-          <aside className="profile-sidebar">
-            <div className="sidebar-card">
-              <AvatarUpload
-                profileImage={profile.profileImage}
-                businessName={profile.businessName}
-                onUploadSuccess={handleAvatarSuccess}
-                onToast={addToast}
-                uploadApiFn={uploadVendorAvatar}
-                instructions="Drag and drop or click to change business logo. Max size 2MB (PNG, JPG, WEBP)."
-              />
-              
-              <div className="user-intro-details">
-                <h2 className="headline-md user-fullname" style={{ fontSize: '18px' }}>
-                  {profile.businessName}
-                </h2>
-                
-                {profile.verificationStatus === 'Verified' && (
-                  <span className="vendor-verification-badge">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                    </svg>
-                    Verified Vendor
-                  </span>
-                )}
-                
-                <p className="body-sm text-muted date-joined">Partner since {formatMemberSince(profile.createdAt)}</p>
-              </div>
-            </div>
-          </aside>
-
-          <main className="profile-main-panel">
-            <VendorProfileView profile={profile} />
-          </main>
-        </div>
-      </div>
-    </div>
+    <BaseProfilePage
+      loading={loading}
+      loadingMessage="Loading business profile…"
+      error={!profile}
+      errorMessage="Could not load business details. Please try reloading."
+      onRetry={() => { setLoading(true); fetchVendorDetails(); }}
+      toasts={toasts}
+      pageTitle="Vendor Profile"
+      pageSubtitle="Manage your business credentials and verification documents."
+      avatarComponent={
+        <AvatarUpload
+          profileImage={profile?.profileImage}
+          firstName={profile?.firstName}
+          lastName={profile?.lastName}
+          onUploadSuccess={handleAvatarSuccess}
+          onToast={addToast}
+          // TODO: Implement actual avatar upload for vendor profile edit
+          uploadApiFn={async () => ({ success: true, url: profile?.profileImage })}
+          deleteApiFn={async () => ({ success: true })}
+        />
+      }
+      heroTitle={profile?.fullName || `${profile?.firstName || ''} ${profile?.lastName || ''}`}
+      heroSubtitle={profile?.email}
+      badges={[
+        getVerificationBadge(),
+        profile?.createdAt ? (
+          <span key="member-since" className="pf-badge pf-badge-since">
+            Since {formatMemberSince(profile.createdAt)}
+          </span>
+        ) : null
+      ].filter(Boolean)}
+      chips={[
+        ...(profile?.phone ? [
+          <React.Fragment key="phone">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16l.19.92z"/>
+            </svg>
+            {profile.phone}
+          </React.Fragment>
+        ] : []),
+        ...(location ? [
+          <React.Fragment key="location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {location}
+          </React.Fragment>
+        ] : [])
+      ]}
+      completionPct={pct}
+      completionHints={
+        [
+          !profile?.phone && 'Add phone',
+          (!profile?.address || !profile.address.city) && 'Add address',
+          (!profile?.identity || !profile.identity.documentNumber) && 'Verify Identity'
+        ].filter(Boolean).join(' · ')
+      }
+      accountStatus={
+        profile?.status 
+          ? profile.status.charAt(0).toUpperCase() + profile.status.slice(1)
+          : 'Active'
+      }
+    >
+      <VendorProfileView
+        profile={profile}
+        onSaveProfile={(updated) => setProfile(updated)}
+      />
+    </BaseProfilePage>
   );
 }
 

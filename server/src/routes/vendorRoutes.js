@@ -2,13 +2,16 @@ import express from 'express';
 import { protect, authorize } from '../middlewares/authMiddleware.js';
 import { uploadProfileImage, uploadIdentityDoc } from '../utils/uploadMiddleware.js';
 import { validateStep1, validateStep2, validateStep3 } from '../validators/vendorOnboardingValidator.js';
+import { validateProfileUpdate, validateIdentityUpdate } from '../validators/vendorProfileValidator.js';
 import {
   getOnboardingStatus,
   saveStep1,
   saveStep2,
   saveStep3,
   submitForReview,
-  getVendorProfile
+  getVendorProfile,
+  updateProfile,
+  updateIdentity
 } from '../controllers/vendorController.js';
 
 const router = express.Router();
@@ -42,5 +45,16 @@ router.put(
 router.post('/onboarding/submit', submitForReview);
 
 router.get('/profile', getVendorProfile);
+
+// Update general profile details (Personal Info & Address)
+router.put('/profile', validateProfileUpdate, updateProfile);
+
+// Update identity details + replace document file in Cloudinary
+router.put(
+  '/profile/identity',
+  uploadIdentityDoc.single('identityDocument'),
+  validateIdentityUpdate,
+  updateIdentity
+);
 
 export default router;

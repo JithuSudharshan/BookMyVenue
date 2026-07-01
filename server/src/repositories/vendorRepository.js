@@ -26,7 +26,7 @@ class VendorRepository {
   }
 
   async submitForReview(userId) {
-    return await this.updateProfile(userId, { onboardingStatus: 'under_review' });
+    return await this.updateProfile(userId, { onboardingStatus: 'requested' });
   }
 }
 
