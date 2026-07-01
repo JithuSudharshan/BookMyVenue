@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Venue from '../../models/venue.model.js';
+import Venue from '../../models/venueModel.js';
 
 export const createVenue = async (venueData) => {
     const venue = new Venue(venueData);

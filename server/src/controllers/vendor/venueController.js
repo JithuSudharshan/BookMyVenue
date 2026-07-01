@@ -1,4 +1,4 @@
-import * as venueService from '../../services/vendor/venue.service.js';
+import * as venueService from '../../services/vendor/venueService.js';
 
 export const createVenue = async (req, res) => {
     try {

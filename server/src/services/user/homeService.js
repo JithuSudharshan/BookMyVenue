@@ -1,4 +1,4 @@
-import { findPublicVenuesAggregation } from '../../repositories/user/venue.repository.js';
+import { findPublicVenuesAggregation } from '../../repositories/user/venueRepository.js';
 
 export const getHomeVenuesService = async () => {
     // 1. For the home page, we want 18 most recent venues (3 rows x 6 venues)

@@ -1,4 +1,4 @@
-import Venue from '../../models/venue.model.js';
+import Venue from '../../models/venueModel.js';
 
 export const findPublicVenuesAggregation = async ({ matchStage = {}, sortStage = { createdAt: -1 }, skip = 0, limit = 10 }) => {
     // 1. Base match: always only show approved and active venues to users

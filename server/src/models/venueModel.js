@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { BOOKING_MODELS } from '../utils/venue.constants.js';
+import { BOOKING_MODELS } from '../utils/venueConstants.js';
 
 function isStrict() {
     // Only enforce required fields if the venue is NOT a draft or rejected

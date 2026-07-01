@@ -3,7 +3,7 @@ import {
     getSubcategoriesService,
     updateSubcategoryService,
     toggleSubcategoryStatusService
-} from "../../services/admin/subcategory.service.js";
+} from "../../services/admin/subcategoryService.js";
 
 
 
@@ -109,11 +109,10 @@ export const toggleSubcategoryStatus =
 
             res.status(200).json({
                 success: true,
-                message: `Subcategory ${
-                    isActive
+                message: `Subcategory ${isActive
                         ? "activated"
                         : "blocked"
-                } successfully`,
+                    } successfully`,
                 data: subcategory
             });
 

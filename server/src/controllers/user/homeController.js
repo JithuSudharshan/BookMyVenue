@@ -1,4 +1,4 @@
-import { getHomeVenuesService } from "../../services/user/home.service.js";
+import { getHomeVenuesService } from "../../services/user/homeService.js";
 
 export const loadHome = async (req, res) => {
     try {

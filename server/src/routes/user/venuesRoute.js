@@ -1,5 +1,5 @@
 import express from "express";
-import { LoadVenues } from "../../controllers/user/venues.controller.js";
+import { LoadVenues } from "../../controllers/user/venuesController.js";
 
 const router = express.Router();
 

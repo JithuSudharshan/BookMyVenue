@@ -1,7 +1,7 @@
-import * as venueRepository from '../../repositories/vendor/venue.repository.js';
-import Category from '../../models/category.model.js';
-import Subcategory from '../../models/subcategory.model.js';
-import Venue from '../../models/venue.model.js';
+import * as venueRepository from '../../repositories/vendor/venueRepository.js';
+import Category from '../../models/categoryModel.js';
+import Subcategory from '../../models/subcategoryModel.js';
+import Venue from '../../models/venueModel.js';
 import { generateSlug } from '../../utils/generateSlug.js';
 import ApiError from '../../utils/ApiError.js';
 

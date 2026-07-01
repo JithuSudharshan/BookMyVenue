@@ -1,4 +1,4 @@
-import { getVenuesService } from "../../services/user/venues.service.js";
+import { getVenuesService } from "../../services/user/venuesService.js";
 
 export const LoadVenues = async (req, res) => {
     try {

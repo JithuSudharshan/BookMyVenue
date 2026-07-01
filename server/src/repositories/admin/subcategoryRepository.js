@@ -1,4 +1,4 @@
-import Subcategory from "../../models/subcategory.model.js";
+import Subcategory from "../../models/subcategoryModel.js";
 
 export const createSubcategoryRepository = async (subcategoryData) => {
     return await Subcategory.create(subcategoryData);

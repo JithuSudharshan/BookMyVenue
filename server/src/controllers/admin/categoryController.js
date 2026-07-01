@@ -3,7 +3,7 @@ import {
     getCategoriesService,
     updateCategoryService,
     toggleCategoryStatusService
-} from "../../services/admin/category.service.js";
+} from "../../services/admin/categoryService.js";
 
 
 

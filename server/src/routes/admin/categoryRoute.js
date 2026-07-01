@@ -5,7 +5,7 @@ import {
     getCategories,
     updateCategory,
     toggleCategoryStatus
-} from "../../controllers/admin/category.controller.js";
+} from "../../controllers/admin/categoryController.js";
 
 const router = express.Router();
 

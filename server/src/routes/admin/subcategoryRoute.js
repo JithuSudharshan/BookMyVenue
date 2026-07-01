@@ -5,7 +5,7 @@ import {
     getSubcategories,
     updateSubcategory,
     toggleSubcategoryStatus
-} from "../../controllers/admin/subcategory.controller.js";
+} from "../../controllers/admin/subcategoryController.js";
 
 const router = express.Router();
 

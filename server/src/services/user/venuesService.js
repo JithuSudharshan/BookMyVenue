@@ -1,5 +1,5 @@
-import { findPublicVenuesAggregation } from '../../repositories/user/venue.repository.js';
-import Category from '../../models/category.model.js';
+import { findPublicVenuesAggregation } from '../../repositories/user/venueRepository.js';
+import Category from '../../models/categoryModel.js';
 
 export const getVenuesService = async (queryParams) => {
     const {

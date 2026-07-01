@@ -1,4 +1,4 @@
-import { normalizeName } from "../../utils/normalize-name.js";
+import { normalizeName } from "../../utils/normalizeName.js";
 
 import {
     createSubcategoryRepository,
@@ -7,11 +7,11 @@ import {
     getSubcategoryByIdRepository,
     updateSubcategoryRepository,
     toggleSubcategoryStatusRepository
-} from "../../repositories/admin/subcategory.repository.js";
+} from "../../repositories/admin/subcategoryRepository.js";
 
 import {
     getCategoryByIdRepository
-} from "../../repositories/admin/category.repository.js";
+} from "../../repositories/admin/categoryRepository.js";
 
 
 

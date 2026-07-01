@@ -1,5 +1,5 @@
 import express from 'express';
-import * as venueController from '../../controllers/vendor/venue.controller.js';
+import * as venueController from '../../controllers/vendor/venueController.js';
 
 const router = express.Router();
 
