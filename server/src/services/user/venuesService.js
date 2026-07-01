@@ -96,6 +96,8 @@ export const getVenuesService = async (queryParams) => {
         hasNextPage: parsedPage < totalPages,
         hasPrevPage: parsedPage > 1
     };
+    // 10. Fetch Available Categories for Frontend Filter
+    const availableCategories = await Category.find({ isActive: true }).select('name').lean();
 
-    return { venues, pagination };
+    return { venues, pagination, availableCategories: availableCategories.map(c => c.name) };
 };

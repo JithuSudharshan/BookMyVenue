@@ -2,14 +2,15 @@ import { getVenuesService } from "../../services/user/venuesService.js";
 
 export const LoadVenues = async (req, res) => {
     try {
-        const { venues, pagination } = await getVenuesService(req.query);
+        const { venues, pagination, availableCategories } = await getVenuesService(req.query);
 
         res.status(200).json({
             success: true,
             message: "Venues retrieved successfully",
             data: {
                 venues,
-                pagination
+                pagination,
+                availableCategories
             }
         });
 
