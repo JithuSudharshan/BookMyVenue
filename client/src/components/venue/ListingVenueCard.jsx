@@ -1,59 +1,92 @@
-import React from 'react'
-import { FiMapPin, FiStar, FiHeart, FiArrowRight } from 'react-icons/fi'
+import React, { useState } from 'react'
+import { FiHeart, FiStar } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
-const ListingVenueCard = ({ venue, isTopRated }) => {
+const ListingVenueCard = ({ venue, badge }) => {
   const navigate = useNavigate()
+  const [wishlisted, setWishlisted] = useState(false)
+  const [imgError, setImgError] = useState(false)
 
   return (
-    <div 
-      onClick={() => navigate('/venues')}
-      className="group bg-white rounded-[20px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col cursor-pointer h-full"
+    <div
+      onClick={() => navigate(`/venues/${venue._id || venue.id || ''}`)}
+      className="group cursor-pointer"
     >
-      <div className="h-[220px] overflow-hidden relative">
-        <img 
-          src={venue.image} 
-          alt={venue.name} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        {isTopRated && (
-          <div className="absolute top-4 left-4 bg-white/90 text-dark px-3 py-1 text-xs font-bold rounded-md backdrop-blur-sm shadow-sm">
-            Top Rated
+      {/* Image Container */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100 mb-3">
+        {venue.image && !imgError ? (
+          <img
+            src={venue.image}
+            alt={venue.name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+            <span className="text-xs mt-2">No image</span>
           </div>
         )}
-        <div className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40 transition-colors">
-          <FiHeart className="text-white w-4 h-4" />
-        </div>
+
+        {/* Badge (Top Left) */}
+        {badge && (
+          <div className="absolute top-3 left-3 bg-white text-gray-900 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-sm">
+            {badge}
+          </div>
+        )}
+
+        {/* Wishlist Button (Top Right) */}
+        <button
+          onClick={e => { e.stopPropagation(); setWishlisted(w => !w) }}
+          className="absolute top-3 right-3 p-1.5 transition-transform hover:scale-110 active:scale-95"
+          aria-label="Save to wishlist"
+        >
+          {wishlisted ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#E53935" stroke="#E53935" strokeWidth="1.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(0,0,0,0.3)" stroke="white" strokeWidth="1.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          )}
+        </button>
       </div>
-      <div className="p-6 flex flex-col flex-grow justify-between">
-        <div>
-          <div className="flex justify-between items-start mb-2">
-            <h4 className="font-extrabold text-dark text-xl pr-2">{venue.name}</h4>
-            <div className="flex items-center bg-gray-100 px-2 py-1 rounded text-xs font-bold text-dark flex-shrink-0">
-              <FiStar className="text-yellow-500 mr-1 fill-current w-3 h-3" />
-              {venue.rating || 4.9}
+
+      {/* Info Section */}
+      <div className="space-y-0.5 px-0.5">
+        {/* Name + Rating Row */}
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-gray-900 text-[15px] leading-snug truncate flex-1">
+            {venue.name}
+          </h3>
+          {venue.rating != null && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <FiStar className="w-3.5 h-3.5 fill-current text-gray-900" />
+              <span className="text-sm font-medium text-gray-900">{Number(venue.rating).toFixed(1)}</span>
             </div>
-          </div>
-          <div className="flex items-center text-gray-500 text-sm mb-4">
-            <FiMapPin className="mr-1.5 w-4 h-4 text-gray-400" />
-            {venue.location}
-          </div>
-          
-          <div className="flex flex-wrap gap-2 mb-6">
-            <span className="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-md font-medium">Up to 250 Guests</span>
-            <span className="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-md font-medium">Indoor</span>
-          </div>
+          )}
         </div>
-        
-        <div className="flex border-t border-gray-100 pt-5 justify-between items-end mt-auto">
-          <div className="flex items-baseline">
-            <span className="font-extrabold text-primary text-[28px] leading-none">${venue.price || '450'}</span>
-            <span className="text-dark text-sm ml-1 font-medium">/ hr</span>
-          </div>
-          <button className="text-primary font-bold text-sm flex items-center hover:text-red-700 transition-colors">
-            View Detail <FiArrowRight className="ml-1.5 w-4 h-4" />
-          </button>
-        </div>
+
+        {/* Location */}
+        <p className="text-sm text-gray-500 truncate">{venue.location || 'Location not specified'}</p>
+
+        {/* Category / Type */}
+        {venue.category && (
+          <p className="text-sm text-gray-500">{venue.category}</p>
+        )}
+
+        {/* Price */}
+        <p className="text-sm text-gray-900 pt-0.5">
+          <span className="font-semibold">₹{venue.price?.toLocaleString('en-IN') || '—'}</span>
+          <span className="text-gray-500 font-normal">
+            {venue.bookingModel === 'hourly' ? ' / hr' : ' / day'}
+          </span>
+        </p>
       </div>
     </div>
   )

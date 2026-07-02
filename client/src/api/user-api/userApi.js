@@ -10,9 +10,9 @@ export const getHomeData = async () => {
   }
 };
 
-export const getVenues = async () => {
+export const getVenues = async (filters = {}) => {
   try {
-    const response = await axiosInstance.get("/venues");
+    const response = await axiosInstance.get("/venues", { params: filters });
     return response.data.data;
   } catch (error) {
     console.error("Error fetching venues", error);

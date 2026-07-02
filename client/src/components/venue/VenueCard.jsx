@@ -1,47 +1,78 @@
-import React from 'react'
-import { FiMapPin, FiStar } from 'react-icons/fi'
+import React, { useState } from 'react'
+import { FiStar, FiHeart } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 const VenueCard = ({ venue }) => {
   const navigate = useNavigate()
+  const [wishlisted, setWishlisted] = useState(false)
+
+  const isGuestFavourite = venue.rating >= 4.8
+
+  const handleCardClick = () => {
+    navigate(`/venues/${venue._id || venue.id || ''}`)
+  }
+
+  const handleWishlist = (e) => {
+    e.stopPropagation()
+    setWishlisted(prev => !prev)
+  }
 
   return (
     <div
-      onClick={() => navigate('/venues')}
-      className="group bg-white rounded-[20px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col cursor-pointer h-full"
+      onClick={handleCardClick}
+      className="group flex-shrink-0 w-[280px] cursor-pointer"
     >
-      <div className="h-[220px] overflow-hidden relative">
+      {/* ── IMAGE ── */}
+      <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-3">
         <img
           src={venue.image}
           alt={venue.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
-        <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 text-xs font-bold rounded-full shadow-sm">
-          {venue.category || 'Venue'}
-        </div>
-        <div className="absolute top-4 right-4 bg-white/90 text-dark px-3 py-1 text-xs font-bold rounded-full backdrop-blur-sm shadow-sm flex items-center">
-          <FiStar className="text-yellow-500 mr-1.5 fill-current w-3.5 h-3.5" />
-          {venue.rating || 4.8}
-        </div>
-      </div>
-      <div className="p-6 flex flex-col flex-grow justify-between">
-        <div>
-          <h4 className="font-extrabold text-dark text-xl mb-2">{venue.name}</h4>
-          <div className="flex items-center text-gray-500 text-sm mb-5">
-            <FiMapPin className="mr-2 text-gray-400" />
-            {venue.location}
+
+        {/* Guest favourite badge */}
+        {isGuestFavourite && (
+          <div className="absolute top-3 left-3 bg-white text-dark text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm">
+            Guest favourite
           </div>
+        )}
+
+        {/* Wishlist heart */}
+        <button
+          onClick={handleWishlist}
+          aria-label="Save to wishlist"
+          className="absolute top-3 right-3 p-1 transition-transform hover:scale-110"
+        >
+          <FiHeart
+            className={`w-5 h-5 drop-shadow transition-colors duration-200
+              ${wishlisted ? 'fill-primary text-primary' : 'fill-black/20 text-white'}`}
+          />
+        </button>
+      </div>
+
+      {/* ── INFO ── */}
+      <div className="px-0.5">
+        {/* Name + Rating row */}
+        <div className="flex items-start justify-between gap-2 mb-0.5">
+          <h4 className="font-semibold text-dark text-sm leading-snug flex-1 truncate">
+            {venue.name}
+          </h4>
+          {venue.rating && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <FiStar className="w-3 h-3 fill-dark text-dark" />
+              <span className="text-xs font-medium text-dark">{venue.rating}</span>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-col border-t border-gray-100 pt-5 space-y-4">
-          <div>
-            <span className="font-extrabold text-dark text-xl">${venue.price.toLocaleString()}</span>
-            <span className="text-gray-500 text-xs ml-1 font-medium">/ day</span>
-          </div>
-          <button className="w-full py-2.5 bg-gray-50 hover:bg-primary hover:text-white text-dark rounded-xl font-bold transition-colors duration-300">
-            Explore Venue
-          </button>
-        </div>
+        {/* Location */}
+        <p className="text-gray-400 text-xs mb-1 truncate">{venue.location}</p>
+
+        {/* Price */}
+        <p className="text-dark text-sm">
+          <span className="font-semibold">₹{venue.price?.toLocaleString()}</span>
+          <span className="text-gray-500 font-normal"> / day</span>
+        </p>
       </div>
     </div>
   )

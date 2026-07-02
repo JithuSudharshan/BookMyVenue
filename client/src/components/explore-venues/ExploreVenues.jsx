@@ -1,59 +1,106 @@
-import React, { useState, useEffect } from 'react'
-import SectionHeader from '../common/SectionHeader'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { FiArrowRight, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import VenueCard from '../venue/VenueCard'
 import { getHomeData } from '../../api/user-api/userApi'
-import { CardSkeleton } from '../common/Skeleton'
+import { AirbnbCardSkeleton } from '../common/Skeleton'
 
-const ExploreVenues = () => {
+const ExploreVenues = ({ activeCategoryId }) => {
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+  const scrollRef = useRef(null)
 
   useEffect(() => {
-    const fetchExploreVenues = async () => {
+    const fetchVenues = async () => {
       try {
         const result = await getHomeData()
         setVenues(result.popularVenues || [])
       } catch (error) {
-        console.error('Failed to fetch explore venues:', error)
+        console.error('Failed to fetch popular venues:', error)
       } finally {
         setLoading(false)
       }
     }
-    fetchExploreVenues()
+    fetchVenues()
   }, [])
 
-  // If we have less than 4 venues, duplicate them to show the 4 column layout as requested
-  const displayVenues = venues && venues.length > 0 ?
-    (venues.length < 4 ? [...venues, ...venues, ...venues, ...venues].slice(0, 4) : venues.slice(0, 8)) : []
+  const scroll = (dir) => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
+  }
+
+  const updateScrollState = () => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+
+  // Filter by active category if one is selected
+  const displayVenues = activeCategoryId && activeCategoryId !== 'all'
+    ? venues.filter(v => v.categoryId === activeCategoryId || v.category === activeCategoryId)
+    : venues
+
+  const showEmpty = !loading && displayVenues.length === 0
 
   return (
-    <section className="py-20 bg-background min-h-[400px]">
+    <section className="py-12 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
-        <SectionHeader
-          title="Popular Venues"
-          subtitle="Discover hand-picked venues perfect for weddings, corporate events, celebrations, and special occasions."
-          actionText="View All Venues"
-          actionLink="/venues"
-        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, idx) => <CardSkeleton key={idx} height="h-[200px]" />)
-          ) : (
-            displayVenues.map((venue, index) => (
-              <VenueCard key={`${venue.id}-${index}`} venue={venue} />
-            ))
-          )}
-        </div>
-
-        <div className="sm:hidden mt-10 w-full flex justify-center">
-          <a
-            href="/venues"
-            className="bg-gray-100 hover:bg-gray-200 text-dark px-8 py-3 rounded-lg font-bold transition-colors shadow-sm"
+        {/* Section header */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/venues"
+            className="text-[22px] font-bold text-dark hover:underline flex items-center gap-2 group"
           >
-            View All Venues
-          </a>
+            Popular Venues
+            <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+          </Link>
+
+          {/* Scroll arrows */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => scroll('left')}
+              disabled={!canScrollLeft}
+              aria-label="Scroll left"
+              className="w-9 h-9 border border-gray-300 rounded-full flex items-center justify-center
+                         hover:border-dark transition-colors disabled:opacity-25 disabled:cursor-default"
+            >
+              <FiChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              disabled={!canScrollRight}
+              aria-label="Scroll right"
+              className="w-9 h-9 border border-gray-300 rounded-full flex items-center justify-center
+                         hover:border-dark transition-colors disabled:opacity-25 disabled:cursor-default"
+            >
+              <FiChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Horizontal scroll row */}
+        {showEmpty ? (
+          <p className="text-gray-400 text-sm py-8">No venues found for this category.</p>
+        ) : (
+          <div
+            ref={scrollRef}
+            onScroll={updateScrollState}
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-2"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {loading
+              ? Array.from({ length: 5 }).map((_, i) => <AirbnbCardSkeleton key={i} />)
+              : displayVenues.map((venue, idx) => (
+                  <VenueCard key={`${venue.id}-${idx}`} venue={venue} />
+                ))
+            }
+          </div>
+        )}
       </div>
     </section>
   )
