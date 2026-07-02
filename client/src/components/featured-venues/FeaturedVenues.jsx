@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { FiArrowRight } from 'react-icons/fi'
-import VenueCardLarge from './VenueCardLarge'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { FiArrowRight, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import VenueCard from '../venue/VenueCard'
 import { getHomeData } from '../../api/user-api/userApi'
-import { CardSkeleton } from '../common/Skeleton'
+import { AirbnbCardSkeleton } from '../common/Skeleton'
 
-const FeaturedVenues = () => {
+const FeaturedVenues = ({ activeCategoryId }) => {
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+  const scrollRef = useRef(null)
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -23,51 +26,79 @@ const FeaturedVenues = () => {
     fetchVenues()
   }, [])
 
-  const mainVenue = venues[0]
-  const secondaryVenues = venues.slice(1, 3)
+  const scroll = (dir) => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
+  }
+
+  const updateScrollState = () => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+
+  const displayVenues = activeCategoryId && activeCategoryId !== 'all'
+    ? venues.filter(v => v.categoryId === activeCategoryId || v.category === activeCategoryId)
+    : venues
+
+  const showEmpty = !loading && displayVenues.length === 0
 
   return (
-    <section className="py-20 bg-background min-h-[500px]">
+    <section className="py-12 bg-white border-b border-gray-100">
       <div className="container mx-auto px-4 lg:px-8">
-        
-        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-12">
-          <div className="mb-4 md:mb-0">
-            <h2 className="text-[42px] font-extrabold text-dark mb-3 leading-tight">Featured Venues</h2>
-            <p className="text-[18px] text-[#6B7280]">Hand-picked spaces for exceptional experiences.</p>
-          </div>
-          <button className="hidden sm:flex items-center text-primary font-semibold hover:text-red-700 transition-colors text-lg">
-            View All <FiArrowRight className="ml-2" />
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Left: Large Venue */}
-          <div className="h-full">
-            {loading ? (
-               <CardSkeleton height="h-[400px]" />
-            ) : mainVenue ? (
-               <VenueCardLarge venue={mainVenue} />
-            ) : null}
-          </div>
 
-          {/* Right: Small Venues */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-6">
-            {loading ? (
-               <>
-                 <CardSkeleton height="h-[200px]" />
-                 <CardSkeleton height="h-[200px]" />
-               </>
-            ) : (
-               secondaryVenues.map((venue) => (
-                 <VenueCard key={venue.id} venue={venue} />
-               ))
-            )}
+        {/* Section header */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/venues"
+            className="text-[22px] font-bold text-dark hover:underline flex items-center gap-2 group"
+          >
+            Featured Venues
+            <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+          </Link>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => scroll('left')}
+              disabled={!canScrollLeft}
+              aria-label="Scroll left"
+              className="w-9 h-9 border border-gray-300 rounded-full flex items-center justify-center
+                         hover:border-dark transition-colors disabled:opacity-25 disabled:cursor-default"
+            >
+              <FiChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              disabled={!canScrollRight}
+              aria-label="Scroll right"
+              className="w-9 h-9 border border-gray-300 rounded-full flex items-center justify-center
+                         hover:border-dark transition-colors disabled:opacity-25 disabled:cursor-default"
+            >
+              <FiChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
-        
-        <button className="sm:hidden mt-8 w-full flex justify-center items-center text-primary font-semibold hover:text-red-700 transition-colors">
-          View All <FiArrowRight className="ml-2" />
-        </button>
+
+        {/* Horizontal scroll row */}
+        {showEmpty ? (
+          <p className="text-gray-400 text-sm py-8">No featured venues available.</p>
+        ) : (
+          <div
+            ref={scrollRef}
+            onScroll={updateScrollState}
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-2"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {loading
+              ? Array.from({ length: 5 }).map((_, i) => <AirbnbCardSkeleton key={i} />)
+              : displayVenues.map((venue, idx) => (
+                  <VenueCard key={`${venue.id}-${idx}`} venue={venue} />
+                ))
+            }
+          </div>
+        )}
       </div>
     </section>
   )

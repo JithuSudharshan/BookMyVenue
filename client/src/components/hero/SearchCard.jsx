@@ -1,70 +1,184 @@
-import React from 'react'
-import { FiSearch, FiMapPin, FiCalendar, FiUsers, FiBox } from 'react-icons/fi'
+import React, { useState, useRef, useEffect } from 'react'
+import { FiSearch } from 'react-icons/fi'
+import { useNavigate } from 'react-router-dom'
+import LocationPanel from './LocationPanel'
+import DatePanel from './DatePanel'
+import GuestPanel from './GuestPanel'
+
+const saveRecentSearch = (location) => {
+  if (!location.trim()) return
+  // Only save Kerala locations
+  const lower = location.toLowerCase()
+  if (!lower.includes('kerala') && lower !== 'nearby') return
+  try {
+    const prev = JSON.parse(localStorage.getItem('bmv_recent_searches') || '[]')
+    const updated = [location, ...prev.filter(r => r !== location)].slice(0, 5)
+    localStorage.setItem('bmv_recent_searches', JSON.stringify(updated))
+  } catch { /* ignore */ }
+}
+
+const formatDate = (date) =>
+  date ? date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : null
 
 const SearchCard = () => {
+  const navigate = useNavigate()
+  const cardRef = useRef(null)
+
+  // Which field is active — drives which panel is shown
+  const [activeField, setActiveField] = useState(null) // null | 'location' | 'date' | 'guests'
+
+  // Field values
+  const [locationValue, setLocationValue] = useState('')
+  const [dateRange, setDateRange] = useState({ start: null, end: null })
+  const [guests, setGuests] = useState(0)
+
+  // Close all panels when user clicks outside the entire card
+  useEffect(() => {
+    const handler = (e) => {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        setActiveField(null)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const totalGuests = guests
+
+  // Date display strings
+  const startStr = formatDate(dateRange.start)
+  const endStr = formatDate(dateRange.end)
+  const dateDisplay = startStr
+    ? endStr ? `${startStr} – ${endStr}` : startStr
+    : null
+
+  // Segment active styling
+  const segmentBase = `
+    relative flex-1 px-6 py-3 rounded-full cursor-pointer
+    transition-all duration-200 text-left select-none
+  `
+  const segmentActive = `bg-white shadow-[0_2px_20px_rgba(0,0,0,0.12)]`
+  const segmentInactive = `hover:bg-white/60`
+
+  const seg = (field) =>
+    `${segmentBase} ${activeField === field ? segmentActive : activeField ? 'opacity-60 ' + segmentInactive : segmentInactive}`
+
+  const handleSearch = () => {
+    saveRecentSearch(locationValue)
+    const params = new URLSearchParams()
+    if (locationValue) params.set('location', locationValue)
+    if (dateRange.start) params.set('date', dateRange.start.toISOString().split('T')[0])
+    if (totalGuests > 0) params.set('guests', totalGuests)
+    navigate(`/venues?${params.toString()}`)
+  }
+
   return (
-    <div className="bg-white rounded-[20px] shadow-xl p-6 lg:p-4 w-full flex flex-col lg:flex-row items-center gap-4 lg:gap-2 border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+    <div ref={cardRef} className="relative w-full">
 
-      {/* Location */}
-      <div className="flex-1 w-full lg:w-auto px-4 lg:border-r border-gray-200 pb-4 lg:pb-0 border-b lg:border-b-0 group">
-        <label className="block text-[11px] font-extrabold text-gray-800 tracking-wider mb-1.5 transition-colors group-hover:text-primary">LOCATION</label>
-        <div className="flex items-center text-gray-500">
-          <FiMapPin className="mr-3 w-5 h-5 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" />
+      {/* ── PILL BAR ── */}
+      <div className={`
+        flex items-center bg-white/80 backdrop-blur-md rounded-full
+        border border-gray-200 shadow-lg
+        transition-all duration-200
+        ${activeField ? 'shadow-xl ring-2 ring-white/50' : ''}
+      `}>
+
+        {/* ─── WHERE ─── */}
+        <div
+          className={seg('location')}
+          onClick={() => setActiveField(activeField === 'location' ? null : 'location')}
+        >
+          <p className="text-[11px] font-extrabold text-dark tracking-wider mb-0.5">Location</p>
           <input
             type="text"
-            placeholder="Where are you going?"
-            className="w-full min-w-0 bg-transparent outline-none text-gray-900 font-medium placeholder-gray-400 focus:placeholder-gray-300 text-base truncate"
+            value={locationValue}
+            onChange={e => setLocationValue(e.target.value)}
+            onFocus={() => setActiveField('location')}
+            placeholder="Search destinations"
+            className="w-full bg-transparent outline-none text-gray-500 text-sm font-medium placeholder-gray-400 truncate"
           />
         </div>
-      </div>
 
-      {/* Date */}
-      <div className="flex-1 w-full lg:w-auto px-4 lg:border-r border-gray-200 pb-4 lg:pb-0 border-b lg:border-b-0 group">
-        <label className="block text-[11px] font-extrabold text-gray-800 tracking-wider mb-1.5 transition-colors group-hover:text-primary">DATE</label>
-        <div className="flex items-center text-gray-500">
-          <FiCalendar className="mr-3 w-5 h-5 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Add dates"
-            className="w-full min-w-0 bg-transparent outline-none text-gray-900 font-medium placeholder-gray-400 focus:placeholder-gray-300 text-base truncate"
-          />
+        {/* Divider */}
+        <div className={`w-px h-8 bg-gray-200 flex-shrink-0 transition-opacity ${activeField ? 'opacity-0' : 'opacity-100'}`} />
+
+        {/* ─── WHEN ─── */}
+        <div
+          className={seg('date')}
+          onClick={() => setActiveField(activeField === 'date' ? null : 'date')}
+        >
+          <p className="text-[11px] font-extrabold text-dark tracking-wider mb-0.5">Date</p>
+          <p className={`text-sm font-medium truncate ${dateDisplay ? 'text-dark' : 'text-gray-400'}`}>
+            {dateDisplay || 'Add dates'}
+          </p>
         </div>
-      </div>
 
-      {/* Guests */}
-      <div className="flex-1 w-full lg:w-auto px-4 lg:border-r border-gray-200 pb-4 lg:pb-0 border-b lg:border-b-0 group">
-        <label className="block text-[11px] font-extrabold text-gray-800 tracking-wider mb-1.5 transition-colors group-hover:text-primary">GUESTS</label>
-        <div className="flex items-center text-gray-500">
-          <FiUsers className="mr-3 w-5 h-5 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" />
+        {/* Divider */}
+        <div className={`w-px h-8 bg-gray-200 flex-shrink-0 transition-opacity ${activeField ? 'opacity-0' : 'opacity-100'}`} />
+
+        {/* ─── WHO ─── */}
+        <div
+          className={seg('guests')}
+          onClick={() => setActiveField(activeField === 'guests' ? null : 'guests')}
+        >
+          <p className="text-[11px] font-extrabold text-dark tracking-wider mb-0.5">Guests</p>
           <input
-            type="text"
+            type="number"
+            min="0"
+            value={guests === 0 ? '' : guests}
+            onChange={(e) => {
+              const val = parseInt(e.target.value, 10);
+              setGuests(isNaN(val) ? 0 : Math.max(0, val));
+            }}
+            onFocus={() => setActiveField('guests')}
             placeholder="Add guests"
-            className="w-full min-w-0 bg-transparent outline-none text-gray-900 font-medium placeholder-gray-400 focus:placeholder-gray-300 text-base truncate"
+            className="w-full bg-transparent outline-none text-dark text-sm font-medium placeholder-gray-400 truncate [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
+        </div>
+
+        {/* ─── SEARCH BUTTON ─── */}
+        <div className="pr-2 pl-1 flex-shrink-0">
+          <button
+            onClick={handleSearch}
+            className={`
+              flex items-center justify-center rounded-full bg-primary hover:bg-red-700
+              text-white font-semibold transition-all duration-200 shadow-md hover:shadow-lg
+              ${activeField
+                ? 'w-auto px-5 h-12 gap-2'
+                : 'w-12 h-12'
+              }
+            `}
+          >
+            <FiSearch className="w-5 h-5 flex-shrink-0" />
+            {activeField && <span className="text-sm">Search</span>}
+          </button>
         </div>
       </div>
 
-      {/* Venue Type */}
-      <div className="flex-1 w-full lg:w-auto px-4 pb-4 lg:pb-0 group">
-        <label className="block text-[11px] font-extrabold text-gray-800 tracking-wider mb-1.5 transition-colors group-hover:text-primary">VENUE TYPE</label>
-        <div className="flex items-center text-gray-500">
-          <FiBox className="mr-3 w-5 h-5 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Any type"
-            className="w-full min-w-0 bg-transparent outline-none text-gray-900 font-medium placeholder-gray-400 focus:placeholder-gray-300 text-base truncate"
-          />
-        </div>
-      </div>
+      {/* ── PANELS (drop below the pill) ── */}
 
-      {/* Search Button */}
-      <div className="w-full lg:w-auto px-4 lg:px-2 flex justify-end lg:pl-4 flex-shrink-0">
-        <button className="w-full lg:w-[60px] h-14 lg:h-[60px] bg-primary hover:bg-red-700 text-white rounded-xl flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.05]">
-          <span className="lg:hidden font-semibold mr-2 text-lg">Search</span>
-          <FiSearch className="w-6 h-6" />
-        </button>
-      </div>
+      {activeField === 'location' && (
+        <LocationPanel
+          value={locationValue}
+          onChange={setLocationValue}
+          onSelectLocation={() => setActiveField('date')}
+        />
+      )}
 
+      {activeField === 'date' && (
+        <DatePanel
+          dateRange={dateRange}
+          onChange={setDateRange}
+          onClose={() => setActiveField('guests')}
+        />
+      )}
+
+      {activeField === 'guests' && (
+        <GuestPanel
+          guests={guests}
+          onChange={setGuests}
+        />
+      )}
     </div>
   )
 }
