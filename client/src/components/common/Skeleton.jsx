@@ -29,3 +29,25 @@ export const CategorySkeleton = () => {
     </div>
   )
 }
+
+// Airbnb-style card skeleton — no border, image-first, slim info below
+export const AirbnbCardSkeleton = () => {
+  return (
+    <div className="flex-shrink-0 w-[280px]">
+      <div className="w-full aspect-[4/3] rounded-2xl bg-gray-200 animate-pulse mb-3"></div>
+      <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5 mb-2"></div>
+      <div className="h-3 bg-gray-200 rounded animate-pulse w-3/5 mb-2"></div>
+      <div className="h-3 bg-gray-200 rounded animate-pulse w-2/5"></div>
+    </div>
+  )
+}
+
+// Slim category tab skeleton
+export const TabSkeleton = () => {
+  return (
+    <div className="flex flex-col items-center gap-1 flex-shrink-0">
+      <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+      <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  )
+}
