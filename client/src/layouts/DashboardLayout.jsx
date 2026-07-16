@@ -56,7 +56,8 @@ function DashboardLayout() {
   const isVendorAppStatusVisible = isVendor && 
     (user?.profile?.onboardingStatus === 'requested' || 
      user?.profile?.onboardingStatus === 'under_review' || 
-     user?.profile?.onboardingStatus === 'rejected');
+     user?.profile?.onboardingStatus === 'rejected' ||
+     user?.profile?.onboardingStatus === 'changes_requested');
 
   const NAV_ITEMS = isVendor 
     ? (isVendorAppStatusVisible 

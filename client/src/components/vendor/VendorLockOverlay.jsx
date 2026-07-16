@@ -33,7 +33,7 @@ const VendorLockOverlay = () => {
   // IMPORTANT EXCEPTION: If the status is requested, under_review, or rejected, 
   // do NOT show the lock modal on the application status page!
   if (
-    (onboardingStatus === 'requested' || onboardingStatus === 'under_review' || onboardingStatus === 'rejected') && 
+    (onboardingStatus === 'requested' || onboardingStatus === 'under_review' || onboardingStatus === 'rejected' || onboardingStatus === 'changes_requested') && 
     location.pathname === '/vendor/application-status'
   ) {
     return null;
@@ -97,6 +97,18 @@ const VendorLockOverlay = () => {
       buttonText = "View Application Status";
       buttonAction = () => navigate('/vendor/application-status');
       colorTheme = "error";
+      break;
+    case 'changes_requested':
+      icon = (
+        <div className="w-20 h-20 bg-brand-subtle rounded-full flex items-center justify-center mb-6 shadow-inner mx-auto">
+          <Clock className="w-10 h-10 text-brand-dark" />
+        </div>
+      );
+      title = "Updates Submitted";
+      description = "Thank you for updating your application. Our team is currently reviewing your changes and will get back to you shortly.";
+      buttonText = "View Application Status";
+      buttonAction = () => navigate('/vendor/application-status');
+      colorTheme = "primary";
       break;
     default:
       return null;

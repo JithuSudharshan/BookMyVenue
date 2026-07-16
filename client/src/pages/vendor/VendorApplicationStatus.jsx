@@ -111,6 +111,21 @@ function VendorApplicationStatus() {
           </div>
         )}
 
+        {profile.onboardingStatus === 'changes_requested' && (
+          <div className="relative overflow-hidden bg-blue-50/50 ring-1 ring-blue-500/20 rounded-2xl mb-10 p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center shadow-sm">
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl"></div>
+            <div className="bg-white ring-1 ring-blue-500/20 p-3 rounded-full flex-shrink-0 shadow-sm z-10">
+              <Clock className="w-8 h-8 text-blue-600" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 z-10">
+              <h2 className="text-xl font-semibold text-on-surface mb-1">Updates Submitted</h2>
+              <p className="text-on-surface-variant leading-relaxed">
+                Your updated application has been successfully resubmitted. Our team is currently reviewing your changes and will get back to you shortly.
+              </p>
+            </div>
+          </div>
+        )}
+
         {profile.onboardingStatus === 'rejected' && (
           <div className="relative overflow-hidden bg-red-50/50 ring-1 ring-red-500/20 rounded-2xl mb-10 p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center shadow-sm">
             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl"></div>

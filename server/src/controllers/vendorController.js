@@ -137,9 +137,10 @@ export const updateIdentity = async (req, res) => {
     if (documentType)   data['identity.documentType']   = documentType;
     if (documentNumber) data['identity.documentNumber'] = documentNumber;
 
+    const existingProfile = await vendorRepository.getProfileByUserId(req.user._id);
+
     if (req.file && req.file.path) {
       // Delete the old document from Cloudinary before saving the new one
-      const existingProfile = await vendorRepository.getProfileByUserId(req.user._id);
       const oldUrl = existingProfile?.identity?.documentUrl;
       if (oldUrl) {
         await deleteIdentityDocFromCloudinary(oldUrl);

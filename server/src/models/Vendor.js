@@ -12,7 +12,7 @@ const vendorSchema = new mongoose.Schema(
     // --- Onboarding Flow ---
     onboardingStatus: {
       type: String,
-      enum: ['incomplete', 'under_review', 'approved', 'rejected', 'requested'],
+      enum: ['incomplete', 'under_review', 'approved', 'rejected', 'requested', 'changes_requested'],
       default: 'incomplete', 
     },
     onboardingStep: {

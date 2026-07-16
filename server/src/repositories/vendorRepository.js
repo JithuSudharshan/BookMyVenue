@@ -26,7 +26,9 @@ class VendorRepository {
   }
 
   async submitForReview(userId) {
-    return await this.updateProfile(userId, { onboardingStatus: 'requested' });
+    const currentProfile = await this.getProfileByUserId(userId);
+    const nextStatus = currentProfile && currentProfile.onboardingStatus === 'rejected' ? 'changes_requested' : 'requested';
+    return await this.updateProfile(userId, { onboardingStatus: nextStatus });
   }
 }
 
