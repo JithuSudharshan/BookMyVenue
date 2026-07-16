@@ -4,7 +4,7 @@ import { AuthContext } from '../../store/AuthContext';
 import ProfileView from '../../components/user/Profile/ProfileView';
 import AvatarUpload from '../../components/user/Profile/AvatarUpload';
 import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
-import { useToast } from '../../hooks/useToast';
+import { toast } from 'sonner';
 import { formatMemberSince } from '../../utils/dateFormatter';
 import '../../components/user/Profile/Profile.css';
 
@@ -12,7 +12,6 @@ function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingSection, setEditingSection] = useState(null); // null | 'personal' | 'address'
-  const { toasts, addToast } = useToast();
   const { updateUser } = useContext(AuthContext);
 
   const fetchProfileDetails = async () => {
@@ -22,7 +21,7 @@ function ProfilePage() {
         setProfile(response.data);
       }
     } catch (err) {
-      addToast(err.message || 'Failed to load profile details.', 'error');
+      toast.error(err.message || 'Failed to load profile details.');
     } finally {
       setLoading(false);
     }
@@ -38,7 +37,7 @@ function ProfilePage() {
       setProfile(response.data);
       updateUser({ profile: { firstName: response.data.firstName, lastName: response.data.lastName } });
       setEditingSection(null);
-      addToast('Personal information updated!', 'success');
+      toast.success('Personal information updated!');
     }
   };
 
@@ -47,7 +46,7 @@ function ProfilePage() {
     if (response.success) {
       setProfile(response.data);
       setEditingSection(null);
-      addToast('Address updated!', 'success');
+      toast.success('Address updated!');
     }
   };
 
@@ -73,7 +72,6 @@ function ProfilePage() {
       error={!profile}
       errorMessage="Could not load profile details. Please try reloading."
       onRetry={() => { setLoading(true); fetchProfileDetails(); }}
-      toasts={toasts}
       pageTitle="My Profile"
       pageSubtitle="Manage your personal information and address."
       avatarComponent={
@@ -82,7 +80,6 @@ function ProfilePage() {
           firstName={profile?.firstName}
           lastName={profile?.lastName}
           onUploadSuccess={handleAvatarSuccess}
-          onToast={addToast}
           uploadApiFn={uploadAvatar}
           deleteApiFn={deleteAvatar}
         />

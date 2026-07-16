@@ -4,14 +4,13 @@ import { AuthContext } from '../../store/AuthContext';
 import VendorProfileView from '../../components/vendor/Profile/VendorProfileView';
 import AvatarUpload from '../../components/user/Profile/AvatarUpload';
 import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
-import { useToast } from '../../hooks/useToast';
+import { toast } from 'sonner';
 import { formatMemberSince } from '../../utils/dateFormatter';
 import '../../components/user/Profile/Profile.css';
 
 function VendorProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { toasts, addToast } = useToast();
   const { updateUser } = useContext(AuthContext);
 
   const fetchVendorDetails = async () => {
@@ -23,7 +22,7 @@ function VendorProfilePage() {
         setProfile(response); // Fallback depending on API response structure
       }
     } catch (err) {
-      addToast(err.message || 'Failed to load vendor details.', 'error');
+      toast.error(err.message || 'Failed to load vendor details.');
     } finally {
       setLoading(false);
     }
@@ -89,7 +88,6 @@ function VendorProfilePage() {
       error={!profile}
       errorMessage="Could not load business details. Please try reloading."
       onRetry={() => { setLoading(true); fetchVendorDetails(); }}
-      toasts={toasts}
       pageTitle="Vendor Profile"
       pageSubtitle="Manage your business credentials and verification documents."
       avatarComponent={
@@ -98,7 +96,6 @@ function VendorProfilePage() {
           firstName={profile?.firstName}
           lastName={profile?.lastName}
           onUploadSuccess={handleAvatarSuccess}
-          onToast={addToast}
           // TODO: Implement actual avatar upload for vendor profile edit
           uploadApiFn={async () => ({ success: true, url: profile?.profileImage })}
           deleteApiFn={async () => ({ success: true })}

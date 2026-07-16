@@ -1,14 +1,15 @@
 import React, { useState, useRef } from 'react';
 import CropModal from './CropModal';
 import { getCroppedImg } from '../../../utils/cropImage';
-  
+import { toast } from 'sonner';
+
 function AvatarUpload({
   profileImage,
   firstName,
   lastName,
   businessName,
   onUploadSuccess,
-  onToast,
+
   uploadApiFn,
   deleteApiFn,
 }) {
@@ -40,11 +41,11 @@ function AvatarUpload({
   const processFileSelection = (file) => {
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      onToast('Only PNG, JPG, JPEG, and WEBP formats are supported.', 'error');
+      toast.error('Only PNG, JPG, JPEG, and WEBP formats are supported.');
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      onToast('Image file size must be less than 2MB.', 'error');
+      toast.error('Image file size must be less than 2MB.');
       return;
     }
     setSelectedFile(file);
@@ -79,7 +80,7 @@ function AvatarUpload({
       if (fileInputRef.current) fileInputRef.current.value = '';
       await performImageUpload(croppedFile);
     } catch (err) {
-      onToast(err.message || 'Failed to crop image.', 'error');
+      toast.error(err.message || 'Failed to crop image.');
     }
   };
 
@@ -100,11 +101,11 @@ function AvatarUpload({
       setTimeout(() => {
         setUploadProgress(null);
         onUploadSuccess(result.data?.profileImage || result.profileImage);
-        onToast('Profile picture updated!', 'success');
+        toast.success('Profile picture updated!');
       }, 200);
     } catch (err) {
       setUploadProgress(null);
-      onToast(err.message || 'Failed to upload image.', 'error');
+      toast.error(err.message || 'Failed to upload image.');
     }
   };
 
@@ -115,10 +116,10 @@ function AvatarUpload({
       await deleteApiFn();
       setUploadProgress(null);
       onUploadSuccess('');
-      onToast('Profile picture removed.', 'success');
+      toast.success('Profile picture removed.');
     } catch (err) {
       setUploadProgress(null);
-      onToast(err.message || 'Failed to remove profile picture.', 'error');
+      toast.error(err.message || 'Failed to remove profile picture.');
     }
   };
 

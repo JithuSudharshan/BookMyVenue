@@ -8,7 +8,7 @@ const BaseProfilePage = ({
   error,
   errorMessage = 'Could not load profile details. Please try reloading.',
   onRetry,
-  toasts = [],
+
   pageTitle,
   pageSubtitle,
   avatarComponent,
@@ -50,16 +50,7 @@ const BaseProfilePage = ({
 
   return (
     <div className="pf-scope">
-      {/* Toast Notifications */}
-      {toasts && toasts.length > 0 && (
-        <div className="pf-toast-container">
-          {toasts.map((t) => (
-            <div key={t.id} className={`pf-toast ${t.type}`}>
-              {t.type === 'success' ? '✓' : '✕'} {t.message}
-            </div>
-          ))}
-        </div>
-      )}
+
 
       <div className="pf-page">
         {/* Page Header */}

@@ -28,6 +28,7 @@ import OAuthSuccess from './pages/OAuthSuccess';
 import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
 import MyVenuesPage from './pages/vendor/MyVenuesPage';
 import VenueDetailPage from './pages/venues/VenueDetailPage';
+import VendorBookingsPage from './pages/vendor/VendorBookingsPage';
 import { Toaster } from 'sonner';
 
 const Unauthorized = () => <div className="p-8 text-error">You are not authorized to view this page.</div>;
@@ -38,10 +39,10 @@ function App() {
       <Toaster 
         position="top-right" 
         toastOptions={{
-          className: 'bg-surface-container-low text-on-surface font-body-md border border-outline-variant shadow-md rounded-xl',
+          className: 'bg-surface-container-lowest text-on-surface font-body-md shadow-lg rounded-xl border border-outline-variant/30',
           classNames: {
-            success: 'bg-success/10 text-success border-success/20',
-            error: 'bg-error-container text-on-error-container border-error/20',
+            success: 'border-l-4 border-l-success !pl-4',
+            error: 'border-l-4 border-l-primary !pl-4',
           }
         }}
       />
@@ -89,6 +90,7 @@ function App() {
               <Route path="/vendor/profile" element={<VendorProfilePage />} />
               <Route path="/vendor/venues" element={<MyVenuesPage />} />
               <Route path="/vendor/venues/:id" element={<VenueDetailPage />} />
+              <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
               <Route path="/vendor/wallet" element={<WalletPage />} />
             </Route>
             <Route path="/vendor/onboarding" element={<VendorOnboarding />} />

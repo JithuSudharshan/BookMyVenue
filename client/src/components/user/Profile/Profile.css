@@ -798,33 +798,6 @@
   grid-column: 1 / -1;
 }
 
-/* ── Toast container ── */
-.pf-toast-container {
-  position: fixed;
-  top: 80px;
-  right: 24px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pf-toast {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
-  border-radius: var(--pf-radius-sm);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  box-shadow: var(--pf-shadow-md);
-  animation: pf-slide-in 200ms ease;
-  max-width: 340px;
-}
-
-.pf-toast.success { background: var(--pf-success); }
-.pf-toast.error   { background: var(--pf-error);   }
 
 /* ── Loading / Error states ── */
 .pf-state-center {

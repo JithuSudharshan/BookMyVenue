@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Edit2
 } from 'lucide-react';
-import { useToast } from '../../hooks/useToast';
+import { toast } from 'sonner';
 import { VendorPersonalEdit, VendorBusinessEdit, VendorIdentityEdit } from '../../components/vendor/status/VendorStatusEditForms';
 
 // Reusable semantic data row
@@ -26,7 +26,6 @@ function VendorApplicationStatus() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingSection, setEditingSection] = useState(null); // 'personal', 'business', 'identity', or null
-  const { addToast } = useToast();
 
   useEffect(() => {
     fetchVendorDetails();
@@ -41,7 +40,7 @@ function VendorApplicationStatus() {
         setProfile(response);
       }
     } catch (err) {
-      addToast(err.message || 'Failed to load vendor details.', 'error');
+      toast.error(err.message || 'Failed to load vendor details.');
     } finally {
       setLoading(false);
     }
@@ -159,7 +158,7 @@ function VendorApplicationStatus() {
                 </div>
                 <h3 className="text-lg font-semibold text-on-surface">Personal Information</h3>
               </div>
-              {(profile.onboardingStatus === 'requested' || profile.onboardingStatus === 'rejected') && editingSection !== 'personal' && (
+              {(profile.onboardingStatus === 'requested' || profile.onboardingStatus === 'rejected' || profile.onboardingStatus === 'changes_requested') && editingSection !== 'personal' && (
                 <button onClick={() => setEditingSection('personal')} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit
                 </button>
@@ -194,7 +193,7 @@ function VendorApplicationStatus() {
                 </div>
                 <h3 className="text-lg font-semibold text-on-surface">Business Details</h3>
               </div>
-              {(profile.onboardingStatus === 'requested' || profile.onboardingStatus === 'rejected') && editingSection !== 'business' && (
+              {(profile.onboardingStatus === 'requested' || profile.onboardingStatus === 'rejected' || profile.onboardingStatus === 'changes_requested') && editingSection !== 'business' && (
                 <button onClick={() => setEditingSection('business')} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit
                 </button>
@@ -230,7 +229,7 @@ function VendorApplicationStatus() {
                 </div>
                 <h3 className="text-lg font-semibold text-on-surface">Identity Verification</h3>
               </div>
-              {(profile.onboardingStatus === 'requested' || profile.onboardingStatus === 'rejected') && editingSection !== 'identity' && (
+              {(profile.onboardingStatus === 'requested' || profile.onboardingStatus === 'rejected' || profile.onboardingStatus === 'changes_requested') && editingSection !== 'identity' && (
                 <button onClick={() => setEditingSection('identity')} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit
                 </button>
@@ -282,17 +281,17 @@ function VendorApplicationStatus() {
         </div>
 
         {/* Resubmit Application Button (Only shown when rejected) */}
-        {profile.onboardingStatus === 'rejected' && (
+        {(profile.onboardingStatus === 'rejected' || profile.onboardingStatus === 'changes_requested') && (
           <div className="max-w-4xl mx-auto mt-10 pt-6 border-t border-outline-variant/30 flex justify-end">
             <button
               onClick={async () => {
                 try {
                   setLoading(true);
                   await vendorApi.submitForReview();
-                  addToast('Application resubmitted successfully!', 'success');
+                  toast.success('Application resubmitted successfully!');
                   fetchVendorDetails();
                 } catch (err) {
-                  addToast('Failed to resubmit application', 'error');
+                  toast.error('Failed to resubmit application');
                   setLoading(false);
                 }
               }}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { vendorApi } from '../../../api/vendor-api/vendorApi';
-import { useToast } from '../../../hooks/useToast';
+import { toast } from 'sonner';
 
 export const VendorPersonalEdit = ({ profile, onCancel, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -11,7 +11,6 @@ export const VendorPersonalEdit = ({ profile, onCancel, onSuccess }) => {
     dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : '',
   });
   const [loading, setLoading] = useState(false);
-  const { addToast } = useToast();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,10 +33,10 @@ export const VendorPersonalEdit = ({ profile, onCancel, onSuccess }) => {
       if (formData.dateOfBirth) payload.personalInfo.dateOfBirth = formData.dateOfBirth;
 
       await vendorApi.updateProfile(payload);
-      addToast('Personal information updated successfully', 'success');
+      toast.success('Personal information updated successfully');
       onSuccess();
     } catch (err) {
-      addToast(err.response?.data?.message || err.message || 'Failed to update personal info', 'error');
+      toast.error(err.response?.data?.message || err.message || 'Failed to update personal info');
     } finally {
       setLoading(false);
     }
@@ -91,7 +90,6 @@ export const VendorBusinessEdit = ({ profile, onCancel, onSuccess }) => {
     country: profile.address?.country || '',
   });
   const [loading, setLoading] = useState(false);
-  const { addToast } = useToast();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -106,10 +104,10 @@ export const VendorBusinessEdit = ({ profile, onCancel, onSuccess }) => {
       if (!payload.address.line2) delete payload.address.line2;
 
       await vendorApi.updateProfile(payload);
-      addToast('Business address updated successfully', 'success');
+      toast.success('Business address updated successfully');
       onSuccess();
     } catch (err) {
-      addToast(err.response?.data?.message || err.message || 'Failed to update business details', 'error');
+      toast.error(err.response?.data?.message || err.message || 'Failed to update business details');
     } finally {
       setLoading(false);
     }
@@ -159,7 +157,6 @@ export const VendorIdentityEdit = ({ profile, onCancel, onSuccess }) => {
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { addToast } = useToast();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -185,10 +182,10 @@ export const VendorIdentityEdit = ({ profile, onCancel, onSuccess }) => {
       }
 
       await vendorApi.updateIdentity(data);
-      addToast('Identity verification updated successfully', 'success');
+      toast.success('Identity verification updated successfully');
       onSuccess();
     } catch (err) {
-      addToast(err.response?.data?.message || err.message || 'Failed to update identity', 'error');
+      toast.error(err.response?.data?.message || err.message || 'Failed to update identity');
     } finally {
       setLoading(false);
     }
