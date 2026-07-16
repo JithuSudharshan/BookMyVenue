@@ -1,7 +1,7 @@
 import express from "express";
 
-import homeRoutes from "./home.route.js";
-import venueRoutes from "./venues.route.js"
+import homeRoutes from "./homeRoutes.js";
+import venueRoutes from "./venuesRoutes.js"
 
 const router = express.Router();
 

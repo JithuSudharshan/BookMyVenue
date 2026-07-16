@@ -1,6 +1,6 @@
 import express from "express";
 
-import venueRoutes from "./venue.route.js";
+import venueRoutes from "./venueRoutes.js";
 
 const router = express.Router();
 

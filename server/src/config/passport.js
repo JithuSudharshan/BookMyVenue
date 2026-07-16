@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import User from '../models/User.js';
+import User from '../models/userModel.js';
 
 passport.use(
   new GoogleStrategy(
@@ -44,7 +44,7 @@ passport.use(
             googleId: profile.id, 
             firstName: profile.name?.givenName || 'Google User', 
             lastName: profile.name?.familyName || '',
-            profileImage: profile.photos?.[0]?.value || 'default.jpg',
+            profileImage: profile.photos?.[0]?.value || null,
             requestedRole: role
           });
         }
@@ -57,7 +57,7 @@ passport.use(
             googleId: profile.id, 
             firstName: profile.name?.givenName || 'Google User', 
             lastName: profile.name?.familyName || '',
-            profileImage: profile.photos?.[0]?.value || 'default.jpg'
+            profileImage: profile.photos?.[0]?.value || null
         });
 
       } catch (error) {

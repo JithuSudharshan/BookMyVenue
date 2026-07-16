@@ -34,4 +34,16 @@ export const vendorApi = {
     const response = await axiosInstance.get('/vendor/profile');
     return response.data;
   },
+
+  updateProfile: async (data) => {
+    const response = await axiosInstance.put('/vendor/profile', data);
+    return response.data;
+  },
+
+  updateIdentity: async (formData) => {
+    const response = await axiosInstance.put('/vendor/profile/identity', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 };
