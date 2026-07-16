@@ -1,4 +1,4 @@
-import Vendor from '../models/Vendor.js';
+import Vendor from '../models/vendorModel.js';
 
 class VendorRepository {
   async getProfileByUserId(userId) {

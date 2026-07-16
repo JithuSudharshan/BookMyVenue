@@ -1,9 +1,9 @@
 import express from 'express';
-import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, getWishlist, addToWishlist, removeFromWishlist } from '../controllers/customerController.js';
-import { validateBody } from '../middlewares/validationMiddleware.js';
-import { customerProfileSchema, personalInfoSchema, addressSchema } from '../validators/customerValidator.js';
-import { uploadAvatarMiddleware, handleUploadError } from '../middlewares/uploadMiddleware.js';
-import { protect, authorize } from '../middlewares/authMiddleware.js';
+import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, getWishlist, addToWishlist, removeFromWishlist } from '../../controllers/customerController.js';
+import { validateBody } from '../../middlewares/validationMiddleware.js';
+import { customerProfileSchema, personalInfoSchema, addressSchema } from '../../validators/customerValidator.js';
+import { uploadAvatarMiddleware, handleUploadError } from '../../middlewares/uploadMiddleware.js';
+import { protect, authorize } from '../../middlewares/authMiddleware.js';
 
 const router = express.Router();
 

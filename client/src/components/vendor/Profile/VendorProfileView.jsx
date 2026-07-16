@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { vendorPersonalInfoSchema, vendorAddressSchema, vendorIdentitySchema } from '../../../validations/vendorProfile.validation';
-import ProfilePanel from '../../common/ProfileUi/ProfilePanel';
-import InfoRow from '../../common/ProfileUi/InfoRow';
-import FormField from '../../common/ProfileUi/FormField';
+import { vendorPersonalInfoSchema, vendorAddressSchema, vendorIdentitySchema } from '../../../validations/vendorProfileValidation';
+import ProfilePanel from '../../common/profileUi/ProfilePanel';
+import InfoRow from '../../common/profileUi/InfoRow';
+import FormField from '../../common/profileUi/FormField';
 import { vendorApi } from '../../../api/vendor-api/vendorApi';
 
 /* ── Inline edit: Personal Info ── */

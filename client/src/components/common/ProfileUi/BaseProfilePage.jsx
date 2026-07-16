@@ -1,6 +1,6 @@
 import React from 'react';
 import ProfileHero from './ProfileHero';
-import '../../user/Profile/Profile.css';
+import '../../user/profile/Profile.css';
 
 const BaseProfilePage = ({
   loading,

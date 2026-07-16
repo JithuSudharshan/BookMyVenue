@@ -33,13 +33,13 @@ const Login = () => {
         email: data.email.trim().toLowerCase(),
         password: data.password
       });
-      login();
+      await login();
       toast.success('Logged in successfully!');
       
-      const role = res.role;
-      if (role === 'admin') navigate('/admin-dashboard');
-      else if (role === 'vendor') navigate('/vendor/dashboard');
-      else navigate('/home');
+      // We do NOT manually navigate here. 
+      // The login() function updates the global AuthContext user state.
+      // Once the state updates, PublicRoute automatically redirects to "/"
+      // which uses AuthRedirect to route the user to their correct dashboard.
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {

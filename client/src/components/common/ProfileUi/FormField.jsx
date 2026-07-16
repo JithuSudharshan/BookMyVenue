@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../user/Profile/Profile.css';
+import '../../user/profile/Profile.css';
 
 const FormField = React.forwardRef(({ label, id, required, error, type = "text", ...rest }, ref) => {
   return (

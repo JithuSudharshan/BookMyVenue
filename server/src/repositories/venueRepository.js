@@ -1,4 +1,4 @@
-import Venue from '../models/Venue.js';
+import Venue from '../models/venueModel.js';
 
 class VenueRepository {
   async getVenuesByVendor(vendorId) {

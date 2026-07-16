@@ -1,4 +1,4 @@
-import Wishlist from '../models/Wishlist.js';
+import Wishlist from '../models/wishlistModel.js';
 
 /**
  * Find all wishlist entries for a user.

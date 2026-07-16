@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { vendorVenueApi } from '../../api/vendor-api/venueApi';
-import VenueCard from '../../components/vendor/Venues/VenueCard';
+import VenueCard from '../../components/vendor/venues/VenueCard';
 import { Search, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 

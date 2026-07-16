@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../user/Profile/Profile.css';
+import '../../user/profile/Profile.css';
 
 function ProfileHero({
   avatarComponent,

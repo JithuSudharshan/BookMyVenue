@@ -1,6 +1,6 @@
 import express from 'express';
-import { protect, authorize } from '../middlewares/authMiddleware.js';
-import { getMyVenues, getVenueById } from '../controllers/venueController.js';
+import { protect, authorize } from '../../middlewares/authMiddleware.js';
+import { getMyVenues, getVenueById } from '../../controllers/venueController.js';
 
 const router = express.Router();
 

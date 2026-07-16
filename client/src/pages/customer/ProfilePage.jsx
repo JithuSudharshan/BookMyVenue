@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { getProfile, updatePersonalInfo, updateAddress, uploadAvatar, deleteAvatar } from '../../api/user-api/profileApi';
 import { AuthContext } from '../../store/AuthContext';
-import ProfileView from '../../components/user/Profile/ProfileView';
-import AvatarUpload from '../../components/user/Profile/AvatarUpload';
-import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
+import ProfileView from '../../components/user/profile/ProfileView';
+import AvatarUpload from '../../components/user/profile/AvatarUpload';
+import BaseProfilePage from '../../components/common/profileUi/BaseProfilePage';
 import { toast } from 'sonner';
 import { formatMemberSince } from '../../utils/dateFormatter';
-import '../../components/user/Profile/Profile.css';
+import '../../components/user/profile/Profile.css';
 
 function ProfilePage() {
   const [profile, setProfile] = useState(null);

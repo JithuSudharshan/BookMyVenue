@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import '../components/user/Profile/Profile.css';
+import '../components/user/profile/Profile.css';
 
 function MainLayout() {
   return (

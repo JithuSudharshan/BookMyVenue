@@ -104,7 +104,7 @@ function DashboardLayout() {
               aria-label="User menu"
             >
               <div className="dl-avatar">
-                {user?.profile?.profileImage ? (
+                {user?.profile?.profileImage && user.profile.profileImage !== 'default.jpg' ? (
                   <img src={user.profile.profileImage} alt="avatar" className="dl-avatar-img" />
                 ) : (
                   <span className="dl-avatar-initials">{getInitials()}</span>
@@ -154,7 +154,7 @@ function DashboardLayout() {
         <aside className={`dl-sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="dl-sidebar-user">
             <div className="dl-sidebar-avatar">
-              {user?.profile?.profileImage ? (
+              {user?.profile?.profileImage && user.profile.profileImage !== 'default.jpg' ? (
                 <img src={user.profile.profileImage} alt="avatar" className="dl-avatar-img" />
               ) : (
                 <span className="dl-avatar-initials">{getInitials()}</span>

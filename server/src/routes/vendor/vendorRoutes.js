@@ -1,8 +1,8 @@
 import express from 'express';
-import { protect, authorize } from '../middlewares/authMiddleware.js';
-import { uploadProfileImage, uploadIdentityDoc } from '../utils/uploadMiddleware.js';
-import { validateStep1, validateStep2, validateStep3 } from '../validators/vendorOnboardingValidator.js';
-import { validateProfileUpdate, validateIdentityUpdate } from '../validators/vendorProfileValidator.js';
+import { protect, authorize } from '../../middlewares/authMiddleware.js';
+import { uploadProfileImage, uploadIdentityDoc } from '../../middlewares/uploadMiddleware.js';
+import { validateStep1, validateStep2, validateStep3 } from '../../validators/vendorOnboardingValidator.js';
+import { validateProfileUpdate, validateIdentityUpdate } from '../../validators/vendorProfileValidator.js';
 import {
   getOnboardingStatus,
   saveStep1,
@@ -12,7 +12,7 @@ import {
   getVendorProfile,
   updateProfile,
   updateIdentity
-} from '../controllers/vendorController.js';
+} from '../../controllers/vendorController.js';
 
 const router = express.Router();
 

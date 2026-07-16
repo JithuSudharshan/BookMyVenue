@@ -1,5 +1,5 @@
-import Wallet from '../models/Wallet.js';
-import WalletTransaction from '../models/WalletTransaction.js';
+import Wallet from '../models/walletModel.js';
+import WalletTransaction from '../models/walletTransactionModel.js';
 
 /**
  * Find a wallet by ownerId, or create one if it doesn't exist.

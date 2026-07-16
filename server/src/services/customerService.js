@@ -1,10 +1,10 @@
 import cloudinary from '../config/cloudinary.js';
 import userRepository from '../repositories/userRepository.js';
 import * as customerRepository from '../repositories/customerRepository.js';
-import Booking from '../models/Booking.js';
-import '../models/Venue.js'; // Register Venue schema for populate
+import Booking from '../models/bookingModel.js';
+import '../models/venueModel.js'; // Register Venue schema for populate
 import * as wishlistRepository from '../repositories/wishlistRepository.js';
-import AppError from '../utils/AppError.js';
+import AppError from '../utils/appError.js';
 
 /**
  * Extract Cloudinary public ID from secure URL.

@@ -1,5 +1,5 @@
 import * as walletRepository from '../repositories/walletRepository.js';
-import AppError from '../utils/AppError.js';
+import AppError from '../utils/appError.js';
 
 /**
  * Get the wallet and paginated transactions for a user.

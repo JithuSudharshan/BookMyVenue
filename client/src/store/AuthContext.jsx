@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const login = () => {
+  const login = async () => {
     setLoading(true);
-    fetchUser(); // This will fetch the user since the cookie is now set
+    await fetchUser(); // This will fetch the user since the cookie is now set
   };
 
   const logout = async () => {

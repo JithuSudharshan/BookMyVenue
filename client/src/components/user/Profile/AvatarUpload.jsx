@@ -152,7 +152,7 @@ function AvatarUpload({
         onKeyDown={(e) => { if (e.key === 'Enter') handleAvatarClick(); }}
         style={{ outline: 'none' }}
       >
-        {profileImage ? (
+        {profileImage && profileImage !== 'default.jpg' ? (
           <img src={profileImage} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
           <span className="pf-avatar-initials-lg">{getInitials()}</span>
@@ -206,7 +206,7 @@ function AvatarUpload({
         >
           Change Photo
         </button>
-        {profileImage && deleteApiFn && (
+        {profileImage && profileImage !== 'default.jpg' && deleteApiFn && (
           <button
             type="button"
             className="pf-photo-action-btn remove"
