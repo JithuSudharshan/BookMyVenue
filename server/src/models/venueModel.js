@@ -169,8 +169,8 @@ const venueSchema = new mongoose.Schema(
 
 // Custom validation for images length when submitted
 venueSchema.pre('validate', function(next) {
-    if (isStrict.call(this) && (!this.images || this.images.length === 0)) {
-        this.invalidate('images', 'At least one image is required for submission');
+    if (isStrict.call(this) && (!this.images || this.images.length < 3)) {
+        this.invalidate('images', 'At least 3 images are required for submission');
     }
     next();
 });

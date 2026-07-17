@@ -1,0 +1,13 @@
+{
+  "name": "bookmyvenue-root",
+  "version": "1.0.0",
+  "description": "Root package for running client and server concurrently",
+  "scripts": {
+    "start": "concurrently \"npm run start --prefix server\" \"npm run dev --prefix client\"",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "install:all": "npm install --prefix client && npm install --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

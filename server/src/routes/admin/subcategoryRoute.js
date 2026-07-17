@@ -2,19 +2,18 @@ import express from "express";
 
 import {
     createSubcategory,
-    getSubcategories,
     updateSubcategory,
     toggleSubcategoryStatus
 } from "../../controllers/admin/subcategoryController.js";
+import { validateSubcategory } from "../../validators/categoryValidator.js";
 
 const router = express.Router();
 
-router.post("/", createSubcategory);
-
-router.get("/", getSubcategories);
+router.post("/", validateSubcategory, createSubcategory);
 
 router.patch(
     "/:subcategoryId",
+    validateSubcategory,
     updateSubcategory
 );
 

@@ -39,4 +39,22 @@ export const identityDocStorage = new CloudinaryStorage({
   },
 });
 
+export const categoryImageStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'BookMyVenue/category_images',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 800, crop: 'scale' }], // Responsive scale for categories
+  },
+});
+
+export const venueImageStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'BookMyVenue/venue_images',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 1080, crop: 'scale' }], // Responsive scale for venues
+  },
+});
+
 export default cloudinary;

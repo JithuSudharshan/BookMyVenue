@@ -1,9 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 @layer base {
   body {
-    @apply font-body-md antialiased text-on-surface bg-surface-container-lowest;
+    @apply bg-background text-dark font-sans antialiased;
   }
 }

@@ -1,7 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './store/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
+
+import UserRoutes from './routes/UserRoutes';
+import VendorRoutes from './routes/VendorRoutes';
+import AdminRoutes from './routes/AdminRoutes';
 
 // Pages
 import Login from './pages/Login';
@@ -28,18 +32,16 @@ function App() {
       <Toaster 
         position="top-right" 
         toastOptions={{
-          className: 'bg-surface-container-low text-on-surface font-body-md border border-outline-variant shadow-md rounded-xl',
           classNames: {
-            success: 'bg-success/10 text-success border-success/20',
-            error: 'bg-error-container text-on-error-container border-error/20',
+            toast: 'bg-white border border-gray-200 shadow-md rounded-xl font-medium',
+            title: 'text-inherit font-semibold',
+            success: '!text-green-600 !bg-white !border-green-200',
+            error: '!text-red-600 !bg-white !border-red-200',
           }
         }}
       />
-      <Router>
+      <div className="font-sans antialiased text-dark bg-background min-h-screen">
         <Routes>
-          {/* Root Redirect */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
           {/* Public Routes (Only accessible if NOT logged in) */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
@@ -64,11 +66,23 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
             <Route path="/vendor-dashboard" element={<VendorDashboard />} />
             <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
+            
+            {/* Vendor Sub-router for Venue Management */}
+            <Route path="/vendor/*" element={<VendorRoutes />} />
+          </Route>
+
+          {/* Protected Routes for Admins */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            {/* Admin Sub-router */}
+            <Route path="/admin/*" element={<AdminRoutes />} />
           </Route>
           
           <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Public Discovery / User Routes */}
+          <Route path="/*" element={<UserRoutes />} />
         </Routes>
-      </Router>
+      </div>
     </AuthProvider>
   );
 }

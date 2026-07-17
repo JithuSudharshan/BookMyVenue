@@ -2,7 +2,6 @@ import { normalizeName } from "../../utils/normalizeName.js";
 
 import {
     createSubcategoryRepository,
-    getSubcategoriesRepository,
     getSubcategoryByNameRepository,
     getSubcategoryByIdRepository,
     updateSubcategoryRepository,
@@ -70,15 +69,6 @@ export const createSubcategoryService =
             name: normalizedName
         });
     };
-
-
-
-export const getSubcategoriesService =
-    async () => {
-
-        return await getSubcategoriesRepository();
-    };
-
 
 
 export const updateSubcategoryService =
