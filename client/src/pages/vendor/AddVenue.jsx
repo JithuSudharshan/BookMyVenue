@@ -48,6 +48,7 @@ const INITIAL_FORM = {
   city: '',
   state: 'Kerala',
   pincode: '',
+  googleMapLink: '',
   images: [],
   // Step 3
   bookingModel: 'daily',
@@ -246,6 +247,20 @@ const Step2 = ({ form, setForm, errors }) => (
       </Field>
     </div>
 
+    <Field label="Google Maps Link" error={errors.googleMapLink}
+      hint="Paste the direct URL from Google Maps so guests can easily navigate to your venue.">
+      <div className="relative">
+        <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          type="url"
+          placeholder="https://maps.google.com/..."
+          value={form.googleMapLink}
+          onChange={e => setForm(f => ({ ...f, googleMapLink: e.target.value }))}
+          className={`${inputCls(errors.googleMapLink)} pl-10`}
+        />
+      </div>
+    </Field>
+
     <Field label="Upload Images"
       hint="High-quality photos increase booking chances by up to 40%. Add at least 3 images.">
       <ImageUploader
@@ -434,6 +449,7 @@ const Step4 = ({ form, setForm, errors, categoriesData }) => {
             <ReviewRow label="City"     value={form.city} />
             <ReviewRow label="State"    value={form.state} />
             <ReviewRow label="Pincode"  value={form.pincode} />
+            <ReviewRow label="Maps Link" value={form.googleMapLink ? 'Linked ✓' : null} />
             <ReviewRow label="Images"   value={form.images.length > 0 ? `${form.images.length} image${form.images.length !== 1 ? 's' : ''} uploaded` : null} />
           </div>
 
@@ -497,6 +513,11 @@ const validate = (step, form) => {
     if (!form.pincode.trim() || form.pincode.length !== 6) {
       errs.pincode  = 'Valid 6-digit pincode required';
     }
+    if (!form.googleMapLink?.trim()) {
+      errs.googleMapLink = 'Google Map link is required';
+    } else if (!/^https?:\/\/(www\.)?google\.com\/maps.*|^https?:\/\/maps\.app\.goo\.gl\/.*/.test(form.googleMapLink)) {
+      errs.googleMapLink = 'Please enter a valid Google Maps URL';
+    }
     if (form.images.length < 3)   errs.images   = 'Please upload at least 3 images';
   }
   if (step === 3) {
@@ -516,9 +537,17 @@ const AddVenue = () => {
   const [currentStep, setCurrentStep] = useState(0)
   const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
+  const [attemptedNext, setAttemptedNext] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [pageLoading, setPageLoading] = useState(true) // Start true to fetch categories
   const [categoriesData, setCategoriesData] = useState([])
+
+  // Live validation
+  useEffect(() => {
+    if (attemptedNext) {
+      setErrors(validate(currentStep, form))
+    }
+  }, [form, currentStep, attemptedNext])
 
   useEffect(() => {
     const init = async () => {
@@ -556,6 +585,7 @@ const AddVenue = () => {
         city: data.location?.city || '',
         state: data.location?.state || 'Kerala',
         pincode: data.location?.pincode || '',
+        googleMapLink: data.location?.googleMapLink || '',
         images: mappedImages,
         bookingModel: data.bookingModel || 'daily',
         openingTime: data.bookingConfig?.openingTime || data.operatingHours?.start || '09:00',
@@ -569,6 +599,7 @@ const AddVenue = () => {
   }
 
   const handleNext = () => {
+    setAttemptedNext(true)
     const errs = validate(currentStep, form)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
@@ -577,12 +608,14 @@ const AddVenue = () => {
       return
     }
     setErrors({})
+    setAttemptedNext(false)
     setCurrentStep(s => s + 1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBack = () => {
     setErrors({})
+    setAttemptedNext(false)
     setCurrentStep(s => s - 1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -603,7 +636,8 @@ const AddVenue = () => {
       address: form.address,
       city: form.city,
       state: form.state,
-      pincode: form.pincode
+      pincode: form.pincode,
+      googleMapLink: form.googleMapLink
     }))
     
     if (form.bookingModel === 'hourly') {
@@ -650,6 +684,7 @@ const AddVenue = () => {
   }
 
   const handleSubmit = async () => {
+    setAttemptedNext(true)
     const errs = validate(3, form)
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setSubmitting(true)

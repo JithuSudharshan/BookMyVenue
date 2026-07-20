@@ -85,3 +85,51 @@ export const findPublicVenuesAggregation = async ({ matchStage = {}, sortStage =
 
     return { totalCount, venues };
 };
+
+export const getVenueFilterMetadata = async () => {
+    const pipeline = [
+        {
+            $match: {
+                'approval.status': 'approved',
+                venueStatus: 'active'
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                minPrice: { $min: '$price' },
+                maxPrice: { $max: '$price' },
+                maxCapacity: { $max: '$capacity' },
+                amenities: { $addToSet: '$amenities' } // This creates an array of arrays
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                minPrice: { $ifNull: ['$minPrice', 0] },
+                maxPrice: { $ifNull: ['$maxPrice', 5000] },
+                maxCapacity: { $ifNull: ['$maxCapacity', 500] },
+                // Flatten the array of arrays into a single array of unique amenities
+                uniqueAmenities: {
+                    $reduce: {
+                        input: '$amenities',
+                        initialValue: [],
+                        in: { $setUnion: ['$$value', '$$this'] }
+                    }
+                }
+            }
+        }
+    ];
+
+    const result = await Venue.aggregate(pipeline);
+    if (result.length > 0) {
+        return result[0];
+    }
+    
+    return {
+        minPrice: 0,
+        maxPrice: 5000,
+        maxCapacity: 500,
+        uniqueAmenities: []
+    };
+};

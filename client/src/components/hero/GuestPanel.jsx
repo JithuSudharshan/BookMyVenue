@@ -3,7 +3,7 @@ import { FiMinus, FiPlus, FiUsers } from 'react-icons/fi'
 
 const GuestPanel = ({ guests, onChange }) => {
   return (
-    <div className="absolute right-0 top-[calc(100%+12px)] bg-white rounded-3xl shadow-2xl border border-gray-200 p-6 z-50 w-72 animate-fade-in-up">
+    <div className="absolute right-0 top-[calc(100%+12px)] bg-white rounded-3xl shadow-2xl border border-gray-200 p-6 z-[200] w-72 animate-fade-in-up">
       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Number of Guests</p>
 
       <div className="flex items-center justify-between">

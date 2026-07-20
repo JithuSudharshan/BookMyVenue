@@ -1,34 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import { FiArrowRight, FiStar, FiHeart } from 'react-icons/fi'
-import { getHomeData } from '../../api/user-api/userApi'
+import { FiArrowRight } from 'react-icons/fi'
 import { AirbnbCardSkeleton } from '../common/Skeleton'
 import ListingVenueCard from '../venue/ListingVenueCard'
 
-
-
 // ─── Main Section ─────────────────────────────────────────────────────────────
-const VenuesRow = ({ activeCategoryId }) => {
-  const [venues, setVenues] = useState([])
-  const [loading, setLoading] = useState(true)
+const VenuesRow = ({ venues = [], loading = false, activeCategory = 'All' }) => {
 
-  useEffect(() => {
-    const fetchVenuesList = async () => {
-      try {
-        const result = await getHomeData()
-        setVenues(result?.venues || [])
-      } catch (err) {
-        console.error('Failed to fetch venues:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchVenuesList()
-  }, [])
-
-  // Filter by active category
-  const displayed = activeCategoryId && activeCategoryId !== 'all'
-    ? venues.filter(v => v.categoryId === activeCategoryId || v.category === activeCategoryId)
+  // Filter client-side by selected category
+  const displayed = activeCategory && activeCategory !== 'All'
+    ? venues.filter(v => v.category === activeCategory)
     : venues
 
   return (
@@ -38,8 +19,9 @@ const VenuesRow = ({ activeCategoryId }) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-dark">
-            Venues
-
+            {activeCategory && activeCategory !== 'All'
+              ? `${activeCategory} Venues`
+              : 'Trending in Kerala'}
           </h2>
           <Link
             to="/venues"
@@ -49,7 +31,7 @@ const VenuesRow = ({ activeCategoryId }) => {
           </Link>
         </div>
 
-        {/* Responsive Airbnb grid — fills as many columns as possible */}
+        {/* Responsive Airbnb grid */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -58,7 +40,9 @@ const VenuesRow = ({ activeCategoryId }) => {
           </div>
         ) : displayed.length === 0 ? (
           <div className="text-center py-16 text-gray-400 text-sm">
-            No venues found for this category.
+            {activeCategory !== 'All'
+              ? `No venues found for "${activeCategory}" yet.`
+              : 'No venues available right now.'}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">

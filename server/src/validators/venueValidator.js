@@ -54,6 +54,11 @@ export const validateVenueSubmit = [
     .isString().withMessage('Pincode must be a string')
     .matches(/^\d{6}$/).withMessage('Pincode must be exactly 6 digits'),
 
+  body('googleMapLink')
+    .notEmpty().withMessage('Google Map link is required')
+    .isString().withMessage('Google Map link must be a string')
+    .matches(/^https?:\/\/(www\.)?google\.com\/maps.*|^https?:\/\/maps\.app\.goo\.gl\/.*/).withMessage('Please enter a valid Google Maps URL'),
+
   body('images')
     .isArray({ min: 3 }).withMessage('At least 3 images are required for submission'),
 

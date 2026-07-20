@@ -36,6 +36,7 @@ const parseVenueData = (req, res, next) => {
             req.body.city = req.body.location.city;
             req.body.state = req.body.location.state;
             req.body.pincode = req.body.location.pincode;
+            req.body.googleMapLink = req.body.location.googleMapLink;
         }
         
         // Map category/subcategory for validator

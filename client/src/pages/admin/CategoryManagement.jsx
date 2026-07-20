@@ -3,7 +3,8 @@ import { FiPlus, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { toast } from 'sonner';
 import { 
   getCategories, createCategory, updateCategory, toggleCategoryStatus,
-  createSubcategory, updateSubcategory, toggleSubcategoryStatus
+  createSubcategory, updateSubcategory, toggleSubcategoryStatus,
+  deleteSubcategory
 } from '../../api/admin/adminCategoryApi';
 import CategoryCardAdmin from '../../components/admin/category/CategoryCardAdmin';
 import CategoryFormModal from '../../components/admin/category/CategoryFormModal';
@@ -89,16 +90,16 @@ const CategoryManagement = () => {
     const isCurrentlyActive = category.isActive;
     setConfirmModal({
       isOpen: true,
-      title: isCurrentlyActive ? 'Block Category' : 'Unblock Category',
+      title: isCurrentlyActive ? 'Unpublish Category' : 'Publish Category',
       message: isCurrentlyActive 
-        ? `Are you sure you want to block "${category.name}"? All subcategories under this category will automatically be blocked to maintain consistency.`
-        : `Are you sure you want to unblock "${category.name}"? Subcategories will retain their previous status.`,
-      actionText: isCurrentlyActive ? 'Block' : 'Unblock',
+        ? `Are you sure you want to unpublish "${category.name}"? It will be hidden from users. Subcategories will keep their individual published status.`
+        : `Are you sure you want to publish "${category.name}"? It will become visible to users.`,
+      actionText: isCurrentlyActive ? 'Unpublish' : 'Publish',
       isDestructive: isCurrentlyActive,
       action: async () => {
         try {
           await toggleCategoryStatus(category._id, !isCurrentlyActive);
-          toast.success(`Category ${isCurrentlyActive ? 'blocked' : 'unblocked'} successfully`);
+          toast.success(`Category ${isCurrentlyActive ? 'unpublished' : 'published'} successfully`);
           fetchCategories();
         } catch (error) {
           toast.error("Failed to update category status");
@@ -128,17 +129,36 @@ const CategoryManagement = () => {
     const isCurrentlyActive = subcategory.isActive;
     setConfirmModal({
       isOpen: true,
-      title: isCurrentlyActive ? 'Block Subcategory' : 'Unblock Subcategory',
-      message: `Are you sure you want to ${isCurrentlyActive ? 'block' : 'unblock'} "${subcategory.name}"?`,
-      actionText: isCurrentlyActive ? 'Block' : 'Unblock',
+      title: isCurrentlyActive ? 'Unpublish Subcategory' : 'Publish Subcategory',
+      message: `Are you sure you want to ${isCurrentlyActive ? 'unpublish' : 'publish'} "${subcategory.name}"?`,
+      actionText: isCurrentlyActive ? 'Unpublish' : 'Publish',
       isDestructive: isCurrentlyActive,
       action: async () => {
         try {
           await toggleSubcategoryStatus(subcategory._id, !isCurrentlyActive);
-          toast.success(`Subcategory ${isCurrentlyActive ? 'blocked' : 'unblocked'} successfully`);
+          toast.success(`Subcategory ${isCurrentlyActive ? 'unpublished' : 'published'} successfully`);
           fetchCategories();
         } catch (error) {
           toast.error("Failed to update subcategory status");
+        }
+      }
+    });
+  };
+
+  const handleDeleteSubcategory = (subcategory) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Subcategory',
+      message: `Are you sure you want to permanently delete "${subcategory.name}"? This cannot be undone. Venues linked to this subcategory will lose their subcategory assignment.`,
+      actionText: 'Delete',
+      isDestructive: true,
+      action: async () => {
+        try {
+          await deleteSubcategory(subcategory._id);
+          toast.success(`"${subcategory.name}" deleted successfully`);
+          fetchCategories();
+        } catch (error) {
+          toast.error(error.response?.data?.message || "Failed to delete subcategory");
         }
       }
     });
@@ -182,8 +202,8 @@ const CategoryManagement = () => {
               className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2 pr-8 text-sm font-semibold text-gray-600 hover:border-gray-300 focus:outline-none focus:border-primary shadow-sm cursor-pointer transition-colors"
             >
               <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="blocked">Blocked</option>
+              <option value="active">Published</option>
+              <option value="inactive">Unpublished</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -227,6 +247,7 @@ const CategoryManagement = () => {
               onAddSubcategory={(parentId) => setSubcategoryModal({ isOpen: true, data: null, parentId })}
               onEditSubcategory={(data) => setSubcategoryModal({ isOpen: true, data, parentId: null })}
               onToggleSubcategoryStatus={handleToggleSubcategoryStatus}
+              onDeleteSubcategory={handleDeleteSubcategory}
             />
           ))}
         </div>

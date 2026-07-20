@@ -1,7 +1,8 @@
 import {
     createSubcategoryService,
     updateSubcategoryService,
-    toggleSubcategoryStatusService
+    toggleSubcategoryStatusService,
+    deleteSubcategoryService
 } from "../../services/admin/subcategoryService.js";
 
 
@@ -86,8 +87,8 @@ export const toggleSubcategoryStatus =
             res.status(200).json({
                 success: true,
                 message: `Subcategory ${isActive
-                        ? "activated"
-                        : "blocked"
+                        ? "published"
+                        : "unpublished"
                     } successfully`,
                 data: subcategory
             });
@@ -101,3 +102,16 @@ export const toggleSubcategoryStatus =
 
         }
     };
+
+
+export const deleteSubcategory = async (req, res) => {
+    try {
+        const { subcategoryId } = req.params;
+        await deleteSubcategoryService(subcategoryId);
+        res.status(200).json({ success: true, message: "Subcategory deleted successfully" });
+    } catch (error) {
+        // 409 for FK guard, 400 for other errors
+        const status = error.message.includes('Cannot delete') ? 409 : 400;
+        res.status(status).json({ success: false, message: error.message });
+    }
+};

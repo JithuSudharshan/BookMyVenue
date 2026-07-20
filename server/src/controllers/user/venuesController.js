@@ -2,7 +2,7 @@ import { getVenuesService } from "../../services/user/venuesService.js";
 
 export const LoadVenues = async (req, res) => {
     try {
-        const { venues, pagination, availableCategories } = await getVenuesService(req.query);
+        const { venues, pagination, availableCategories, filterMetadata } = await getVenuesService(req.query);
 
         res.status(200).json({
             success: true,
@@ -10,7 +10,8 @@ export const LoadVenues = async (req, res) => {
             data: {
                 venues,
                 pagination,
-                availableCategories
+                availableCategories,
+                filterMetadata
             }
         });
 

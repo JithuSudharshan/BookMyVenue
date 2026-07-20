@@ -86,6 +86,11 @@ const venueSchema = new mongoose.Schema(
         type: String,
         required: [isStrict, 'Pincode is required for submission'],
       },
+      googleMapLink: {
+        type: String,
+        required: [isStrict, 'Google Map link is required for submission'],
+        match: [/^https?:\/\/(www\.)?google\.com\/maps.*|^https?:\/\/maps\.app\.goo\.gl\/.*/, 'Please enter a valid Google Maps URL'],
+      }
     },
 
     // ─── Venue Details ───────────────────────────────────────

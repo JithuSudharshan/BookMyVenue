@@ -1,11 +1,13 @@
-import { findPublicVenuesAggregation } from '../../repositories/user/venueRepository.js';
+import { findPublicVenuesAggregation, getVenueFilterMetadata } from '../../repositories/user/venueRepository.js';
 import Category from '../../models/categoryModel.js';
+import Subcategory from '../../models/subcategoryModel.js';
 
 export const getVenuesService = async (queryParams) => {
     const {
         location,
         guests,
         category,
+        subcategory,
         priceMin,
         priceMax,
         capacity, // range like '200-500' or '500+'
@@ -35,6 +37,16 @@ export const getVenuesService = async (queryParams) => {
         } else {
             // If category not found, return empty results by matching an impossible condition
             matchStage.categoryId = null;
+        }
+    }
+
+    // 2.5 Subcategory Filter (Need to resolve name to ID first)
+    if (subcategory) {
+        const subcategoryDoc = await Subcategory.findOne({ name: { $regex: new RegExp(`^${subcategory}$`, 'i') } });
+        if (subcategoryDoc) {
+            matchStage.subcategoryId = subcategoryDoc._id;
+        } else {
+            matchStage.subcategoryId = null;
         }
     }
 
@@ -97,7 +109,24 @@ export const getVenuesService = async (queryParams) => {
         hasPrevPage: parsedPage > 1
     };
     // 10. Fetch Available Categories for Frontend Filter
-    const availableCategories = await Category.find({ isActive: true }).select('name').lean();
+    const availableCategories = await Category.find({ isActive: true }).select('_id name').lean();
+    const activeSubcategories = await Subcategory.find({ isActive: true }).select('categoryId name').lean();
 
-    return { venues, pagination, availableCategories: availableCategories.map(c => c.name) };
+    // Format categories nicely for the frontend
+    const formattedCategories = availableCategories.map(c => ({
+        name: c.name,
+        subcategories: activeSubcategories
+            .filter(sub => sub.categoryId.toString() === c._id.toString())
+            .map(sub => sub.name)
+    }));
+
+    // 11. Fetch Filter Metadata (max price, unique amenities, etc)
+    const filterMetadata = await getVenueFilterMetadata();
+
+    return { 
+        venues, 
+        pagination, 
+        availableCategories: formattedCategories,
+        filterMetadata 
+    };
 };

@@ -85,3 +85,13 @@ export const toggleSubcategoryStatus = async (subcategoryId, isActive) => {
     throw error;
   }
 };
+
+export const deleteSubcategory = async (subcategoryId) => {
+  try {
+    const response = await axiosInstance.delete(`/admin/subcategories/${subcategoryId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting subcategory", error);
+    throw error;
+  }
+};

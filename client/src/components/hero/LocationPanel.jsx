@@ -52,7 +52,7 @@ const LocationPanel = ({ value, onChange, onSelectLocation }) => {
     : SUGGESTED
 
   return (
-    <div className="absolute left-0 top-[calc(100%+12px)] w-full max-w-[420px] bg-white rounded-3xl shadow-2xl border border-gray-200 p-6 z-50 animate-fade-in-up">
+    <div className="absolute left-0 top-[calc(100%+12px)] w-full max-w-[420px] bg-white rounded-3xl shadow-2xl border border-gray-200 p-6 z-[200] animate-fade-in-up">
 
       {/* Recent searches */}
       {recent.length > 0 && !value && (

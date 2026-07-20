@@ -4,35 +4,52 @@ import { FiX } from 'react-icons/fi';
 const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     image: null
   });
   const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setFormData({
           name: initialData.name || '',
-          description: initialData.description || '',
           image: null
         });
         setImagePreview(initialData.image || '');
       } else {
-        setFormData({ name: '', description: '', image: null });
+        setFormData({ name: '', image: null });
         setImagePreview('');
       }
-      setError(null);
+      setErrors({});
     }
   }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
+  const validateName = (val) => {
+    const trimmed = val.trim();
+    if (!trimmed) return "Category name is required";
+    if (trimmed.length < 3 || trimmed.length > 50) return "Must be between 3 and 50 characters";
+    if (!/^[a-zA-Z\s]+$/.test(trimmed)) return "Only letters and spaces are allowed";
+    return "";
+  };
+
+  const validateImage = (file, isEdit) => {
+    if (!file && !isEdit) return "Category image is required";
+    if (file instanceof File) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) return "Only JPG, PNG, and WEBP allowed";
+      if (file.size > 5 * 1024 * 1024) return "Image must be less than 5MB";
+    }
+    return "";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: validateName(value) }));
   };
 
   const handleImageChange = (e) => {
@@ -40,39 +57,33 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     if (file) {
       setFormData(prev => ({ ...prev, image: file }));
       setImagePreview(URL.createObjectURL(file));
+      setErrors(prev => ({ ...prev, image: validateImage(file, !!initialData) }));
+    } else {
+      if (!formData.image && !initialData) {
+        setErrors(prev => ({ ...prev, image: "Category image is required" }));
+      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
-    const name = formData.name.trim();
-    if (!name) {
-      setError("Category name is required");
-      return;
-    }
-    if (name.length < 3 || name.length > 50) {
-      setError("Category name must be between 3 and 50 characters");
-      return;
-    }
-    if (!/^[a-zA-Z0-9\s-]+$/.test(name)) {
-      setError("Category name can only contain letters, numbers, spaces, and hyphens");
-      return;
-    }
-
-    if (formData.description && formData.description.length > 500) {
-      setError("Description cannot exceed 500 characters");
+    const nameError = validateName(formData.name);
+    const imageError = validateImage(formData.image, !!initialData);
+    
+    if (nameError || imageError) {
+      setErrors({ name: nameError, image: imageError });
       return;
     }
     
     setLoading(true);
-    setError(null);
+    setErrors({});
+    
     try {
       await onSubmit(formData);
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to save category");
+      setErrors({ submit: err.response?.data?.message || err.message || "Failed to save category" });
     } finally {
       setLoading(false);
     }
@@ -85,47 +96,37 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
           <h3 className="text-lg font-bold text-gray-900">
             {initialData ? 'Edit Category' : 'Create Category'}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <FiX size={20} />
           </button>
         </div>
         
-        <div className="overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6">
-          {error && (
+        <div className="overflow-y-auto custom-scrollbar">
+          <form onSubmit={handleSubmit} className="p-6" noValidate>
+          {errors.submit && (
             <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
-              {error}
+              {errors.submit}
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Category Name *</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                  errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primary'
+                }`}
                 placeholder="e.g., Wedding Halls"
-                required
               />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Brief description of this category..."
-              />
+              {errors.name && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Category Image *</label>
               
               {imagePreview && (
                 <div className="mb-3 relative group w-fit">
@@ -136,32 +137,36 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               <input
                 type="file"
                 name="image"
-                accept="image/*"
+                accept="image/jpeg, image/png, image/webp"
                 onChange={handleImageChange}
                 className="w-full text-sm text-gray-500
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-full file:border-0
                   file:text-sm file:font-semibold
                   file:bg-red-50 file:text-primary
-                  hover:file:bg-red-100 transition-colors"
+                  hover:file:bg-red-100 transition-colors cursor-pointer"
               />
-              <p className="text-xs text-gray-500 mt-2">Select an image file (JPG, PNG, WebP) up to 5MB.</p>
+              {errors.image ? (
+                <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.image}</p>
+              ) : (
+                <p className="mt-1.5 text-xs text-gray-500">Select an image file (JPG, PNG, WebP) up to 5MB.</p>
+              )}
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className="mt-8 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-70 flex items-center"
+              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-red-700 disabled:opacity-70 transition-colors flex items-center shadow-sm"
             >
               {loading ? 'Saving...' : 'Save Category'}
             </button>

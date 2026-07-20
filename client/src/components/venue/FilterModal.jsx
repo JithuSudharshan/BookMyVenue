@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react'
 
-const FilterModal = ({ isOpen, onClose, onApply }) => {
-  const [priceMin, setPriceMin] = useState(0)
-  const [priceMax, setPriceMax] = useState(5000)
+const FilterModal = ({ isOpen, onClose, onApply, metadata }) => {
+  const defaultMinPrice = metadata?.minPrice ?? 0
+  const defaultMaxPrice = metadata?.maxPrice ?? 50000
+  const maxCapacityLimit = metadata?.maxCapacity ?? 1000
+
+  const [priceMin, setPriceMin] = useState(defaultMinPrice)
+  const [priceMax, setPriceMax] = useState(defaultMaxPrice)
   const [selectedCapacity, setSelectedCapacity] = useState(null)
   const [selectedAmenities, setSelectedAmenities] = useState([])
   const [selectedRating, setSelectedRating] = useState(null)
+
+  // Reset local state if metadata bounds change (optional, but good if they change significantly)
+  useEffect(() => {
+    if (priceMin < defaultMinPrice) setPriceMin(defaultMinPrice)
+    if (priceMax > defaultMaxPrice) setPriceMax(defaultMaxPrice)
+  }, [defaultMinPrice, defaultMaxPrice])
 
   useEffect(() => {
     if (isOpen) {
@@ -16,23 +26,38 @@ const FilterModal = ({ isOpen, onClose, onApply }) => {
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  const amenities = [
-    { label: 'High-Speed WiFi', icon: '📶' },
-    { label: 'A/V Equipment', icon: '🎙️' },
-    { label: 'In-house Catering', icon: '🍽️' },
-    { label: 'Parking Available', icon: '🅿️' },
-    { label: 'Air Conditioning', icon: '❄️' },
-    { label: 'Outdoor Space', icon: '🌿' },
-    { label: 'Stage & Lighting', icon: '💡' },
-    { label: 'Private Restrooms', icon: '🚻' },
-  ]
+  const generateCapacities = (maxCap) => {
+    const caps = []
+    if (maxCap >= 50) caps.push({ label: 'Up to 50', value: '0-50' })
+    if (maxCap >= 200) caps.push({ label: '50 – 200', value: '50-200' })
+    if (maxCap >= 500) caps.push({ label: '200 – 500', value: '200-500' })
+    if (maxCap > 500) {
+      const topStr = maxCap >= 1000 ? '1000+' : '500+'
+      caps.push({ label: topStr, value: topStr })
+    }
+    return caps.length ? caps : [{ label: 'Any', value: '0-99999' }]
+  }
 
-  const capacities = [
-    { label: 'Up to 50', value: '0-50' },
-    { label: '50 – 200', value: '50-200' },
-    { label: '200 – 500', value: '200-500' },
-    { label: '500+', value: '500+' },
-  ]
+  const capacities = generateCapacities(maxCapacityLimit)
+
+  // Map backend unique strings to icons where possible
+  const getIconForAmenity = (label) => {
+    const l = label.toLowerCase()
+    if (l.includes('wifi') || l.includes('wi-fi')) return '📶'
+    if (l.includes('a/v') || l.includes('pa system') || l.includes('mic')) return '🎙️'
+    if (l.includes('cater') || l.includes('food')) return '🍽️'
+    if (l.includes('park')) return '🅿️'
+    if (l.includes('ac ') || l.includes('air cond')) return '❄️'
+    if (l.includes('out') || l.includes('lawn')) return '🌿'
+    if (l.includes('stage') || l.includes('light')) return '💡'
+    if (l.includes('restroom') || l.includes('wash')) return '🚻'
+    return '✨'
+  }
+
+  const amenities = (metadata?.uniqueAmenities || []).map(a => ({
+    label: a,
+    icon: getIconForAmenity(a)
+  }))
 
   const ratings = [3, 4, 4.5, 5]
 
@@ -43,11 +68,22 @@ const FilterModal = ({ isOpen, onClose, onApply }) => {
   }
 
   const handleClearAll = () => {
-    setPriceMin(0)
-    setPriceMax(5000)
+    setPriceMin(defaultMinPrice)
+    setPriceMax(defaultMaxPrice)
     setSelectedCapacity(null)
     setSelectedAmenities([])
     setSelectedRating(null)
+
+    if (onApply) {
+      onApply({
+        priceMin: defaultMinPrice,
+        priceMax: defaultMaxPrice,
+        selectedCapacity: null,
+        selectedAmenities: [],
+        selectedRating: null
+      })
+    }
+    onClose()
   }
 
   const handleApply = () => {
@@ -83,62 +119,7 @@ const FilterModal = ({ isOpen, onClose, onApply }) => {
         {/* Scrollable Body */}
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-7">
 
-          {/* Price Range */}
-          <div>
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Price range</h3>
-            <p className="text-sm text-gray-500 mb-4">Price per hour, includes all fees</p>
-
-            {/* Dual Range Visual */}
-            <div className="relative h-10 mb-3">
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-gray-200 rounded-full" />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 h-1 bg-[#E53935] rounded-full"
-                style={{
-                  left: `${(priceMin / 5000) * 100}%`,
-                  right: `${100 - (priceMax / 5000) * 100}%`,
-                }}
-              />
-              <input
-                type="range" min="0" max="5000" step="100"
-                value={priceMin}
-                onChange={e => setPriceMin(Math.min(Number(e.target.value), priceMax - 100))}
-                className="absolute inset-0 w-full opacity-0 cursor-pointer h-10"
-                style={{ zIndex: priceMin > 4900 ? 5 : 3 }}
-              />
-              <input
-                type="range" min="0" max="5000" step="100"
-                value={priceMax}
-                onChange={e => setPriceMax(Math.max(Number(e.target.value), priceMin + 100))}
-                className="absolute inset-0 w-full opacity-0 cursor-pointer h-10"
-                style={{ zIndex: 4 }}
-              />
-              {/* Thumb indicators */}
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md pointer-events-none"
-                style={{ left: `calc(${(priceMin / 5000) * 100}% - 10px)` }}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md pointer-events-none"
-                style={{ left: `calc(${(priceMax / 5000) * 100}% - 10px)` }}
-              />
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-center">
-                <span className="text-xs text-gray-500 block mb-0.5">Minimum</span>
-                <span className="font-semibold text-gray-900 text-sm">${priceMin.toLocaleString()}</span>
-              </div>
-              <div className="w-4 h-px bg-gray-300" />
-              <div className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-center">
-                <span className="text-xs text-gray-500 block mb-0.5">Maximum</span>
-                <span className="font-semibold text-gray-900 text-sm">${priceMax === 5000 ? '5000+' : priceMax.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
-          <hr className="border-gray-100" />
-
-          {/* Capacity */}
+          {/* Capacity (Moved to Top) */}
           <div>
             <h3 className="text-base font-semibold text-gray-900 mb-3">Capacity</h3>
             <div className="flex gap-2 flex-wrap">
@@ -155,6 +136,61 @@ const FilterModal = ({ isOpen, onClose, onApply }) => {
                   {c.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* Price Range */}
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Price range</h3>
+            <p className="text-sm text-gray-500 mb-4">Price per day or per event</p>
+
+            {/* Dual Range Visual */}
+            <div className="relative h-10 mb-3">
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-gray-200 rounded-full" />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 h-1 bg-[#E53935] rounded-full"
+                style={{
+                  left: `${((priceMin - defaultMinPrice) / (defaultMaxPrice - defaultMinPrice || 1)) * 100}%`,
+                  right: `${100 - ((priceMax - defaultMinPrice) / (defaultMaxPrice - defaultMinPrice || 1)) * 100}%`,
+                }}
+              />
+              <input
+                type="range" min={defaultMinPrice} max={defaultMaxPrice} step="1000"
+                value={priceMin}
+                onChange={e => setPriceMin(Math.min(Number(e.target.value), priceMax - 1000))}
+                className="absolute inset-0 w-full opacity-0 cursor-pointer h-10"
+                style={{ zIndex: priceMin > (defaultMaxPrice - 1000) ? 5 : 3 }}
+              />
+              <input
+                type="range" min={defaultMinPrice} max={defaultMaxPrice} step="1000"
+                value={priceMax}
+                onChange={e => setPriceMax(Math.max(Number(e.target.value), priceMin + 1000))}
+                className="absolute inset-0 w-full opacity-0 cursor-pointer h-10"
+                style={{ zIndex: 4 }}
+              />
+              {/* Thumb indicators */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md pointer-events-none"
+                style={{ left: `calc(${((priceMin - defaultMinPrice) / (defaultMaxPrice - defaultMinPrice || 1)) * 100}% - 10px)` }}
+              />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow-md pointer-events-none"
+                style={{ left: `calc(${((priceMax - defaultMinPrice) / (defaultMaxPrice - defaultMinPrice || 1)) * 100}% - 10px)` }}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-center">
+                <span className="text-xs text-gray-500 block mb-0.5">Minimum</span>
+                <span className="font-semibold text-gray-900 text-sm">₹{priceMin.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="w-4 h-px bg-gray-300" />
+              <div className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-center">
+                <span className="text-xs text-gray-500 block mb-0.5">Maximum</span>
+                <span className="font-semibold text-gray-900 text-sm">₹{priceMax === defaultMaxPrice ? `${defaultMaxPrice.toLocaleString('en-IN')}+` : priceMax.toLocaleString('en-IN')}</span>
+              </div>
             </div>
           </div>
 

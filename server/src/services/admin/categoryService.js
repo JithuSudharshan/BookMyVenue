@@ -168,12 +168,5 @@ export const toggleCategoryStatusService =
                 isActive
             );
 
-        if (!isActive) {
-
-            await blockAllSubcategoriesByCategoryRepository(
-                categoryId
-            );
-        }
-
         return updatedCategory;
     };

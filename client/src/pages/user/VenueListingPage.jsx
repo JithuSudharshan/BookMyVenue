@@ -45,6 +45,20 @@ const ListingSearchBar = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  const [isCompact, setIsCompact] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50 && !activeField) {
+        setIsCompact(true)
+      } else {
+        setIsCompact(false)
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [activeField])
+
   const totalGuests = guests
   const startStr = formatDate(dateRange.start)
   const endStr = formatDate(dateRange.end)
@@ -77,13 +91,29 @@ const ListingSearchBar = () => {
   `
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-2xl mx-auto">
-      {/* Pill bar */}
-      <div className={`
-        flex items-center bg-white rounded-full border border-gray-300 shadow-md
-        transition-all duration-200
-        ${activeField ? 'shadow-xl ring-1 ring-gray-200' : 'hover:shadow-lg'}
-      `}>
+    <div ref={searchRef} className="relative w-full max-w-2xl mx-auto min-h-[48px]">
+      {isCompact && !activeField ? (
+        <div 
+          onClick={() => { setIsCompact(false); setActiveField('location'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+          className="mx-auto w-full max-w-[320px] flex items-center justify-between bg-white rounded-full border border-gray-300 shadow-md hover:shadow-lg transition-all duration-300 px-4 py-2 cursor-pointer"
+        >
+          <div className="flex flex-col truncate pr-2">
+            <span className="text-sm font-semibold text-gray-900 truncate">{locationValue || 'Anywhere'}</span>
+            <span className="text-[11px] text-gray-500 truncate">
+              {dateDisplay ? dateDisplay : 'Any week'} • {guests > 0 ? `${guests} guests` : 'Add guests'}
+            </span>
+          </div>
+          <div className="w-8 h-8 bg-[#E53935] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+            <FiSearch className="w-3.5 h-3.5 text-white" />
+          </div>
+        </div>
+      ) : (
+        /* Pill bar */
+        <div className={`
+          flex items-center bg-white rounded-full border border-gray-300 shadow-md
+          transition-all duration-300
+          ${activeField ? 'shadow-xl ring-1 ring-gray-200' : 'hover:shadow-lg'}
+        `}>
 
         {/* WHERE */}
         <div
@@ -152,7 +182,8 @@ const ListingSearchBar = () => {
             {activeField && <span className="text-sm">Search</span>}
           </button>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Drop-down Panels */}
       {activeField === 'location' && (
@@ -185,9 +216,11 @@ const VenueListingPage = () => {
   const [venues, setVenues] = useState([])
   const [pagination, setPagination] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [availableCategories, setAvailableCategories] = useState(['All'])
+  const [availableCategories, setAvailableCategories] = useState([{ name: 'All', subcategories: [] }])
   
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null)
+  const [filterMetadata, setFilterMetadata] = useState(null)
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const [activeFilters, setActiveFilters] = useState({})
   const [sortBy, setSortBy] = useState('recommended')
@@ -200,12 +233,12 @@ const VenueListingPage = () => {
   useEffect(() => {
     fetchVenues()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, selectedCategory, activeFilters, sortBy, currentPage])
+  }, [searchParams, selectedCategory, selectedSubcategory, activeFilters, sortBy, currentPage])
 
   // Reset to page 1 if any filter (other than page itself) changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchParams, selectedCategory, activeFilters, sortBy])
+  }, [searchParams, selectedCategory, selectedSubcategory, activeFilters, sortBy])
 
   const fetchVenues = async () => {
     setLoading(true)
@@ -222,6 +255,9 @@ const VenueListingPage = () => {
       // Extract category
       if (selectedCategory && selectedCategory !== 'All') {
         filters.category = selectedCategory
+      }
+      if (selectedSubcategory) {
+        filters.subcategory = selectedSubcategory
       }
 
       // Extract active filters from modal
@@ -240,8 +276,11 @@ const VenueListingPage = () => {
       const result = await getVenues(filters)
       setVenues(result?.venues || [])
       setPagination(result?.pagination || null)
+      if (result?.filterMetadata) {
+        setFilterMetadata(result.filterMetadata)
+      }
       if (result?.availableCategories) {
-        setAvailableCategories(['All', ...result.availableCategories])
+        setAvailableCategories([{ name: 'All', subcategories: [] }, ...result.availableCategories])
       }
     } catch (error) {
       console.log('Error fetching venues:', error)
@@ -332,15 +371,18 @@ const VenueListingPage = () => {
             >
               {availableCategories.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  key={cat.name}
+                  onClick={() => {
+                    setSelectedCategory(cat.name)
+                    setSelectedSubcategory(null)
+                  }}
                   className={`flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-all duration-150 text-xs font-medium whitespace-nowrap ${
-                    selectedCategory === cat
+                    selectedCategory === cat.name
                       ? 'bg-gray-900 text-white shadow-sm'
                       : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                   }`}
                 >
-                  <span>{cat}</span>
+                  <span>{cat.name}</span>
                 </button>
               ))}
             </div>
@@ -377,6 +419,35 @@ const VenueListingPage = () => {
             </button>
 
           </div>
+
+          {/* Subcategories Row (if applicable) */}
+          {selectedCategory !== 'All' && availableCategories.find(c => c.name === selectedCategory)?.subcategories?.length > 0 && (
+            <div className="py-2.5 flex items-center gap-2 overflow-x-auto border-t border-gray-50" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <button
+                onClick={() => setSelectedSubcategory(null)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                  !selectedSubcategory 
+                    ? 'border-gray-900 bg-gray-50 text-gray-900' 
+                    : 'border-transparent text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                All {selectedCategory}
+              </button>
+              {availableCategories.find(c => c.name === selectedCategory).subcategories.map(sub => (
+                <button
+                  key={sub}
+                  onClick={() => setSelectedSubcategory(sub)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                    selectedSubcategory === sub 
+                      ? 'border-gray-900 bg-gray-50 text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -493,6 +564,7 @@ const VenueListingPage = () => {
         isOpen={filterModalOpen}
         onClose={() => setFilterModalOpen(false)}
         onApply={handleApplyFilters}
+        metadata={filterMetadata}
       />
     </div>
   )

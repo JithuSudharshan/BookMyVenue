@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiMapPin, FiUsers, FiMoreVertical } from 'react-icons/fi'
+import { FiMapPin, FiUsers, FiMoreVertical, FiStar } from 'react-icons/fi'
 
 const VenueCard = ({ venue, onViewDetails }) => {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -39,7 +39,13 @@ const VenueCard = ({ venue, onViewDetails }) => {
         />
         <div className="min-w-0 flex-1">
           <h3 className="font-bold text-dark text-[15px] leading-snug truncate">{venue.name || 'Untitled Venue'}</h3>
-          <p className="text-xs text-gray-500 mb-1.5 truncate">{categoryName}</p>
+          <div className="flex items-center gap-1.5 text-xs mb-1.5">
+            <FiStar className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
+            <span className="font-bold text-dark">{venue.rating || '0.0'}</span>
+            <span className="text-gray-400">({venue.reviews || 0})</span>
+            <span className="text-gray-300 mx-0.5">•</span>
+            <span className="text-gray-500 truncate">{categoryName}</span>
+          </div>
           <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
             <FiMapPin className="w-3 h-3 flex-shrink-0" />
             <span className="truncate">{locationText}</span>

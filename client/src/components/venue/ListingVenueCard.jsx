@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiHeart, FiStar } from 'react-icons/fi'
+import { FiHeart, FiStar, FiUsers } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 const ListingVenueCard = ({ venue }) => {
@@ -59,16 +59,24 @@ const ListingVenueCard = ({ venue }) => {
           <h3 className="font-semibold text-gray-900 text-[15px] leading-snug truncate flex-1">
             {venue.name}
           </h3>
-          {venue.rating != null && (
+          {venue.rating !== undefined && (
             <div className="flex items-center gap-1 flex-shrink-0">
               <FiStar className="w-3.5 h-3.5 fill-current text-gray-900" />
-              <span className="text-sm font-medium text-gray-900">{Number(venue.rating).toFixed(1)}</span>
+              <span className="text-sm font-medium text-gray-900">{venue.rating != null ? Number(venue.rating).toFixed(1) : '0.0'}</span>
             </div>
           )}
         </div>
 
         {/* Location */}
         <p className="text-sm text-gray-500 truncate">{venue.location || 'Location not specified'}</p>
+
+        {/* Capacity */}
+        {venue.capacity && (
+          <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
+            <FiUsers className="w-3.5 h-3.5" />
+            <span>Up to {venue.capacity} guests</span>
+          </p>
+        )}
 
         {/* Category / Type */}
         {venue.category && (

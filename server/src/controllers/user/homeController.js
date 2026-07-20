@@ -2,13 +2,15 @@ import { getHomeVenuesService } from "../../services/user/homeService.js";
 
 export const loadHome = async (req, res) => {
     try {
-        const venues = await getHomeVenuesService();
+        const { venues, categories, stats } = await getHomeVenuesService();
 
         res.status(200).json({
             success: true,
             message: "Home data fetched successfully",
             data: {
-                venues
+                venues,
+                categories,
+                stats
             }
         });
 
@@ -19,4 +21,4 @@ export const loadHome = async (req, res) => {
             message: "Something went wrong"
         });
     }
-};
+};

@@ -108,7 +108,7 @@ const DatePanel = ({ dateRange, onChange, onClose }) => {
   }
 
   return (
-    <div className="absolute left-0 top-[calc(100%+12px)] bg-white rounded-3xl shadow-2xl border border-gray-200 p-6 z-50 w-[700px] max-w-[calc(100vw-2rem)] animate-fade-in-up">
+    <div className="absolute left-0 top-[calc(100%+12px)] bg-white rounded-3xl shadow-2xl border border-gray-200 p-6 z-[200] w-[700px] max-w-[calc(100vw-2rem)] animate-fade-in-up">
 
       {/* Dates / Flexible Toggle */}
       <div className="flex justify-center mb-6">

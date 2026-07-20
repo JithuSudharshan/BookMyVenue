@@ -218,8 +218,8 @@ const VendorVenueDetailPage = () => {
           </h1>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center text-[15px] font-medium text-[#222222] gap-1.5 flex-wrap">
-              <FiStar className="w-4 h-4 fill-current" />
-              <span>{venue.rating || '4.5'}</span>
+              <FiStar className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span>{venue.rating || '0.0'}</span>
               <span className="text-gray-400 font-normal mx-0.5">·</span>
               <span className="underline hover:cursor-pointer">{venue.reviews || 0} reviews</span>
               <span className="text-gray-400 font-normal mx-0.5">·</span>

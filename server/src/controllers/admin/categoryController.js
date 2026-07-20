@@ -110,8 +110,8 @@ export const toggleCategoryStatus = async (req, res) => {
             success: true,
             message: `Category ${
                 isActive
-                    ? "activated"
-                    : "blocked"
+                    ? "published"
+                    : "unpublished"
             } successfully`,
             data: category
         });

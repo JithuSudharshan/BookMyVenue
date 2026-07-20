@@ -1,4 +1,5 @@
 import Subcategory from "../../models/subcategoryModel.js";
+import Venue from "../../models/venueModel.js";
 
 export const createSubcategoryRepository = async (subcategoryData) => {
     return await Subcategory.create(subcategoryData);
@@ -77,3 +78,11 @@ export const blockAllSubcategoriesByCategoryRepository =
             }
         );
     };
+
+export const countVenuesBySubcategoryRepository = async (subcategoryId) => {
+    return await Venue.countDocuments({ subcategoryId });
+};
+
+export const deleteSubcategoryRepository = async (subcategoryId) => {
+    return await Subcategory.findByIdAndDelete(subcategoryId);
+};

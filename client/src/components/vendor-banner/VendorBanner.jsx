@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import { FiArrowRight, FiCheckCircle } from 'react-icons/fi'
 
 const PERKS = [
-  'List your venue for free',
-  'Manage bookings in one place',
-  'Reach thousands of customers',
+  'List your venue for free — no upfront cost',
+  'Reach thousands of Kerala families monthly',
+  'Manage bookings from one simple dashboard',
+  'Malayalam-speaking support team',
 ]
 
 const VendorBanner = () => {
@@ -20,11 +21,11 @@ const VendorBanner = () => {
               <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">
                 For Venue Owners
               </p>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-dark leading-tight mb-4">
-                Own a space?<br />Become a Vendor.
+              <h2 className="text-3xl md:text-4xl font-extrabold text-dark leading-tight mb-2">
+                Run a venue in Kerala?<br />List it here.
               </h2>
               <p className="text-gray-500 text-base mb-6 max-w-sm leading-relaxed">
-                List your venue on BookMyVenue and reach thousands of users looking for the perfect space.
+                Join 200+ venue owners already earning on BookMyVenue. Reach families across all 14 Kerala districts.
               </p>
 
               {/* Perks */}
