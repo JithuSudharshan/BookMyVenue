@@ -24,4 +24,4 @@ export const getHomeVenuesService = async () => {
             totalVenues: totalCount
         }
     };
-};
+};

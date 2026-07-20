@@ -11,7 +11,7 @@ const venueSchema = new mongoose.Schema(
     // ─── Ownership ───────────────────────────────────────────
     vendorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'VendorProfile',
+      ref: 'User',
       required: true,
       index: true,
     },
@@ -26,7 +26,7 @@ const venueSchema = new mongoose.Schema(
 
     subcategoryId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'SubCategory',
+      ref: 'Subcategory',
       required: [isStrict, 'Subcategory is required for submission'],
       index: true,
     },

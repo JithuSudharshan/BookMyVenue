@@ -21,4 +21,4 @@ export const loadHome = async (req, res) => {
             message: "Something went wrong"
         });
     }
-};
+};

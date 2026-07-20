@@ -1,12 +1,12 @@
-import VendorProfile from '../models/VendorProfile.js';
+import Vendor from '../models/vendorModel.js';
 
 class VendorRepository {
   async getProfileByUserId(userId) {
-    return await VendorProfile.findOne({ userId }).populate('userId', 'email');
+    return await Vendor.findOne({ userId }).populate('userId', 'email');
   }
 
   async updateProfile(userId, updateData) {
-    return await VendorProfile.findOneAndUpdate(
+    return await Vendor.findOneAndUpdate(
       { userId },
       { $set: updateData },
       { new: true, runValidators: true }
@@ -26,7 +26,9 @@ class VendorRepository {
   }
 
   async submitForReview(userId) {
-    return await this.updateProfile(userId, { onboardingStatus: 'under_review' });
+    const currentProfile = await this.getProfileByUserId(userId);
+    const nextStatus = currentProfile && currentProfile.onboardingStatus === 'rejected' ? 'changes_requested' : 'requested';
+    return await this.updateProfile(userId, { onboardingStatus: nextStatus });
   }
 }
 

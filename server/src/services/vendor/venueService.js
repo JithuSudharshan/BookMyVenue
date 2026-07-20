@@ -3,7 +3,7 @@ import Category from '../../models/categoryModel.js';
 import Subcategory from '../../models/subcategoryModel.js';
 import Venue from '../../models/venueModel.js';
 import { generateSlug } from '../../utils/generateSlug.js';
-import ApiError from '../../utils/ApiError.js';
+import AppError from '../../utils/appError.js';
 
 const validateTimeRange = (opening, closing) => {
     const openDate = new Date(`1970-01-01T${opening}:00Z`);
@@ -17,13 +17,13 @@ export const validateVenueBusinessRules = async (venueData) => {
 
     if (categoryId) {
         const category = await Category.findById(categoryId);
-        if (!category) throw new ApiError(400, "Category does not exist");
+        if (!category) throw new AppError("Category does not exist", 400);
 
         if (subcategoryId) {
             const subcategory = await Subcategory.findById(subcategoryId);
-            if (!subcategory) throw new ApiError(400, "Subcategory does not exist");
+            if (!subcategory) throw new AppError("Subcategory does not exist", 400);
             if (subcategory.categoryId.toString() !== categoryId.toString()) {
-                throw new ApiError(400, "Subcategory must belong to selected category");
+                throw new AppError("Subcategory must belong to selected category", 400);
             }
         }
     }
@@ -31,7 +31,7 @@ export const validateVenueBusinessRules = async (venueData) => {
     if (bookingModel === 'hourly') {
         if (bookingConfig && bookingConfig.openingTime && bookingConfig.closingTime) {
             if (!validateTimeRange(bookingConfig.openingTime, bookingConfig.closingTime)) {
-                throw new ApiError(400, "Invalid time range. Closing time must be after opening time.");
+                throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
             }
         }
     }
@@ -40,16 +40,16 @@ export const validateVenueBusinessRules = async (venueData) => {
 // --- DRAFT LOGIC ---
 
 export const saveDraft = async (vendorId, venueId, venueData) => {
-    if (!vendorId) throw new ApiError(401, "Unauthorized");
+    if (!vendorId) throw new AppError("Unauthorized", 401);
 
     let venue;
     if (venueId) {
         venue = await venueRepository.findVenueById(venueId);
-        if (!venue) throw new ApiError(404, "Draft not found");
-        if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+        if (!venue) throw new AppError("Draft not found", 404);
+        if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
 
         if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
-            throw new ApiError(400, "Venue is already submitted or approved and cannot be saved as a draft");
+            throw new AppError("Venue is already submitted or approved and cannot be saved as a draft", 400);
         }
     }
 
@@ -59,7 +59,7 @@ export const saveDraft = async (vendorId, venueId, venueData) => {
             const query = { slug };
             if (venueId) query._id = { $ne: venueId };
             const existingVenue = await Venue.findOne(query);
-            if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
+            if (existingVenue) throw new AppError("A venue with this name already exists", 400);
             venueData.slug = slug;
         } else if (!slug) {
             venueData.slug = undefined;
@@ -90,15 +90,15 @@ export const saveDraft = async (vendorId, venueId, venueData) => {
 
 export const submitVenueService = async (vendorId, venueId) => {
     const venue = await venueRepository.findVenueById(venueId);
-    if (!venue) throw new ApiError(404, "Venue not found");
-    if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+    if (!venue) throw new AppError("Venue not found", 404);
+    if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
 
     if (venue.approval.status === 'submitted') {
         return venue;
     }
 
     if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
-        throw new ApiError(400, "Only drafts or rejected venues can be submitted");
+        throw new AppError("Only drafts or rejected venues can be submitted", 400);
     }
 
     // Set approval status to trigger strict Mongoose validation on save()
@@ -110,14 +110,14 @@ export const submitVenueService = async (vendorId, venueId) => {
 };
 
 export const createVenueService = async (vendorId, venueData) => {
-    if (!vendorId) throw new ApiError(401, "Unauthorized");
+    if (!vendorId) throw new AppError("Unauthorized", 401);
 
     await validateVenueBusinessRules(venueData);
 
     if (venueData.name) {
         const slug = generateSlug(venueData.name);
         const existingVenue = await Venue.findOne({ slug });
-        if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
+        if (existingVenue) throw new AppError("A venue with this name already exists", 400);
         venueData.slug = slug;
     }
 
@@ -133,8 +133,8 @@ export const createVenueService = async (vendorId, venueData) => {
 
 export const updateVenueService = async (vendorId, venueId, updateData) => {
     const venue = await venueRepository.findVenueById(venueId);
-    if (!venue) throw new ApiError(404, "Venue not found");
-    if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+    if (!venue) throw new AppError("Venue not found", 404);
+    if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
 
     if (venue.approval?.status === 'under_review') {
         throw new ApiError(400, "Cannot edit a venue while it is under review by the admin.");
@@ -148,7 +148,7 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
         const slug = generateSlug(updateData.name);
         if (slug !== venue.slug) {
             const existingVenue = await Venue.findOne({ slug, _id: { $ne: venueId } });
-            if (existingVenue) throw new ApiError(400, "A venue with this name already exists");
+            if (existingVenue) throw new AppError("A venue with this name already exists", 400);
             updateData.slug = slug;
         }
     }
@@ -170,8 +170,8 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
 
 export const getVenueByIdService = async (vendorId, venueId) => {
     const venue = await venueRepository.findVenueById(venueId);
-    if (!venue) throw new ApiError(404, "Venue not found");
-    if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+    if (!venue) throw new AppError("Venue not found", 404);
+    if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
     return venue;
 };
 
@@ -266,21 +266,22 @@ export const getVendorVenuesService = async (vendorId, queryParams = {}) => {
 
 export const blockVenueService = async (vendorId, venueId) => {
     const venue = await venueRepository.findVenueById(venueId);
-    if (!venue) throw new ApiError(404, "Venue not found");
-    if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+    if (!venue) throw new AppError("Venue not found", 404);
+    if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
 
-    if (venue.venueStatus === 'inactive') throw new ApiError(409, "Venue already blocked");
+    if (venue.venueStatus === 'inactive') throw new AppError("Venue already blocked", 409);
 
     return await venueRepository.updateVenueStatus(venueId, 'venueStatus', 'inactive');
 };
 
 export const unblockVenueService = async (vendorId, venueId) => {
     const venue = await venueRepository.findVenueById(venueId);
-    if (!venue) throw new ApiError(404, "Venue not found");
-    if (venue.vendorId.toString() !== vendorId.toString()) throw new ApiError(403, "Forbidden");
+    if (!venue) throw new AppError("Venue not found", 404);
+    if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
 
-    if (venue.venueStatus === 'active') throw new ApiError(409, "Venue already active");
-    if (venue.approval.status !== 'approved') throw new ApiError(400, "Cannot activate unapproved venue");
+    if (venue.venueStatus === 'active') throw new AppError("Venue already active", 409);
+    if (venue.approval.status !== 'approved') throw new AppError("Cannot activate unapproved venue", 400);
 
     return await venueRepository.updateVenueStatus(venueId, 'venueStatus', 'active');
 };
+

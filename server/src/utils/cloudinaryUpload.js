@@ -56,5 +56,36 @@ export const venueImageStorage = new CloudinaryStorage({
     transformation: [{ width: 1080, crop: 'scale' }], // Responsive scale for venues
   },
 });
+/**
+ * Delete an identity document from Cloudinary.
+ * Handles both image and raw (PDF) resource types.
+ * @param {string} url - The Cloudinary URL of the file to delete.
+ */
+export const deleteIdentityDocFromCloudinary = async (url) => {
+  if (!url) return;
+  try {
+    // Extract the path after /upload/ and before any version or file extension
+    const uploadIndex = url.indexOf('/upload/');
+    if (uploadIndex === -1) return;
+
+    let publicIdWithExt = url.substring(uploadIndex + 8);
+
+    // Strip version segment like v1234567890/
+    publicIdWithExt = publicIdWithExt.replace(/^v\d+\//, '');
+
+    // Remove file extension
+    const lastDot = publicIdWithExt.lastIndexOf('.');
+    const publicId = lastDot !== -1 ? publicIdWithExt.substring(0, lastDot) : publicIdWithExt;
+
+    // Determine resource_type: PDFs are stored as 'raw'
+    const isPdf = url.toLowerCase().includes('.pdf');
+    const resourceType = isPdf ? 'raw' : 'image';
+
+    await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+  } catch (err) {
+    // Non-fatal: log but do not block the update
+    console.error('Cloudinary delete failed:', err.message);
+  }
+};
 
 export default cloudinary;

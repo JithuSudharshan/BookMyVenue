@@ -173,3 +173,4 @@ export const validateVendorSignupData = (data) => {
     sanitizedData: { firstName, lastName, email, phone, password }
   };
 };
+

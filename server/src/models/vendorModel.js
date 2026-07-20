@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const vendorProfileSchema = new mongoose.Schema(
+const vendorSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,8 +12,8 @@ const vendorProfileSchema = new mongoose.Schema(
     // --- Onboarding Flow ---
     onboardingStatus: {
       type: String,
-      enum: ['incomplete', 'under_review', 'approved', 'rejected', 'changes_requested'],
-      default: 'incomplete',
+      enum: ['incomplete', 'under_review', 'approved', 'rejected', 'requested', 'changes_requested'],
+      default: 'incomplete', 
     },
     onboardingStep: {
       type: Number,
@@ -56,7 +56,7 @@ const vendorProfileSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
-      default: 'default.jpg',
+      default: null,
     },
 
     // --- Step 2: Address & Role ---
@@ -100,6 +100,6 @@ const vendorProfileSchema = new mongoose.Schema(
   }
 );
 
-const VendorProfile = mongoose.model('VendorProfile', vendorProfileSchema);
+const Vendor = mongoose.model('Vendor', vendorSchema);
 
-export default VendorProfile;
+export default Vendor;

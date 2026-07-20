@@ -1,6 +1,6 @@
-import User from '../models/User.js';
-import CustomerProfile from '../models/CustomerProfile.js';
-import VendorProfile from '../models/VendorProfile.js';
+import User from '../models/userModel.js';
+import Customer from '../models/customerModel.js';
+import Vendor from '../models/vendorModel.js';
 
 class UserRepository {
   async findUserByEmail(email) {
@@ -27,26 +27,26 @@ class UserRepository {
     return await user.save();
   }
 
-  async createCustomerProfile(profileData) {
-    const profile = new CustomerProfile(profileData);
+  async createCustomer(profileData) {
+    const profile = new Customer(profileData);
     return await profile.save();
   }
 
-  async createVendorProfile(profileData) {
-    const profile = new VendorProfile(profileData);
+  async createVendor(profileData) {
+    const profile = new Vendor(profileData);
     return await profile.save();
   }
 
-  async findCustomerProfileByPhone(phone) {
-    return await CustomerProfile.findOne({ phone });
+  async findCustomerByPhone(phone) {
+    return await Customer.findOne({ phone });
   }
 
-  async findCustomerProfileByUserId(userId) {
-    return await CustomerProfile.findOne({ userId });
+  async findCustomerByUserId(userId) {
+    return await Customer.findOne({ userId });
   }
 
-  async findVendorProfileByUserId(userId) {
-    return await VendorProfile.findOne({ userId });
+  async findVendorByUserId(userId) {
+    return await Vendor.findOne({ userId });
   }
 
   async saveUser(userDoc) {
@@ -55,3 +55,4 @@ class UserRepository {
 }
 
 export default new UserRepository();
+

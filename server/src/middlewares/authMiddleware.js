@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import userRepository from '../repositories/userRepository.js';
 
 // Protect routes
 export const protect = async (req, res, next) => {
@@ -13,10 +13,13 @@ export const protect = async (req, res, next) => {
   if (token) {
     try {
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined in environment variables.");
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get user from the token
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await userRepository.findUserById(decoded.id);
 
       if (!req.user) {
         return res.status(401).json({ message: 'Not authorized, user not found' });

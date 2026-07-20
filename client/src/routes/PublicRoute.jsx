@@ -8,9 +8,7 @@ const PublicRoute = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   if (user) {
-    if (user.role === 'vendor') return <Navigate to="/vendor-dashboard" replace />;
-    if (user.role === 'admin') return <Navigate to="/admin-dashboard" replace />;
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;

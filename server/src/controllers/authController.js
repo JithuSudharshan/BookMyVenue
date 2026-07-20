@@ -1,5 +1,6 @@
 import authService from '../services/authService.js';
 
+
 // @desc    Register a new user (customer)
 // @route   POST /api/auth/register
 // @access  Public
@@ -32,11 +33,10 @@ export const login = async (req, res) => {
     const { identifier, email, password } = req.body; 
     const result = await authService.loginUser(identifier || email, password);
     
-    // Set the accessToken inside an HttpOnly cookie
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
@@ -44,7 +44,7 @@ export const login = async (req, res) => {
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       path: '/api/auth/refresh',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
@@ -121,6 +121,7 @@ export const getMe = async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
+
   }
 };
 
@@ -131,11 +132,10 @@ export const verifyEmail = async (req, res) => {
   try {
     const result = await authService.verifyEmailToken(req.params.token);
 
-    // Set the accessToken inside an HttpOnly cookie
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
@@ -143,7 +143,7 @@ export const verifyEmail = async (req, res) => {
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       path: '/api/auth/refresh',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
@@ -154,6 +154,7 @@ export const verifyEmail = async (req, res) => {
     res.json(userData);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
+
   }
 };
 
@@ -178,11 +179,12 @@ export const forgotPassword = async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
+
   }
 };
 
-// @desc    Check if email is available
-// @route   POST /api/auth/check-email
+// @desc    Authenticate a user
+// @route   POST /api/auth/login
 // @access  Public
 export const checkEmail = async (req, res) => {
   try {
@@ -280,3 +282,4 @@ export const completeGoogleSignup = async (req, res) => {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
+

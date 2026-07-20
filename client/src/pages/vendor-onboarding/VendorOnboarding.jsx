@@ -28,8 +28,12 @@ const VendorOnboarding = () => {
       
       // Determine starting step
       if (res.onboardingStep) {
-        // If step 3 is completed and status is under_review or changes_requested, stay on 3 to let them review
-        setCurrentStep(Math.min(res.onboardingStep + 1, 3));
+        // If step 3 is completed and status is under_review or requested, stay on 3 to let them review
+        if (['under_review', 'requested', 'approved'].includes(res.onboardingStatus)) {
+          setCurrentStep(3);
+        } else {
+          setCurrentStep(Math.min(res.onboardingStep + 1, 3));
+        }
       }
     } catch (err) {
       toast.error('Failed to load profile status.');
