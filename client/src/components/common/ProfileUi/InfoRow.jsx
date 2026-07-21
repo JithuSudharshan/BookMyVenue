@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../user/profile/Profile.css';
+import './Profile.css';
 
 function InfoRow({ label, value }) {
   return (

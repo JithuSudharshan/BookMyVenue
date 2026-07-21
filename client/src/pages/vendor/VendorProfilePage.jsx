@@ -2,11 +2,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { vendorApi } from '../../api/vendor-api/vendorApi';
 import { AuthContext } from '../../store/AuthContext';
 import VendorProfileView from '../../components/vendor/profile/VendorProfileView';
-import AvatarUpload from '../../components/user/profile/AvatarUpload';
-import BaseProfilePage from '../../components/common/profileUi/BaseProfilePage';
+import AvatarUpload from '../../components/common/ProfileUi/AvatarUpload';
+import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
 import { toast } from 'sonner';
 import { formatMemberSince } from '../../utils/dateFormatter';
-import '../../components/user/profile/Profile.css';
+import '../../components/common/ProfileUi/Profile.css';
 
 function VendorProfilePage() {
   const [profile, setProfile] = useState(null);

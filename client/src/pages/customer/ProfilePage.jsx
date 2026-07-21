@@ -2,11 +2,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { getProfile, updatePersonalInfo, updateAddress, uploadAvatar, deleteAvatar } from '../../api/user-api/profileApi';
 import { AuthContext } from '../../store/AuthContext';
 import ProfileView from '../../components/user/profile/ProfileView';
-import AvatarUpload from '../../components/user/profile/AvatarUpload';
-import BaseProfilePage from '../../components/common/profileUi/BaseProfilePage';
+import AvatarUpload from '../../components/common/ProfileUi/AvatarUpload';
+import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
 import { toast } from 'sonner';
 import { formatMemberSince } from '../../utils/dateFormatter';
-import '../../components/user/profile/Profile.css';
+import '../../components/common/ProfileUi/Profile.css';
 
 function ProfilePage() {
   const [profile, setProfile] = useState(null);
