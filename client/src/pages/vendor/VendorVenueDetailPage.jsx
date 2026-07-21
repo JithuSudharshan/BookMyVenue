@@ -213,11 +213,11 @@ const VendorVenueDetailPage = () => {
 
         {/* ── Header: Title & Subtitle ───────────────────────────────────── */}
         <div className="mb-6">
-          <h1 className="text-[26px] leading-tight font-semibold text-[#222222] mb-1">
+          <h1 className="text-[26px] leading-tight font-semibold text-on-surface mb-1">
             {venue.name || 'Untitled Venue'}
           </h1>
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center text-[15px] font-medium text-[#222222] gap-1.5 flex-wrap">
+            <div className="flex items-center text-[15px] font-medium text-on-surface gap-1.5 flex-wrap">
               <FiStar className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span>{venue.rating || '0.0'}</span>
               <span className="text-gray-400 font-normal mx-0.5">·</span>
@@ -271,10 +271,10 @@ const VendorVenueDetailPage = () => {
             {/* Hosted By / Basic Stats */}
             <div className="flex items-center justify-between pb-6 border-b border-gray-200">
               <div>
-                <h2 className="text-[22px] font-semibold text-[#222222] mb-1">
+                <h2 className="text-[22px] font-semibold text-on-surface mb-1">
                   Entire {subCategoryName ? subCategoryName.toLowerCase() : categoryName.toLowerCase()} in {city || 'India'}
                 </h2>
-                <div className="text-[15px] text-[#222222]">
+                <div className="text-[15px] text-on-surface">
                   Up to {venue.capacity || 0} guests · {categoryName}
                 </div>
               </div>
@@ -285,22 +285,22 @@ const VendorVenueDetailPage = () => {
 
             {/* Description */}
             <div className="py-8 border-b border-gray-200">
-              <h2 className="text-[22px] font-semibold text-[#222222] mb-4">About this venue</h2>
-              <p className="text-[15px] leading-relaxed text-[#222222] whitespace-pre-wrap">
+              <h2 className="text-[22px] font-semibold text-on-surface mb-4">About this venue</h2>
+              <p className="text-[15px] leading-relaxed text-on-surface whitespace-pre-wrap">
                 {venue.description || 'No description provided.'}
               </p>
             </div>
 
             {/* What this place offers (Amenities) */}
             <div className="py-8 border-b border-gray-200">
-              <h2 className="text-[22px] font-semibold text-[#222222] mb-6">What this place offers</h2>
+              <h2 className="text-[22px] font-semibold text-on-surface mb-6">What this place offers</h2>
               {venue.amenities && venue.amenities.length > 0 ? (
                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                   {venue.amenities.map((amenity, idx) => {
                     const amName = typeof amenity === 'object' ? amenity.name : amenity
                     const Icon = getAmenityIcon(amName)
                     return (
-                      <div key={idx} className="flex items-center gap-4 text-[15px] text-[#222222]">
+                      <div key={idx} className="flex items-center gap-4 text-[15px] text-on-surface">
                         <Icon className="w-6 h-6 text-gray-700" />
                         {amName}
                       </div>
@@ -314,12 +314,12 @@ const VendorVenueDetailPage = () => {
 
             {/* Rules & Policies */}
             <div className="py-8 border-b border-gray-200">
-              <h2 className="text-[22px] font-semibold text-[#222222] mb-6">Rules & Policies</h2>
+              <h2 className="text-[22px] font-semibold text-on-surface mb-6">Rules & Policies</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <FiInfo className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="font-semibold text-[15px] text-[#222222] block mb-0.5">Rules</span>
+                    <span className="font-semibold text-[15px] text-on-surface block mb-0.5">Rules</span>
                     <span className="text-[15px] text-gray-500 whitespace-pre-wrap">{venue.rules || 'No specific rules provided.'}</span>
                   </div>
                 </div>
@@ -330,12 +330,12 @@ const VendorVenueDetailPage = () => {
 
           {/* Right Column (Sticky Admin & Pricing Card) */}
           <div className="w-full lg:w-[40%] xl:w-[33%] relative">
-            <div className="sticky top-28 bg-white border border-[#DDDDDD] rounded-2xl p-6 shadow-xl shadow-black/5">
+            <div className="sticky top-28 bg-white border border-outline-variant rounded-2xl p-6 shadow-xl shadow-black/5">
               
               {/* Pricing Header */}
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-[22px] font-bold text-[#222222]">₹{price.toLocaleString('en-IN')}</span>
-                <span className="text-[15px] text-[#222222]">/ {venue.bookingModel === 'hourly' ? 'Hour' : 'Day'}</span>
+                <span className="text-[22px] font-bold text-on-surface">₹{price.toLocaleString('en-IN')}</span>
+                <span className="text-[15px] text-on-surface">/ {venue.bookingModel === 'hourly' ? 'Hour' : 'Day'}</span>
               </div>
 
               {/* Status Banner Removed as requested */}
@@ -344,12 +344,12 @@ const VendorVenueDetailPage = () => {
                 <div className="relative w-full border border-gray-200 rounded-xl mb-4 overflow-hidden group">
                   <div className="flex bg-gray-50">
                     <div className="w-1/2 p-3 border-r border-gray-200">
-                      <div className="text-[10px] font-extrabold text-[#222222] mb-0.5">BOOKING MODEL</div>
-                      <div className="text-sm text-[#222222] capitalize">{venue.bookingModel || 'Unknown'}</div>
+                      <div className="text-[10px] font-extrabold text-on-surface mb-0.5">BOOKING MODEL</div>
+                      <div className="text-sm text-on-surface capitalize">{venue.bookingModel || 'Unknown'}</div>
                     </div>
                     <div className="w-1/2 p-3">
-                      <div className="text-[10px] font-extrabold text-[#222222] mb-0.5">PRICE TYPE</div>
-                      <div className="text-sm text-[#222222]">Per {venue.bookingModel === 'hourly' ? 'Hour' : 'Day'}</div>
+                      <div className="text-[10px] font-extrabold text-on-surface mb-0.5">PRICE TYPE</div>
+                      <div className="text-sm text-on-surface">Per {venue.bookingModel === 'hourly' ? 'Hour' : 'Day'}</div>
                     </div>
                   </div>
                 </div>

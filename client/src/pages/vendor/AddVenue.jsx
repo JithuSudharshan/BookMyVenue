@@ -716,14 +716,14 @@ const AddVenue = () => {
 
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex justify-center items-center">
+      <div className="min-h-screen bg-surface flex justify-center items-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-surface">
 
       {/* ── Top Bar ──────────────────────────────────────────── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">

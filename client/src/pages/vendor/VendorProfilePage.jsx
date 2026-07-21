@@ -55,7 +55,7 @@ function VendorProfilePage() {
     switch (profile?.onboardingStatus) {
       case 'approved':
         return (
-          <span key="status" className="pf-badge" style={{ background: '#d1fae5', color: '#059669' }}>
+          <span key="status" className="pf-badge bg-green-100 text-green-700">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M20 6L9 17l-5-5"/>
             </svg>
@@ -68,13 +68,13 @@ function VendorProfilePage() {
         return <div className="text-sm font-medium px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-full">Submitted</div>;
       case 'rejected':
         return (
-          <span key="status" className="pf-badge" style={{ background: '#f3f4f6', color: '#4b5563' }}>
+          <span key="status" className="pf-badge bg-gray-100 text-gray-700">
             Rejected
           </span>
         );
       default:
         return (
-          <span key="status" className="pf-badge" style={{ background: '#fef3c7', color: '#d97706' }}>
+          <span key="status" className="pf-badge bg-amber-100 text-amber-700">
             Incomplete
           </span>
         );
