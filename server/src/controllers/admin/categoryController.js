@@ -10,12 +10,8 @@ import {
 export const createCategory = async (req, res) => {
     try {
         const categoryData = { ...req.body };
-        if (req.file) {
-            categoryData.image = req.file.path; // Cloudinary URL
-        }
-
         const category =
-            await createCategoryService(categoryData);
+            await createCategoryService(categoryData, req.file);
 
         res.status(201).json({
             success: true,
@@ -65,14 +61,11 @@ export const updateCategory = async (req, res) => {
 
         const { categoryId } = req.params;
         const updateData = { ...req.body };
-        if (req.file) {
-            updateData.image = req.file.path; // New Cloudinary URL
-        }
-
         const updatedCategory =
             await updateCategoryService(
                 categoryId,
-                updateData
+                updateData,
+                req.file
             );
 
         res.status(200).json({

@@ -16,11 +16,13 @@ import {
 
 
 
-export const createCategoryService = async ({
-    name,
-    image,
-    description
-}) => {
+export const createCategoryService = async (data, file) => {
+    const { name, description } = data;
+    let image = data.image;
+    
+    if (file && file.path) {
+        image = file.path;
+    }
 
     if (!name?.trim()) {
         throw new Error(
@@ -100,8 +102,13 @@ export const getCategoriesService = async (query) => {
 export const updateCategoryService =
     async (
         categoryId,
-        updateData
+        updateData,
+        file
     ) => {
+
+        if (file && file.path) {
+            updateData.image = file.path;
+        }
 
         const category =
             await getCategoryByIdRepository(

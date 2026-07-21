@@ -1,7 +1,7 @@
 import express from 'express';
 import * as venueController from '../../controllers/vendor/venueController.js';
 import { validateVenueSubmit } from '../../validators/venueValidator.js';
-import { uploadVenueImage } from '../../utils/uploadMiddleware.js';
+import { uploadVenueImage } from '../../middlewares/uploadMiddleware.js';
 
 const parseVenueData = (req, res, next) => {
     try {
