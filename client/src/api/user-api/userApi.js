@@ -19,3 +19,12 @@ export const getVenues = async (filters = {}) => {
     throw error;
   }
 };
+export const getVenueById = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/venues/public/${id}`);
+    return response.data.venue;
+  } catch (error) {
+    console.error("Error fetching venue details", error);
+    throw error;
+  }
+};

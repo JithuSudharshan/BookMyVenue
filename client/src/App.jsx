@@ -4,7 +4,7 @@ import { AuthProvider } from './store/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
 import AuthRedirect from './routes/AuthRedirect';
-import MainLayout from './layouts/MainLayout';
+
 import DashboardLayout from './layouts/DashboardLayout';
 
 import UserRoutes from './routes/UserRoutes';
