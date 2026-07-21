@@ -81,7 +81,7 @@ const VenueManagement = () => {
         setVenues([])
       }
     } catch (err) {
-      console.error('Failed to fetch venues:', err)
+
       setVenues([])
     } finally {
       setLoading(false)
@@ -279,4 +279,5 @@ const VenueManagement = () => {
 }
 
 export default VenueManagement
+
 

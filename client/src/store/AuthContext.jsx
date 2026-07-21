@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       await authApi.logout();
       setUser(null);
     } catch (error) {
-      console.error('Logout failed', error);
+
     }
   };
 
@@ -64,3 +64,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

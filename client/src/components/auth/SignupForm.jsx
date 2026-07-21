@@ -44,7 +44,7 @@ const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
         setEmailAvailable(true);
       }
     } catch (err) {
-      console.error(err);
+
     }
   };
 
@@ -62,7 +62,7 @@ const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
         setPhoneAvailable(true);
       }
     } catch (err) {
-      console.error(err);
+
     }
   };
 
@@ -244,3 +244,4 @@ const SignupForm = ({ title, subtitle, buttonText, apiCall, googleRole }) => {
 };
 
 export default SignupForm;
+

@@ -38,7 +38,7 @@ const CategorySection = ({ onCategoryChange }) => {
         const result = await getHomeData()
         setCategories(result.popularCategories || [])
       } catch (error) {
-        console.error('Failed to fetch categories:', error)
+
       } finally {
         setLoading(false)
       }
@@ -92,3 +92,4 @@ const CategorySection = ({ onCategoryChange }) => {
 }
 
 export default CategorySection
+

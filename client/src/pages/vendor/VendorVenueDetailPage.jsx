@@ -40,7 +40,7 @@ const VendorVenueDetailPage = () => {
       const data = await getVendorVenueById(id)
       setVenue(data)
     } catch (err) {
-      console.error('Error fetching venue details:', err)
+
     } finally {
       setLoading(false)
     }
@@ -75,7 +75,7 @@ const VendorVenueDetailPage = () => {
       await fetchVenue()
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to change venue status')
-      console.error('Failed to change venue status:', err)
+
     } finally {
       setUpdating(false)
     }
@@ -90,7 +90,7 @@ const VendorVenueDetailPage = () => {
       await fetchVenue()
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to submit venue')
-      console.error('Failed to submit venue:', err)
+
     } finally {
       setUpdating(false)
     }
@@ -405,3 +405,4 @@ const VendorVenueDetailPage = () => {
 }
 
 export default VendorVenueDetailPage
+

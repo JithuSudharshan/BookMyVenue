@@ -9,7 +9,7 @@ export const createVenue = async (payload) => {
     const response = await axiosInstance.post('/vendor/venues', payload)
     return response.data?.data;
   } catch (error) {
-    console.error('Error creating venue:', error)
+
     throw error
   }
 }
@@ -23,7 +23,7 @@ export const saveDraft = async (data) => {
     const response = await axiosInstance.post('/vendor/venues/draft', data)
     return response.data?.data;
   } catch (error) {
-    console.error('Error saving draft:', error)
+
     throw error
   }
 }
@@ -36,7 +36,7 @@ export const getVendorVenues = async (params = {}) => {
     const response = await axiosInstance.get('/vendor/venues', { params })
     return response.data?.data;
   } catch (error) {
-    console.error('Error fetching vendor venues:', error)
+
     throw error
   }
 }
@@ -51,7 +51,7 @@ export const getVendorVenueById = async (id, action = null) => {
     const response = await axiosInstance.get(`/vendor/venues/${id}`, { params })
     return response.data?.data;
   } catch (error) {
-    console.error('Error fetching vendor venue:', error)
+
     throw error
   }
 }
@@ -61,7 +61,7 @@ export const updateVenue = async (id, data) => {
     const response = await axiosInstance.patch(`/vendor/venues/${id}`, data)
     return response.data?.data;
   } catch (error) {
-    console.error('Error updating venue:', error)
+
     throw error
   }
 }
@@ -71,7 +71,7 @@ export const submitVenue = async (id) => {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/submit`)
     return response.data?.data;
   } catch (error) {
-    console.error('Error submitting venue:', error)
+
     throw error
   }
 }
@@ -81,7 +81,7 @@ export const blockVenue = async (id) => {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/block`)
     return response.data?.data;
   } catch (error) {
-    console.error('Error blocking venue:', error)
+
     throw error
   }
 }
@@ -91,7 +91,7 @@ export const unblockVenue = async (id) => {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/unblock`)
     return response.data?.data;
   } catch (error) {
-    console.error('Error unblocking venue:', error)
+
     throw error
   }
 }
@@ -101,7 +101,7 @@ export const updateDraft = async (id, data) => {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/draft`, data)
     return response.data?.data;
   } catch (error) {
-    console.error('Error updating draft:', error)
+
     throw error
   }
 }
@@ -111,7 +111,7 @@ export const getCategories = async () => {
     const response = await axiosInstance.get('/vendor/venues/categories')
     return response.data?.data;
   } catch (error) {
-    console.error('Error fetching categories:', error)
+
     throw error
   }
 }
@@ -179,4 +179,5 @@ export const vendorApi = {
     return response.data?.data ?? response.data;
   },
 };
+
 

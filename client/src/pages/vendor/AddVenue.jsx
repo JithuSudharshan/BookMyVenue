@@ -558,7 +558,7 @@ const AddVenue = () => {
           await loadVenueDetails()
         }
       } catch (err) {
-        console.error('Failed to initialize:', err)
+
       } finally {
         setPageLoading(false)
       }
@@ -594,7 +594,7 @@ const AddVenue = () => {
         rules: (Array.isArray(data.rules) ? data.rules.join('\n') : data.rules) || '',
       })
     } catch (err) {
-      console.error('Failed to load venue details:', err)
+
     }
   }
 
@@ -677,7 +677,7 @@ const AddVenue = () => {
       navigate('/vendor/venues')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to save draft')
-      console.error('Save draft failed:', err)
+
     } finally {
       setSubmitting(false)
     }
@@ -701,7 +701,7 @@ const AddVenue = () => {
       navigate('/vendor/venues')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to submit venue')
-      console.error('Submit failed:', err)
+
     } finally {
       setSubmitting(false)
     }
@@ -830,4 +830,5 @@ const AddVenue = () => {
 }
 
 export default AddVenue
+
 

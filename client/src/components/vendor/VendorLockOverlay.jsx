@@ -18,7 +18,7 @@ const VendorLockOverlay = () => {
       const res = await vendorApi.getOnboardingStatus();
       setStatusData(res);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoading(false);
     }
@@ -143,5 +143,6 @@ const VendorLockOverlay = () => {
 };
 
 export default VendorLockOverlay;
+
 
 

@@ -43,7 +43,7 @@ const CategoryManagement = () => {
         setPagination(result.pagination);
       }
     } catch (error) {
-      console.error("Failed to fetch categories:", error);
+
     } finally {
       setLoading(false);
     }
@@ -319,4 +319,5 @@ const CategoryManagement = () => {
 };
 
 export default CategoryManagement;
+
 

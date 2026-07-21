@@ -239,13 +239,13 @@ function BookingsPage() {
 
                 {/* Actions Footer */}
                 <div className="bk-card-footer">
-                  <button className="bk-btn bk-btn-outline" onClick={() => console.log('Contact Venue')}>
+                  <button className="bk-btn bk-btn-outline" onClick={() => {}}>
                     <MessageSquare size={16} /> Contact Venue
                   </button>
-                  <button className="bk-btn bk-btn-outline" onClick={() => console.log('Download Receipt')}>
+                  <button className="bk-btn bk-btn-outline" onClick={() => {}}>
                     <FileText size={16} /> Receipt
                   </button>
-                  <button className="bk-btn bk-btn-primary" onClick={() => console.log('View Details')}>
+                  <button className="bk-btn bk-btn-primary" onClick={() => {}}>
                     View Details
                   </button>
                 </div>
@@ -274,3 +274,4 @@ function BookingsPage() {
 }
 
 export default BookingsPage;
+

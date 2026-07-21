@@ -24,7 +24,7 @@ const Home = () => {
           stats: data?.stats || { totalVenues: 0 },
         })
       } catch (err) {
-        console.error('Failed to fetch home data:', err)
+
       } finally {
         setLoading(false)
       }
@@ -70,3 +70,4 @@ const Home = () => {
 }
 
 export default Home
+

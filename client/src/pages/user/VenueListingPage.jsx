@@ -283,7 +283,7 @@ const VenueListingPage = () => {
         setAvailableCategories([{ name: 'All', subcategories: [] }, ...result.availableCategories])
       }
     } catch (error) {
-      console.log('Error fetching venues:', error)
+
     } finally {
       setLoading(false)
     }
@@ -571,4 +571,5 @@ const VenueListingPage = () => {
 }
 
 export default VenueListingPage
+
 
