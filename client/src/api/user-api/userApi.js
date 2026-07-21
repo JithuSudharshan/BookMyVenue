@@ -1,4 +1,4 @@
-import axiosInstance from "../../services/axiosInstance";
+import axiosInstance from "../axiosConfig";
 
 export const getHomeData = async () => {
   try {
