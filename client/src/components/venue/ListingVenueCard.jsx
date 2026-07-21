@@ -1,15 +1,84 @@
-import React, { useState } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { FiHeart, FiStar, FiUsers } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../store/AuthContext'
+import { addToWishlist, removeFromWishlist } from '../../api/user-api/wishlistApi'
+import { toast } from 'sonner'
 
 const ListingVenueCard = ({ venue }) => {
   const navigate = useNavigate()
+  const { user, updateUser } = useContext(AuthContext)
   const [wishlisted, setWishlisted] = useState(false)
   const [imgError, setImgError] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const venueId = venue._id || venue.id || ''
+
+  useEffect(() => {
+    if (user?.role === 'customer' && user.profile?.wishlist) {
+      // Check if venue is in wishlist (MongoDB ObjectIds might be populated objects or string IDs)
+      const isWishlisted = user.profile.wishlist.some(item => 
+        (typeof item === 'object' && item !== null ? item._id : item) === venueId
+      )
+      setWishlisted(isWishlisted)
+    } else {
+      setWishlisted(false)
+    }
+  }, [user, venueId])
+
+  const handleWishlistToggle = async (e) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.info('Login to save to wishlist');
+      navigate('/login');
+      return;
+    }
+
+    if (user.role !== 'customer') {
+      toast.info('Only customers can maintain a wishlist');
+      return;
+    }
+
+    if (loading) return;
+
+    try {
+      setLoading(true);
+      if (wishlisted) {
+        await removeFromWishlist(venueId);
+        setWishlisted(false);
+        // Update user context optimistically
+        if (user.profile?.wishlist) {
+          updateUser({
+            profile: {
+              wishlist: user.profile.wishlist.filter(item => 
+                (typeof item === 'object' && item !== null ? item._id : item) !== venueId
+              )
+            }
+          });
+        }
+      } else {
+        await addToWishlist(venueId);
+        setWishlisted(true);
+        // Update user context optimistically
+        if (user.profile?.wishlist) {
+          updateUser({
+            profile: {
+              wishlist: [...user.profile.wishlist, venueId]
+            }
+          });
+        }
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to update wishlist');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div
-      onClick={() => navigate(`/venues/${venue._id || venue.id || ''}`)}
+      onClick={() => navigate(`/venues/${venueId}`)}
       className="group cursor-pointer"
     >
       {/* Image Container */}
@@ -32,12 +101,11 @@ const ListingVenueCard = ({ venue }) => {
           </div>
         )}
 
-
-
         {/* Wishlist Button (Top Right) */}
         <button
-          onClick={e => { e.stopPropagation(); setWishlisted(w => !w) }}
-          className="absolute top-3 right-3 p-1.5 transition-transform hover:scale-110 active:scale-95"
+          onClick={handleWishlistToggle}
+          disabled={loading}
+          className="absolute top-3 right-3 p-1.5 transition-transform hover:scale-110 active:scale-95 disabled:opacity-50"
           aria-label="Save to wishlist"
         >
           {wishlisted ? (
@@ -68,7 +136,11 @@ const ListingVenueCard = ({ venue }) => {
         </div>
 
         {/* Location */}
-        <p className="text-sm text-gray-500 truncate">{venue.location || 'Location not specified'}</p>
+        <p className="text-sm text-gray-500 truncate">
+          {typeof venue.location === 'object' && venue.location !== null
+            ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
+            : venue.location || 'Location not specified'}
+        </p>
 
         {/* Capacity */}
         {venue.capacity && (

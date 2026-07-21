@@ -144,7 +144,9 @@ function WishlistPage() {
                     {venue.location && (
                       <div className="wl-venue-loc">
                         <MapPin size={14} />
-                        {venue.location}
+                        {typeof venue.location === 'object' && venue.location !== null
+                          ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
+                          : venue.location}
                       </div>
                     )}
 
