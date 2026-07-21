@@ -84,3 +84,4 @@ const VenueCard = ({ venue, onViewDetails }) => {
 
 export default VenueCard
 
+

@@ -103,3 +103,4 @@ const CategoryStrip = ({ categories = [], activeCategory, onSelect }) => {
 
 export default CategoryStrip
 
+

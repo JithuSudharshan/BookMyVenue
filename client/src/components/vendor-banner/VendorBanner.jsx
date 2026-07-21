@@ -40,7 +40,7 @@ const VendorBanner = () => {
 
               <a
                 href="/vendor-signup"
-                className="inline-flex items-center gap-2 bg-primary hover:bg-red-700
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
                            text-white font-semibold px-7 py-3.5 rounded-xl
                            transition-colors shadow-md hover:shadow-lg w-max"
               >
@@ -66,3 +66,4 @@ const VendorBanner = () => {
 }
 
 export default VendorBanner
+

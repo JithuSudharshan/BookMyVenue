@@ -76,3 +76,4 @@ const VenueDetailPage = () => {
 };
 
 export default VenueDetailPage;
+

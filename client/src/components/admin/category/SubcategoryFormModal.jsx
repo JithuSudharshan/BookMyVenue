@@ -69,7 +69,7 @@ const SubcategoryFormModal = ({ isOpen, onClose, onSubmit, initialData, parentCa
         type="button"
         onClick={handleSubmit}
         disabled={loading}
-        className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-red-700 disabled:opacity-70 transition-colors flex items-center shadow-sm"
+        className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-primary/90 disabled:opacity-70 transition-colors flex items-center shadow-sm"
       >
         {loading ? 'Saving...' : 'Save'}
       </button>
@@ -112,3 +112,4 @@ const SubcategoryFormModal = ({ isOpen, onClose, onSubmit, initialData, parentCa
 };
 
 export default SubcategoryFormModal;
+

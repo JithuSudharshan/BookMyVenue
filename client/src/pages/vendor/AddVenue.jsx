@@ -790,7 +790,7 @@ const AddVenue = () => {
               <button
                 onClick={handleNext}
                 disabled={submitting}
-                className="bg-primary hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50"
               >
                 Next Step →
               </button>
@@ -806,7 +806,7 @@ const AddVenue = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="bg-primary hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -830,3 +830,4 @@ const AddVenue = () => {
 }
 
 export default AddVenue
+

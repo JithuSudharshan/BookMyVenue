@@ -90,7 +90,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-modal flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0">
           <h3 className="text-lg font-bold text-gray-900">
@@ -166,7 +166,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-red-700 disabled:opacity-70 transition-colors flex items-center shadow-sm"
+              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-primary/90 disabled:opacity-70 transition-colors flex items-center shadow-sm"
             >
               {loading ? 'Saving...' : 'Save Category'}
             </button>
@@ -179,3 +179,5 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 };
 
 export default CategoryFormModal;
+
+

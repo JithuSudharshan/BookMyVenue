@@ -130,3 +130,4 @@ const Step1PersonalInfo = ({ onNext }) => {
 };
 
 export default Step1PersonalInfo;
+

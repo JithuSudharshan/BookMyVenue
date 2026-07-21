@@ -113,7 +113,7 @@ const VenueManagement = () => {
         
         <button
           onClick={() => navigate('/vendor/venues/add')}
-          className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-red-700 transition-all shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap"
+          className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -279,3 +279,4 @@ const VenueManagement = () => {
 }
 
 export default VenueManagement
+

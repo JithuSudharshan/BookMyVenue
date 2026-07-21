@@ -177,7 +177,7 @@ const CategoryManagement = () => {
         <div className="flex flex-col items-end gap-3">
           <button
             onClick={() => setCategoryModal({ isOpen: true, data: null })}
-            className="flex items-center justify-center px-4 py-2 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors shadow-sm"
+            className="flex items-center justify-center px-4 py-2 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
           >
             <FiPlus className="mr-2" /> Add Category
           </button>
@@ -319,3 +319,4 @@ const CategoryManagement = () => {
 };
 
 export default CategoryManagement;
+

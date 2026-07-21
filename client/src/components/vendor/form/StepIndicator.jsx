@@ -59,3 +59,4 @@ const StepIndicator = ({ currentStep }) => {
 }
 
 export default StepIndicator
+

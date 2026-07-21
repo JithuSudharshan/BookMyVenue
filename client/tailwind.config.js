@@ -68,7 +68,7 @@ export default {
         "xl": "0.75rem",
         "full": "9999px"
       },
-      "spacing": {
+      "zIndex": { "navbar": "50", "dropdown": "60", "overlay": "70", "modal": "80", "popover": "90", "toast": "100" }, "spacing": {
         "gutter": "24px",
         "base": "8px",
         "stack-sm": "8px",
@@ -106,3 +106,4 @@ export default {
   },
   plugins: [],
 }
+

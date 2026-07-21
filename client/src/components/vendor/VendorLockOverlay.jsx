@@ -115,7 +115,7 @@ const VendorLockOverlay = () => {
   }
 
   return (
-    <div className="absolute inset-0 bg-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="absolute inset-0 bg-surface/40 backdrop-blur-sm z-overlay flex items-center justify-center p-4">
       <div className="bg-surface/90 border border-outline-variant p-10 rounded-[32px] shadow-2xl max-w-md w-full text-center">
         {icon}
         <h3 className="font-headline-md text-headline-md text-on-surface mb-3 tracking-tight">{title}</h3>
@@ -143,3 +143,5 @@ const VendorLockOverlay = () => {
 };
 
 export default VendorLockOverlay;
+
+

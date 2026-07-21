@@ -33,7 +33,7 @@ export const DashboardHeader = ({ sidebarOpen, setSidebarOpen, isVendor }) => {
         >
           {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-        <a href={brandLink} className="text-primary font-extrabold text-xl tracking-tight flex-shrink-0" style={{ textDecoration: 'none', marginLeft: '16px' }}>
+        <a href={brandLink} className="text-primary font-extrabold text-2xl tracking-tight flex-shrink-0" style={{ textDecoration: 'none', marginLeft: '16px' }}>
           BookMyVenue
         </a>
       </div>

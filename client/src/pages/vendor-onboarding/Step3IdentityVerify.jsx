@@ -118,3 +118,4 @@ const Step3IdentityVerify = ({ onBack, onSubmit, submitting }) => {
 };
 
 export default Step3IdentityVerify;
+

@@ -55,7 +55,7 @@ const Navbar = ({ scrolled = false }) => {
   const showCompactSearch = isHome && scrolled
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border h-[72px] flex items-center shadow-sm transition-all duration-300">
+    <nav className="sticky top-0 z-navbar bg-white/95 backdrop-blur-md border-b border-border h-[72px] flex items-center shadow-sm transition-all duration-300">
       <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center w-full gap-4">
 
         {/* Left: Logo */}
@@ -84,7 +84,7 @@ const Navbar = ({ scrolled = false }) => {
                 />
                 <button
                   onClick={handleCompactSearch}
-                  className="m-1.5 px-4 py-2 bg-primary hover:bg-red-700 text-white text-sm font-semibold rounded-full transition-colors flex-shrink-0"
+                  className="m-1.5 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold rounded-full transition-colors flex-shrink-0"
                 >
                   Search
                 </button>
@@ -178,7 +178,7 @@ const Navbar = ({ scrolled = false }) => {
                   <FiMenu className="w-4 h-4 text-dark" />
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-[60] animate-fade-in">
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-dropdown animate-fade-in">
                     <Link to="/login" onClick={() => setMenuOpen(false)} className="block px-5 py-3 text-sm font-semibold text-dark hover:bg-gray-50 transition-colors">
                       Log in
                     </Link>
@@ -210,7 +210,7 @@ const Navbar = ({ scrolled = false }) => {
               </button>
 
               {avatarOpen && (
-                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-[60] animate-fade-in">
+                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-dropdown animate-fade-in">
                   {user.role === 'customer' && (
                     <>
                       <Link to="/customer/profile" onClick={() => setAvatarOpen(false)} className="block px-5 py-3 text-sm font-medium text-dark hover:bg-gray-50 transition-colors">
@@ -269,4 +269,6 @@ const Navbar = ({ scrolled = false }) => {
 }
 
 export default Navbar
+
+
 

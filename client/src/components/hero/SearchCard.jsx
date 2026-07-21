@@ -141,7 +141,7 @@ const SearchCard = () => {
           <button
             onClick={handleSearch}
             className={`
-              flex items-center justify-center rounded-full bg-primary hover:bg-red-700
+              flex items-center justify-center rounded-full bg-primary hover:bg-primary/90
               text-white font-semibold transition-all duration-200 shadow-md hover:shadow-lg
               ${activeField
                 ? 'w-auto px-5 h-12 gap-2'
@@ -184,3 +184,4 @@ const SearchCard = () => {
 }
 
 export default SearchCard
+

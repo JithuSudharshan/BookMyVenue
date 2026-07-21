@@ -97,7 +97,7 @@ function VendorProfilePage() {
             firstName={profile?.firstName}
             lastName={profile?.lastName}
             onUploadSuccess={handleAvatarSuccess}
-            uploadApiFn={async (file) => vendorApi.updateAvatar(file)}
+            uploadApiFn={async (file) => { const res = await vendorApi.updateAvatar(file); return { profileImage: res.vendor?.profileImage || res.url }; }}
             deleteApiFn={async () => vendorApi.deleteAvatar()}
           />
         }
@@ -154,3 +154,5 @@ function VendorProfilePage() {
 }
 
 export default VendorProfilePage;
+
+

@@ -49,7 +49,7 @@ const BaseModal = ({
 
   return (
     <div 
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-black/50 p-4"
       onClick={handleBackdropClick}
       aria-modal="true"
       role="dialog"
@@ -87,3 +87,4 @@ const BaseModal = ({
 };
 
 export default BaseModal;
+
