@@ -7,7 +7,7 @@ import axiosInstance from '../axiosConfig';
 export const createVenue = async (payload) => {
   try {
     const response = await axiosInstance.post('/vendor/venues', payload)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error creating venue:', error)
     throw error
@@ -21,7 +21,7 @@ export const createVenue = async (payload) => {
 export const saveDraft = async (data) => {
   try {
     const response = await axiosInstance.post('/vendor/venues/draft', data)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error saving draft:', error)
     throw error
@@ -34,7 +34,7 @@ export const saveDraft = async (data) => {
 export const getVendorVenues = async (params = {}) => {
   try {
     const response = await axiosInstance.get('/vendor/venues', { params })
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error fetching vendor venues:', error)
     throw error
@@ -49,7 +49,7 @@ export const getVendorVenueById = async (id, action = null) => {
   try {
     const params = action ? { action } : {}
     const response = await axiosInstance.get(`/vendor/venues/${id}`, { params })
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error fetching vendor venue:', error)
     throw error
@@ -59,7 +59,7 @@ export const getVendorVenueById = async (id, action = null) => {
 export const updateVenue = async (id, data) => {
   try {
     const response = await axiosInstance.patch(`/vendor/venues/${id}`, data)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error updating venue:', error)
     throw error
@@ -69,7 +69,7 @@ export const updateVenue = async (id, data) => {
 export const submitVenue = async (id) => {
   try {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/submit`)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error submitting venue:', error)
     throw error
@@ -79,7 +79,7 @@ export const submitVenue = async (id) => {
 export const blockVenue = async (id) => {
   try {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/block`)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error blocking venue:', error)
     throw error
@@ -89,7 +89,7 @@ export const blockVenue = async (id) => {
 export const unblockVenue = async (id) => {
   try {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/unblock`)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error unblocking venue:', error)
     throw error
@@ -99,7 +99,7 @@ export const unblockVenue = async (id) => {
 export const updateDraft = async (id, data) => {
   try {
     const response = await axiosInstance.patch(`/vendor/venues/${id}/draft`, data)
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error updating draft:', error)
     throw error
@@ -109,7 +109,7 @@ export const updateDraft = async (id, data) => {
 export const getCategories = async () => {
   try {
     const response = await axiosInstance.get('/vendor/venues/categories')
-    return response.data.data
+    return response.data?.data;
   } catch (error) {
     console.error('Error fetching categories:', error)
     throw error
@@ -121,41 +121,41 @@ export const getCategories = async () => {
 export const vendorApi = {
   getOnboardingStatus: async () => {
     const response = await axiosInstance.get('/vendor/onboarding/status');
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   saveStep1: async (formData) => {
     const response = await axiosInstance.put('/vendor/onboarding/step/1', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   saveStep2: async (data) => {
     const response = await axiosInstance.put('/vendor/onboarding/step/2', data);
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   saveStep3: async (formData) => {
     const response = await axiosInstance.put('/vendor/onboarding/step/3', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   submitForReview: async () => {
     const response = await axiosInstance.post('/vendor/onboarding/submit');
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   getProfile: async () => {
     const response = await axiosInstance.get('/vendor/profile');
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   updateProfile: async (data) => {
     const response = await axiosInstance.put('/vendor/profile', data);
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   updateAvatar: async (file) => {
@@ -164,18 +164,19 @@ export const vendorApi = {
     const response = await axiosInstance.patch('/vendor/profile/avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   deleteAvatar: async () => {
     const response = await axiosInstance.delete('/vendor/profile/avatar');
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 
   updateIdentity: async (formData) => {
     const response = await axiosInstance.put('/vendor/profile/identity', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return response.data?.data ?? response.data;
   },
 };
+

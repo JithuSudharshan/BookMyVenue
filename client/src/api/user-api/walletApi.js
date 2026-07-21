@@ -9,8 +9,9 @@ import axiosInstance from '../axiosConfig.js';
 export const fetchWalletDetails = async (page = 1, limit = 10, filter = 'All') => {
   try {
     const response = await axiosInstance.get(`/wallet?page=${page}&limit=${limit}&filter=${filter}`);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch wallet details.');
   }
 };
+
