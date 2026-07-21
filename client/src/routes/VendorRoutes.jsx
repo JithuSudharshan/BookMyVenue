@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import VendorDashboard from '../pages/vendor/VendorDashboard';
 import VendorApplicationStatus from '../pages/vendor/VendorApplicationStatus';
 import VendorProfilePage from '../pages/vendor/VendorProfilePage';
-import MyVenuesPage from '../pages/vendor/VenueManagement';
+import VenueManagement from '../pages/vendor/VenueManagement';
 import AddVenue from '../pages/vendor/AddVenue';
 import VendorVenueDetailPage from '../pages/vendor/VendorVenueDetailPage';
 import VendorBookingsPage from '../pages/vendor/VendorBookingsPage';
@@ -20,7 +20,7 @@ const VendorRoutes = () => {
       <Route path="profile" element={<VendorProfilePage />} />
       
       {/* Venue Management */}
-      <Route path="venues" element={<MyVenuesPage />} />
+      <Route path="venues" element={<VenueManagement />} />
       <Route path="venues/add" element={<AddVenue />} />
       <Route path="venues/edit/:id" element={<AddVenue />} />
       <Route path="venues/:id" element={<VendorVenueDetailPage />} />
