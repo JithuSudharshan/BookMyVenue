@@ -46,11 +46,11 @@ const VerifyEmail = () => {
       // Explicitly route to the correct dashboard since this page is not under PublicRoute
       const role = userData.user?.role;
       if (role === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/admin/dashboard');
       } else if (role === 'vendor') {
-        navigate('/vendor-dashboard');
+        navigate('/vendor/dashboard');
       } else {
-        navigate('/home');
+        navigate('/');
       }
     } else {
       navigate('/login');

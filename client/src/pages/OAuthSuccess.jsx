@@ -17,11 +17,11 @@ const OAuthSuccess = () => {
     // Wait until loading finishes and user is populated
     if (!loading && user) {
       if (user.role === 'admin') {
-        navigate('/admin-dashboard', { replace: true });
+        navigate('/admin/dashboard', { replace: true });
       } else if (user.role === 'vendor') {
         navigate('/vendor/dashboard', { replace: true });
       } else {
-        navigate('/home', { replace: true });
+        navigate('/', { replace: true });
       }
     }
   }, [loading, user, navigate]);

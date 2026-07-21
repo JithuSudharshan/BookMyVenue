@@ -7,6 +7,10 @@ import AuthRedirect from './routes/AuthRedirect';
 import MainLayout from './layouts/MainLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 
+import UserRoutes from './routes/UserRoutes';
+import VendorRoutes from './routes/VendorRoutes';
+import AdminRoutes from './routes/AdminRoutes';
+
 // Pages
 import Login from './pages/Login';
 import SignupSelection from './pages/SignupSelection';
@@ -17,7 +21,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VendorDashboard from './pages/vendor/VendorDashboard';
 import VendorApplicationStatus from './pages/vendor/VendorApplicationStatus';
-import HomePage from './pages/HomePage';
+
 import ProfilePage from './pages/customer/ProfilePage';
 import BookingsPage from './pages/customer/BookingsPage';
 import WishlistPage from './pages/customer/WishlistPage';
@@ -26,7 +30,7 @@ import VendorSignup from './pages/VendorSignup';
 import VendorProfilePage from './pages/vendor/VendorProfilePage';
 import OAuthSuccess from './pages/OAuthSuccess';
 import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
-import MyVenuesPage from './pages/vendor/MyVenuesPage';
+import MyVenuesPage from './pages/vendor/VenueManagement';
 import VenueDetailPage from './pages/venues/VenueDetailPage';
 import VendorBookingsPage from './pages/vendor/VendorBookingsPage';
 import { Toaster } from 'sonner';
@@ -46,10 +50,10 @@ function App() {
           }
         }}
       />
-      <div className="font-sans antialiased text-dark bg-background min-h-screen">
+      <Router>
         <Routes>
-          {/* Root Redirect (Role-Based) */}
-          <Route path="/" element={<AuthRedirect />} />
+          {/* Dedicated Auth Redirect */}
+          <Route path="/auth-redirect" element={<AuthRedirect />} />
 
           {/* Public Routes (Only accessible if NOT logged in) */}
           <Route element={<PublicRoute />}>
@@ -65,12 +69,6 @@ function App() {
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
             <Route path="/oauth-success" element={<OAuthSuccess />} />
           </Route>
-
-          {/* Shared Post-Login Dummy Homepage */}
-          <Route element={<ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']} />}>
-            <Route path="/home" element={<HomePage />} />
-          </Route>
-
           {/* Protected Routes for Customers */}
           <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
             {/* Customer Dashboard — with sidebar layout */}
@@ -110,10 +108,13 @@ function App() {
           
           <Route path="/unauthorized" element={<Unauthorized />} />
           
+          {/* Public Discovery / User Routes (Includes Landing Page) */}
+          <Route path="/*" element={<UserRoutes />} />
+          
           {/* Fallback Catch-all Route (Redirects back to AuthRedirect) */}
           <Route path="*" element={<AuthRedirect />} />
         </Routes>
-      </div>
+      </Router>
     </AuthProvider>
   );
 }

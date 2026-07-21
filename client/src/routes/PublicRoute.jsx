@@ -8,7 +8,7 @@ const PublicRoute = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/auth-redirect" replace />;
   }
 
   return <Outlet />;

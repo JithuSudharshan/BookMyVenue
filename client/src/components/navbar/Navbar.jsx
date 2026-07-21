@@ -127,7 +127,7 @@ const Navbar = ({ scrolled = false }) => {
         <div className="flex items-center gap-2 flex-shrink-0" ref={menuRef}>
 
           <Link
-            to="/vendor/register"
+            to="/vendor-signup"
             className="hidden md:block px-4 py-2 text-sm font-semibold text-dark rounded-full hover:bg-gray-100 transition-colors whitespace-nowrap"
           >
             Become a Vendor

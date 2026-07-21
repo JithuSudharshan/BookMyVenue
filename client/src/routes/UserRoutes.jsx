@@ -9,6 +9,7 @@ const UserRoutes = () => {
       <Route path="/" element={<UserLayout />}>
         <Route index element={<Home />} />
         <Route path="venues" element={<VenueListingPage />} />
+        <Route path="venues/:id" element={<div>Loading venue...</div>} />
       </Route>
     </Routes>
   )

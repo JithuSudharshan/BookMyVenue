@@ -20,11 +20,11 @@ const AuthRedirect = () => {
 
   // Authenticated users go to their respective dashboards/home
   if (user.role === 'admin') {
-    return <Navigate to="/admin-dashboard" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   } else if (user.role === 'vendor') {
     return <Navigate to="/vendor/dashboard" replace />;
   }
-  return <Navigate to="/home" replace />;
+  return <Navigate to="/" replace />;
 };
 
 export default AuthRedirect;
