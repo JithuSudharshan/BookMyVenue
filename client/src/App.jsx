@@ -53,7 +53,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignupSelection />} />
             <Route path="/customer-signup" element={<CustomerSignup />} />
-            <Route path="/vendor-signup" element={<VendorSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             
@@ -62,6 +61,9 @@ function App() {
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
             <Route path="/oauth-success" element={<OAuthSuccess />} />
           </Route>
+
+          {/* Semi-Public Routes (Accessible by logged-in customers who want to become vendors) */}
+          <Route path="/vendor-signup" element={<VendorSignup />} />
           {/* Protected Routes for Customers */}
           <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
             {/* Customer Dashboard — with sidebar layout */}

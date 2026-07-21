@@ -224,12 +224,6 @@ const VenueManagement = () => {
               <p className="text-sm text-gray-400 mb-6">
                 {debouncedSearch ? `No venues match "${debouncedSearch}"` : `You have no venues in this category yet.`}
               </p>
-              <button
-                onClick={() => navigate('/vendor/venues/add')}
-                className="bg-primary text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors"
-              >
-                + Add New Venue
-              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

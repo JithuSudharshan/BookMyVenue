@@ -134,7 +134,7 @@ function BookingsPage() {
           <p className="bk-empty-subtitle">
             You haven't booked any venues yet. Explore venues and make your first booking!
           </p>
-          <a href="/home" className="bk-btn bk-btn-primary" style={{ marginTop: 20, textDecoration: 'none' }}>
+          <a href="/" className="bk-btn bk-btn-primary" style={{ marginTop: 20, textDecoration: 'none' }}>
             Explore Venues
           </a>
         </div>

@@ -106,6 +106,27 @@ export const getVendorProfile = async (req, res) => {
   }
 };
 
+export const updateAvatar = async (req, res) => {
+  try {
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    const updatedVendor = await vendorRepository.updateProfile(req.user._id, { profileImage: req.file.path });
+    res.json({ success: true, url: req.file.path, vendor: updatedVendor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const deleteAvatar = async (req, res) => {
+  try {
+    const updatedVendor = await vendorRepository.updateProfile(req.user._id, { profileImage: '' });
+    res.json({ success: true, vendor: updatedVendor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 export const updateProfile = async (req, res) => {
   try {
     const { personalInfo, address } = req.body;

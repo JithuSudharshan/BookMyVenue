@@ -55,7 +55,7 @@ const Navbar = ({ scrolled = false }) => {
   const showCompactSearch = isHome && scrolled
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-border h-[72px] flex items-center shadow-sm transition-all duration-300">
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border h-[72px] flex items-center shadow-sm transition-all duration-300">
       <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center w-full gap-4">
 
         {/* Left: Logo */}

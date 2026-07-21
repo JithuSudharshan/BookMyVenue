@@ -158,6 +158,20 @@ export const vendorApi = {
     return response.data;
   },
 
+  updateAvatar: async (file) => {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    const response = await axiosInstance.patch('/vendor/profile/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  deleteAvatar: async () => {
+    const response = await axiosInstance.delete('/vendor/profile/avatar');
+    return response.data;
+  },
+
   updateIdentity: async (formData) => {
     const response = await axiosInstance.put('/vendor/profile/identity', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

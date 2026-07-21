@@ -91,7 +91,7 @@ const VenueDetailPage = () => {
         <div className="md:col-span-3 aspect-video md:h-[440px] rounded-3xl overflow-hidden shadow-md relative group">
           {venue.images && venue.images.length > 0 ? (
             <img
-              src={venue.images[selectedImage]}
+              src={venue.images[selectedImage]?.url || venue.images[selectedImage]}
               alt="Venue view"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -114,7 +114,7 @@ const VenueDetailPage = () => {
                     : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={img} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
+                <img src={img?.url || img} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -133,7 +133,7 @@ const VenueDetailPage = () => {
             <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
               <IndianRupee className="w-6 h-6 text-primary mx-auto mb-2" />
               <p className="font-label-sm text-on-surface-variant mb-1">Base Price</p>
-              <p className="font-title-md text-on-surface">₹{venue.pricing?.toLocaleString()}</p>
+              <p className="font-title-md text-on-surface">₹{venue.price?.toLocaleString('en-IN')}</p>
             </div>
             <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
               <Calendar className="w-6 h-6 text-primary mx-auto mb-2" />
@@ -182,7 +182,7 @@ const VenueDetailPage = () => {
                       <Clock3 className="w-4 h-4 text-primary" />
                       <span className="font-label-sm">Starting from</span>
                    </div>
-                   <span className="font-title-md text-primary">₹{venue.pricing?.toLocaleString()}</span>
+                   <span className="font-title-md text-primary">₹{venue.price?.toLocaleString('en-IN')}</span>
                 </div>
                 
                 <button

@@ -65,8 +65,8 @@ function DashboardLayout() {
         : VENDOR_NAV_ITEMS)
     : CUSTOMER_NAV_ITEMS;
 
-  const brandText = isVendor ? 'BookMyVenue Vendor' : 'BookMyVenue';
-  const brandLink = isVendor ? '/vendor/dashboard' : '/home';
+  const brandText = 'BookMyVenue';
+  const brandLink = isVendor ? '/vendor/dashboard' : '/';
   const profileLink = isVendor ? '/vendor/profile' : '/customer/profile';
   const sectionLabel = isVendor ? 'Vendor Portal' : 'My Account';
 
@@ -82,9 +82,8 @@ function DashboardLayout() {
           >
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <a href={brandLink} className="dl-brand">
-            <span className="dl-brand-icon">📍</span>
-            <span className="dl-brand-text">{brandText}</span>
+          <a href={brandLink} className="text-primary font-extrabold text-xl tracking-tight flex-shrink-0" style={{ textDecoration: 'none', marginLeft: '16px' }}>
+            BookMyVenue
           </a>
         </div>
 

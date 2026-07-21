@@ -99,7 +99,7 @@ function WishlistPage() {
           <p className="wl-empty-subtitle">
             Tap the heart icon on any venue to save it to your wishlist.
           </p>
-          <a href="/home" className="wl-empty-btn">
+          <a href="/" className="wl-empty-btn">
             Discover Venues
           </a>
         </div>
@@ -109,7 +109,8 @@ function WishlistPage() {
             {sortedWishlist.map((item) => {
               const venue = item.venueId || {};
               const isRemoving = removingId === item._id;
-              const image = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
+              const imageObj = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
+              const image = imageObj?.url || imageObj;
 
               return (
                 <div key={item._id} className="wl-card" style={{ opacity: isRemoving ? 0.6 : 1 }}>
@@ -154,7 +155,7 @@ function WishlistPage() {
                       {venue.capacity && (
                         <div className="wl-stat-chip">
                           <Users size={14} className="text-on-surface-variant" />
-                          <span>{venue.capacity} Guests</span>
+                          <span>Up to {venue.capacity} guests</span>
                         </div>
                       )}
                       {/* You can add Rating or other badges here later if backend provides it */}
@@ -162,15 +163,15 @@ function WishlistPage() {
 
                     <div className="wl-card-footer">
                       <div className="wl-price">
-                        {venue.pricing ? (
+                        {venue.price ? (
                           <>
-                            ₹{venue.pricing.toLocaleString('en-IN')} <span className="wl-price-label">/ day</span>
+                            ₹{venue.price.toLocaleString('en-IN')} <span className="wl-price-label">/ day</span>
                           </>
                         ) : (
                           <span className="wl-price-label">Price on request</span>
                         )}
                       </div>
-                      <a href={`/venue/${venue._id}`} className="wl-action-btn">
+                      <a href={`/venues/${venue._id}`} className="wl-action-btn">
                         View Details
                       </a>
                     </div>
