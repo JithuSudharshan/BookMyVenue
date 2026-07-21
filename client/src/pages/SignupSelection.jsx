@@ -22,9 +22,9 @@ const SignupSelection = () => {
         login(); // Context login to load user and set state
         toast.success('Account created successfully!');
         
-        if (role === 'admin') navigate('/admin-dashboard', { replace: true });
-        else if (role === 'vendor') navigate('/vendor-dashboard', { replace: true });
-        else navigate('/home', { replace: true });
+        if (role === 'admin') navigate('/admin/dashboard', { replace: true });
+        else if (role === 'vendor') navigate('/vendor/dashboard', { replace: true });
+        else navigate('/', { replace: true });
       } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to complete Google Sign-Up.');
         setLoading(false);
@@ -97,3 +97,4 @@ const SignupSelection = () => {
 };
 
 export default SignupSelection;
+

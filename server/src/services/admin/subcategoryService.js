@@ -2,11 +2,12 @@ import { normalizeName } from "../../utils/normalizeName.js";
 
 import {
     createSubcategoryRepository,
-    getSubcategoriesRepository,
     getSubcategoryByNameRepository,
     getSubcategoryByIdRepository,
     updateSubcategoryRepository,
-    toggleSubcategoryStatusRepository
+    toggleSubcategoryStatusRepository,
+    countVenuesBySubcategoryRepository,
+    deleteSubcategoryRepository
 } from "../../repositories/admin/subcategoryRepository.js";
 
 import {
@@ -70,15 +71,6 @@ export const createSubcategoryService =
             name: normalizedName
         });
     };
-
-
-
-export const getSubcategoriesService =
-    async () => {
-
-        return await getSubcategoriesRepository();
-    };
-
 
 
 export const updateSubcategoryService =
@@ -166,3 +158,20 @@ export const toggleSubcategoryStatusService =
             isActive
         );
     };
+
+export const deleteSubcategoryService = async (subcategoryId) => {
+    const subcategory = await getSubcategoryByIdRepository(subcategoryId);
+    if (!subcategory) {
+        throw new Error("Subcategory not found");
+    }
+
+    // FK guard: check if any venues are linked
+    const venueCount = await countVenuesBySubcategoryRepository(subcategoryId);
+    if (venueCount > 0) {
+        throw new Error(
+            `Cannot delete: ${venueCount} venue${venueCount > 1 ? 's are' : ' is'} linked to this subcategory. Unpublish it instead.`
+        );
+    }
+
+    return await deleteSubcategoryRepository(subcategoryId);
+};

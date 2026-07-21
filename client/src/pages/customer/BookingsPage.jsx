@@ -60,15 +60,15 @@ function BookingsPage() {
     switch (status?.toLowerCase()) {
       case 'confirmed':
       case 'completed':
-        return { bg: '#e6f4ea', text: '#1e8e3e' };
+        return { bg: 'bg-success/10', text: 'text-success' };
       case 'pending':
-        return { bg: '#fef7e0', text: '#b06000' };
+        return { bg: 'bg-warning/10', text: 'text-warning' };
       case 'cancelled':
-        return { bg: '#fce8e6', text: '#d93025' };
+        return { bg: 'bg-error-container', text: 'text-error' };
       case 'refunded':
-        return { bg: '#e8f0fe', text: '#1a73e8' };
+        return { bg: 'bg-info/10', text: 'text-info' };
       default:
-        return { bg: '#f1f3f4', text: '#5f6368' };
+        return { bg: 'bg-surface-container', text: 'text-on-surface-variant' };
     }
   };
 
@@ -89,8 +89,8 @@ function BookingsPage() {
 
   if (loading && bookings.length === 0) {
     return (
-      <div className="bk-page" style={{ textAlign: 'center', paddingTop: 80 }}>
-        <p style={{ color: '#717171' }}>Loading bookings...</p>
+      <div className="bk-page flex flex-col items-center pt-20">
+        <p className="text-on-surface-variant font-body-md">Loading bookings...</p>
       </div>
     );
   }
@@ -105,7 +105,7 @@ function BookingsPage() {
 
 
       {error && (
-        <div style={{ padding: 16, background: '#fce8e6', color: '#d93025', borderRadius: 8, marginBottom: 24 }}>
+        <div className="p-4 bg-error-container text-on-error-container rounded-lg mb-6">
           {error}
         </div>
       )}
@@ -134,14 +134,14 @@ function BookingsPage() {
           <p className="bk-empty-subtitle">
             You haven't booked any venues yet. Explore venues and make your first booking!
           </p>
-          <a href="/home" className="bk-btn bk-btn-primary" style={{ marginTop: 20, textDecoration: 'none' }}>
+          <a href="/" className="bk-btn bk-btn-primary" style={{ marginTop: 20, textDecoration: 'none' }}>
             Explore Venues
           </a>
         </div>
       ) : (
         <div className="bk-list">
           {bookings.length === 0 && !loading && (
-            <div style={{ padding: 40, textAlign: 'center', color: '#717171' }}>
+            <div className="p-10 text-center text-on-surface-variant">
               No bookings found for the selected filter.
             </div>
           )}
@@ -165,8 +165,8 @@ function BookingsPage() {
                     {image ? (
                       <img src={image} alt={venueName} className="bk-card-img" />
                     ) : (
-                      <div className="bk-card-no-img" style={{ width: '100%', height: '100%', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0a0a0' }}>
-                        <ImageIcon size={32} />
+                      <div className="bk-card-no-img w-full h-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+                        <Calendar size={32} />
                       </div>
                     )}
                   </div>
@@ -185,14 +185,14 @@ function BookingsPage() {
                       </div>
                       <div className="bk-badges" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', color: '#717171', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Booking</span>
-                          <span className="bk-badge" style={{ background: bookingStatusStyle.bg, color: bookingStatusStyle.text }}>
+                          <span className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-wider">Booking</span>
+                          <span className={`bk-badge ${bookingStatusStyle.bg} ${bookingStatusStyle.text}`}>
                             {getStatusIcon(booking.bookingStatus)} {booking.bookingStatus}
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', color: '#717171', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payment</span>
-                          <span className="bk-badge" style={{ background: paymentStatusStyle.bg, color: paymentStatusStyle.text }}>
+                          <span className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-wider">Payment</span>
+                          <span className={`bk-badge ${paymentStatusStyle.bg} ${paymentStatusStyle.text}`}>
                             {booking.paymentStatus}
                           </span>
                         </div>
@@ -239,13 +239,13 @@ function BookingsPage() {
 
                 {/* Actions Footer */}
                 <div className="bk-card-footer">
-                  <button className="bk-btn bk-btn-outline" onClick={() => console.log('Contact Venue')}>
+                  <button className="bk-btn bk-btn-outline" onClick={() => {}}>
                     <MessageSquare size={16} /> Contact Venue
                   </button>
-                  <button className="bk-btn bk-btn-outline" onClick={() => console.log('Download Receipt')}>
+                  <button className="bk-btn bk-btn-outline" onClick={() => {}}>
                     <FileText size={16} /> Receipt
                   </button>
-                  <button className="bk-btn bk-btn-primary" onClick={() => console.log('View Details')}>
+                  <button className="bk-btn bk-btn-primary" onClick={() => {}}>
                     View Details
                   </button>
                 </div>
@@ -274,3 +274,4 @@ function BookingsPage() {
 }
 
 export default BookingsPage;
+

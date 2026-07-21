@@ -1,7 +1,7 @@
 import express from "express";
 
-import categoryRoutes from "./categoryRoutes.js";
-import subcategoryRoutes from "./subcategoryRoutes.js";
+import categoryRoutes from "./categoryRoute.js";
+import subcategoryRoutes from "./subcategoryRoute.js";
 
 const router = express.Router();
 

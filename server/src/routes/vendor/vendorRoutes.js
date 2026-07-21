@@ -11,7 +11,9 @@ import {
   submitForReview,
   getVendorProfile,
   updateProfile,
-  updateIdentity
+  updateIdentity,
+  updateAvatar,
+  deleteAvatar
 } from '../../controllers/vendorController.js';
 
 const router = express.Router();
@@ -48,6 +50,12 @@ router.get('/profile', getVendorProfile);
 
 // Update general profile details (Personal Info & Address)
 router.put('/profile', validateProfileUpdate, updateProfile);
+
+// Update/Delete vendor avatar
+router
+  .route('/profile/avatar')
+  .patch(uploadProfileImage.single('profileImage'), updateAvatar)
+  .delete(deleteAvatar);
 
 // Update identity details + replace document file in Cloudinary
 router.put(

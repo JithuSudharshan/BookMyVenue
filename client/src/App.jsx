@@ -1,11 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './store/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
 import AuthRedirect from './routes/AuthRedirect';
-import MainLayout from './layouts/MainLayout';
+
 import DashboardLayout from './layouts/DashboardLayout';
+
+import UserRoutes from './routes/UserRoutes';
+import VendorRoutes from './routes/VendorRoutes';
+import AdminRoutes from './routes/AdminRoutes';
 
 // Pages
 import Login from './pages/Login';
@@ -15,23 +19,17 @@ import PendingVerification from './pages/PendingVerification';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import VendorDashboard from './pages/vendor/VendorDashboard';
-import VendorApplicationStatus from './pages/vendor/VendorApplicationStatus';
-import HomePage from './pages/HomePage';
 import ProfilePage from './pages/customer/ProfilePage';
 import BookingsPage from './pages/customer/BookingsPage';
 import WishlistPage from './pages/customer/WishlistPage';
 import WalletPage from './pages/common/WalletPage';
-import VendorSignup from './pages/VendorSignup';
-import VendorProfilePage from './pages/vendor/VendorProfilePage';
+import NotFound from './pages/common/NotFound';
 import OAuthSuccess from './pages/OAuthSuccess';
+import VendorSignup from './pages/VendorSignup';
 import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
-import MyVenuesPage from './pages/vendor/MyVenuesPage';
-import VenueDetailPage from './pages/venues/VenueDetailPage';
-import VendorBookingsPage from './pages/vendor/VendorBookingsPage';
 import { Toaster } from 'sonner';
-
-const Unauthorized = () => <div className="p-8 text-error">You are not authorized to view this page.</div>;
+import { ROLES } from './utils/roles';
+import Unauthorized from './pages/common/Unauthorized';
 
 function App() {
   return (
@@ -48,15 +46,14 @@ function App() {
       />
       <Router>
         <Routes>
-          {/* Root Redirect (Role-Based) */}
-          <Route path="/" element={<AuthRedirect />} />
+          {/* Dedicated Auth Redirect */}
+          <Route path="/auth-redirect" element={<AuthRedirect />} />
 
           {/* Public Routes (Only accessible if NOT logged in) */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignupSelection />} />
             <Route path="/customer-signup" element={<CustomerSignup />} />
-            <Route path="/vendor-signup" element={<VendorSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             
@@ -66,13 +63,10 @@ function App() {
             <Route path="/oauth-success" element={<OAuthSuccess />} />
           </Route>
 
-          {/* Shared Post-Login Dummy Homepage */}
-          <Route element={<ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']} />}>
-            <Route path="/home" element={<HomePage />} />
-          </Route>
-
+          {/* Semi-Public Routes (Accessible by logged-in customers who want to become vendors) */}
+          <Route path="/vendor-signup" element={<VendorSignup />} />
           {/* Protected Routes for Customers */}
-          <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.CUSTOMER]} />}>
             {/* Customer Dashboard — with sidebar layout */}
             <Route element={<DashboardLayout />}>
               <Route path="/customer/profile" element={<ProfilePage />} />
@@ -83,17 +77,18 @@ function App() {
           </Route>
 
           {/* Protected Routes for Vendors */}
-          <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-              <Route path="/vendor/application-status" element={<VendorApplicationStatus />} />
-              <Route path="/vendor/profile" element={<VendorProfilePage />} />
-              <Route path="/vendor/venues" element={<MyVenuesPage />} />
-              <Route path="/vendor/venues/:id" element={<VenueDetailPage />} />
-              <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
-              <Route path="/vendor/wallet" element={<WalletPage />} />
-            </Route>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.VENDOR]} />}>
             <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
+            <Route element={<DashboardLayout />}>
+              {/* Vendor Sub-router handles dashboard, venues, bookings, profile, etc. */}
+              <Route path="/vendor/*" element={<VendorRoutes />} />
+            </Route>
+          </Route>
+
+          {/* Protected Routes for Admins */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
+            {/* Admin Sub-router */}
+            <Route path="/admin/*" element={<AdminRoutes />} />
           </Route>
 
           {/* Public/Shared Venue Routes */}
@@ -101,8 +96,11 @@ function App() {
           
           <Route path="/unauthorized" element={<Unauthorized />} />
           
-          {/* Fallback Catch-all Route (Redirects back to AuthRedirect) */}
-          <Route path="*" element={<AuthRedirect />} />
+          {/* Public Discovery / User Routes (Includes Landing Page) */}
+          <Route path="/*" element={<UserRoutes />} />
+          
+          {/* Fallback Catch-all Route (Redirects to 404 Page) */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

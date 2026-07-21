@@ -40,22 +40,34 @@ export const findVendorVenuesSSFP = async ({
         matchStage.bookingModel = bookingModel;
     }
 
-    if (approvalStatus) {
-        if (Array.isArray(approvalStatus)) {
-            matchStage['approval.status'] = { $in: approvalStatus };
-        } else {
-            matchStage['approval.status'] = approvalStatus;
-        }
-    }
+    // Notice: We do NOT add approvalStatus to matchStage here.
+    // We want the global matchStage to get counts for all statuses.
+
+    // Create a specific match stage for filtering the actual venues and total count
+    const venueFilterStage = approvalStatus 
+        ? { $match: { 'approval.status': Array.isArray(approvalStatus) ? { $in: approvalStatus } : approvalStatus } }
+        : { $match: {} };
 
     // 2. Build highly optimized aggregation pipeline
     const pipeline = [
         { $match: matchStage },
-        { $sort: { [sortField]: sortOrder } },
         {
             $facet: {
-                metadata: [{ $count: 'totalCount' }],
+                counts: [
+                    {
+                        $group: {
+                            _id: '$approval.status',
+                            count: { $sum: 1 }
+                        }
+                    }
+                ],
+                metadata: [
+                    venueFilterStage,
+                    { $count: 'totalCount' }
+                ],
                 venues: [
+                    venueFilterStage,
+                    { $sort: { [sortField]: sortOrder } },
                     { $skip: skip },
                     { $limit: limit },
                     // Optimization: Lookups only happen for the 6 paginated documents, not the whole collection
@@ -115,6 +127,7 @@ export const findVendorVenuesSSFP = async ({
                             name: 1,
                             slug: 1,
                             'location.city': 1,
+                            'location.state': 1,
                             price: 1,
                             capacity: 1,
                             bookingModel: 1,
@@ -136,8 +149,23 @@ export const findVendorVenuesSSFP = async ({
     // Format output cleanly
     const totalCount = result[0].metadata[0] ? result[0].metadata[0].totalCount : 0;
     const venues = result[0].venues;
+    
+    // Map counts array to a simple object
+    const countsObj = {
+        approved: 0,
+        under_review: 0,
+        submitted: 0,
+        draft: 0,
+        rejected: 0
+    };
+    
+    result[0].counts.forEach(c => {
+        if (c._id && countsObj[c._id] !== undefined) {
+            countsObj[c._id] = c.count;
+        }
+    });
 
-    return { totalCount, venues };
+    return { totalCount, venues, counts: countsObj };
 };
 
 export const updateVenue = async (venueId, updateData) => {

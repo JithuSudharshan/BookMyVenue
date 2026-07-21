@@ -84,24 +84,7 @@ export const saveDraft = async (vendorId, venueId, venueData) => {
     }
 };
 
-export const getDrafts = async (vendorId) => {
-    return await venueRepository.findVendorVenuesSSFP({
-        vendorId,
-        approvalStatus: ['draft', 'rejected']
-    });
-};
 
-export const continueDraft = async (vendorId, venueId) => {
-    const venue = await venueRepository.findVenueById(venueId);
-    if (!venue) throw new AppError("Draft not found", 404);
-    if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
-
-    if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
-        throw new AppError("This venue is not a draft", 400);
-    }
-
-    return venue;
-};
 
 // --- SUBMISSION LOGIC ---
 
@@ -109,6 +92,10 @@ export const submitVenueService = async (vendorId, venueId) => {
     const venue = await venueRepository.findVenueById(venueId);
     if (!venue) throw new AppError("Venue not found", 404);
     if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
+
+    if (venue.approval.status === 'submitted') {
+        return venue;
+    }
 
     if (venue.approval.status !== 'draft' && venue.approval.status !== 'rejected') {
         throw new AppError("Only drafts or rejected venues can be submitted", 400);
@@ -149,6 +136,10 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
     if (!venue) throw new AppError("Venue not found", 404);
     if (venue.vendorId.toString() !== vendorId.toString()) throw new AppError("Forbidden", 403);
 
+    if (venue.approval?.status === 'under_review') {
+        throw new ApiError(400, "Cannot edit a venue while it is under review by the admin.");
+    }
+
     // Protect core status fields from generic updates
     delete updateData.approval;
     delete updateData.venueStatus;
@@ -165,6 +156,15 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
     await validateVenueBusinessRules(updateData);
 
     venue.set(updateData);
+
+    // Revert status to submitted if it's not a draft
+    if (venue.approval?.status !== 'draft') {
+        venue.approval.status = 'submitted';
+        venue.approval.submittedAt = new Date();
+        venue.approval.rejectionReason = null;
+        venue.venueStatus = 'inactive'; // Force unbookable until re-approved
+    }
+
     return await venue.save();
 };
 
@@ -178,7 +178,7 @@ export const getVenueByIdService = async (vendorId, venueId) => {
 export const getVendorVenuesService = async (vendorId, queryParams = {}) => {
     // 1. Extract params
     const search = queryParams.search ? queryParams.search.trim() : null;
-    const venueStatus = queryParams.venueStatus || null;
+    let venueStatus = queryParams.venueStatus || null;
     const bookingModel = queryParams.bookingModel || null;
     let approvalStatus = queryParams.approvalStatus || null;
     const sort = queryParams.sort || 'new'; // 'new', 'old', 'price_low', 'price_high'
@@ -190,18 +190,22 @@ export const getVendorVenuesService = async (vendorId, queryParams = {}) => {
     let sortOrder = -1;
 
     switch (sort) {
+        case 'oldest':
         case 'old':
             sortField = 'updatedAt';
             sortOrder = 1;
             break;
+        case 'price_asc':
         case 'price_low':
             sortField = 'price';
             sortOrder = 1;
             break;
+        case 'price_desc':
         case 'price_high':
             sortField = 'price';
             sortOrder = -1;
             break;
+        case 'newest':
         case 'new':
         default:
             sortField = 'updatedAt';
@@ -212,18 +216,31 @@ export const getVendorVenuesService = async (vendorId, queryParams = {}) => {
     const skip = Math.max(0, (page - 1) * limit);
     const validLimit = Math.max(1, Math.min(limit, 50)); // Cap at 50
 
-    // Default to 'approved' if no tab is selected on opening page
-    if (!approvalStatus && !queryParams.status) {
-        approvalStatus = 'approved';
+    // Map frontend 'status' query to 'approvalStatus' enum
+    const statusMap = {
+        'approved': 'approved',
+        'under review': 'under_review',
+        'submitted': 'submitted',
+        'draft': ['draft', 'rejected'],
+        'rejected': 'rejected'
+    };
+
+    if (queryParams.status && statusMap[queryParams.status]) {
+        approvalStatus = statusMap[queryParams.status];
+    } else if (!approvalStatus) {
+        approvalStatus = 'approved'; // Default
     }
 
-    // Compatibility for old `?status=draft` query
-    if (queryParams.status === 'draft') {
-        approvalStatus = ['draft', 'rejected'];
+    // Only apply active/inactive filtering if we are in the 'approved' tab
+    if (approvalStatus === 'approved') {
+        if (queryParams.isActive === 'true') venueStatus = 'active';
+        else if (queryParams.isActive === 'false') venueStatus = 'inactive';
+    } else {
+        venueStatus = null; // Ignore venueStatus for drafts/rejected/submitted
     }
 
     // 3. Call Repository
-    return await venueRepository.findVendorVenuesSSFP({
+    const { totalCount, venues, counts } = await venueRepository.findVendorVenuesSSFP({
         vendorId,
         search,
         venueStatus,
@@ -234,6 +251,17 @@ export const getVendorVenuesService = async (vendorId, queryParams = {}) => {
         skip,
         limit: validLimit
     });
+
+    return {
+        venues,
+        counts,
+        pagination: {
+            totalItems: totalCount,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / limit),
+            limit: validLimit
+        }
+    };
 };
 
 export const blockVenueService = async (vendorId, venueId) => {

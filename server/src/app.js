@@ -24,6 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(passport.initialize());
 
+// Global API Response Formatter
+import { responseFormatter } from './middlewares/responseFormatter.js';
+app.use(responseFormatter);
+
 // ── Routes ─────────────────────────────────────────────
 app.use('/api/auth',     authRoutes);
 app.use('/api/wallet',   walletRoutes);

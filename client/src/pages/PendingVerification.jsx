@@ -114,3 +114,4 @@ const PendingVerification = () => {
 };
 
 export default PendingVerification;
+

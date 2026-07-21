@@ -7,7 +7,7 @@ import axiosInstance from '../axiosConfig.js';
 export const getProfile = async () => {
   try {
     const response = await axiosInstance.get('/customer/profile');
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch user profile.');
   }
@@ -21,7 +21,7 @@ export const getProfile = async () => {
 export const updateProfile = async (updatedData) => {
   try {
     const response = await axiosInstance.put('/customer/profile', updatedData);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to update user profile.');
   }
@@ -35,7 +35,7 @@ export const updateProfile = async (updatedData) => {
 export const updatePersonalInfo = async (data) => {
   try {
     const response = await axiosInstance.put('/customer/profile/personal', data);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to update personal information.');
   }
@@ -49,7 +49,7 @@ export const updatePersonalInfo = async (data) => {
 export const updateAddress = async (data) => {
   try {
     const response = await axiosInstance.put('/customer/profile/address', data);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to update address.');
   }
@@ -69,7 +69,7 @@ export const uploadAvatar = async (file) => {
         'Content-Type': 'multipart/form-data'
       }
     });
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to upload avatar.');
   }
@@ -82,8 +82,9 @@ export const uploadAvatar = async (file) => {
 export const deleteAvatar = async () => {
   try {
     const response = await axiosInstance.delete('/customer/profile/avatar');
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to remove avatar.');
   }
 };
+

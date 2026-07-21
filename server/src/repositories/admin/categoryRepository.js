@@ -15,9 +15,8 @@ export const getCategoriesRepository = async ({
 
     const matchStage = {};
 
-    if (status && status !== "all") {
-        matchStage.isActive = status === "active";
-    }
+    if (status === "active") matchStage.isActive = true;
+    else if (status === "inactive") matchStage.isActive = false;
 
     const pipeline = [
         {
@@ -62,7 +61,6 @@ export const getCategoriesRepository = async ({
             $project: {
                 name: 1,
                 image: 1,
-                description: 1,
                 isActive: 1,
                 createdAt: 1,
                 subcategories: {
@@ -102,9 +100,8 @@ export const getCategoriesCountRepository = async ({
 
     const match = {};
 
-    if (status && status !== "all") {
-        match.isActive = status === "active";
-    }
+    if (status === "active") match.isActive = true;
+    else if (status === "inactive") match.isActive = false;
 
     const pipeline = [
         {

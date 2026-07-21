@@ -58,8 +58,8 @@ function WishlistPage() {
 
   if (loading && wishlist.length === 0) {
     return (
-      <div className="wl-page" style={{ textAlign: 'center', paddingTop: 80 }}>
-        <p style={{ color: '#717171' }}>Loading wishlist...</p>
+      <div className="wl-page flex flex-col items-center pt-20">
+        <p className="text-on-surface-variant font-body-md">Loading wishlist...</p>
       </div>
     );
   }
@@ -74,7 +74,7 @@ function WishlistPage() {
             Venues you've saved for later. Revisit and book when you're ready.
           </p>
           {!loading && totalItems > 0 && (
-            <p style={{ marginTop: '8px', fontSize: '13px', color: '#717171' }}>
+            <p className="mt-2 text-[13px] text-on-surface-variant">
               Showing {wishlist.length > 0 ? (page - 1) * LIMIT + 1 : 0} - {(page - 1) * LIMIT + wishlist.length} of {totalItems} venues
             </p>
           )}
@@ -84,7 +84,7 @@ function WishlistPage() {
       </div>
 
       {error && (
-        <div style={{ padding: 16, background: '#fce8e6', color: '#d93025', borderRadius: 8, marginBottom: 24 }}>
+        <div className="p-4 bg-error-container text-on-error-container rounded-lg mb-6">
           {error}
         </div>
       )}
@@ -99,7 +99,7 @@ function WishlistPage() {
           <p className="wl-empty-subtitle">
             Tap the heart icon on any venue to save it to your wishlist.
           </p>
-          <a href="/home" className="wl-empty-btn">
+          <a href="/" className="wl-empty-btn">
             Discover Venues
           </a>
         </div>
@@ -109,7 +109,8 @@ function WishlistPage() {
             {sortedWishlist.map((item) => {
               const venue = item.venueId || {};
               const isRemoving = removingId === item._id;
-              const image = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
+              const imageObj = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
+              const image = imageObj?.url || imageObj;
 
               return (
                 <div key={item._id} className="wl-card" style={{ opacity: isRemoving ? 0.6 : 1 }}>
@@ -118,7 +119,7 @@ function WishlistPage() {
                     {image ? (
                       <img src={image} alt={venue.name} className="wl-card-img" />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', color: '#a0a0a0' }}>
+                      <div className="w-full h-full flex items-center justify-center bg-surface-container text-on-surface-variant">
                         <ImageIcon size={40} />
                       </div>
                     )}
@@ -144,15 +145,17 @@ function WishlistPage() {
                     {venue.location && (
                       <div className="wl-venue-loc">
                         <MapPin size={14} />
-                        {venue.location}
+                        {typeof venue.location === 'object' && venue.location !== null
+                          ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
+                          : venue.location}
                       </div>
                     )}
 
                     <div className="wl-venue-stats">
                       {venue.capacity && (
                         <div className="wl-stat-chip">
-                          <Users size={14} color="#717171" />
-                          <span>{venue.capacity} Guests</span>
+                          <Users size={14} className="text-on-surface-variant" />
+                          <span>Up to {venue.capacity} guests</span>
                         </div>
                       )}
                       {/* You can add Rating or other badges here later if backend provides it */}
@@ -160,15 +163,15 @@ function WishlistPage() {
 
                     <div className="wl-card-footer">
                       <div className="wl-price">
-                        {venue.pricing ? (
+                        {venue.price ? (
                           <>
-                            ₹{venue.pricing.toLocaleString('en-IN')} <span className="wl-price-label">/ day</span>
+                            ₹{venue.price.toLocaleString('en-IN')} <span className="wl-price-label">/ day</span>
                           </>
                         ) : (
                           <span className="wl-price-label">Price on request</span>
                         )}
                       </div>
-                      <a href={`/venue/${venue._id}`} className="wl-action-btn">
+                      <a href={`/venues/${venue._id}`} className="wl-action-btn">
                         View Details
                       </a>
                     </div>
@@ -182,21 +185,19 @@ function WishlistPage() {
           {totalPages > 1 && (
             <div className="wl-pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '32px' }}>
               <button
-                className="wl-page-btn"
+                className={`flex items-center justify-center w-9 h-9 rounded-full border ${page === 1 ? 'bg-surface-container border-outline-variant text-on-surface-variant cursor-not-allowed' : 'bg-surface-container-lowest border-outline-variant text-on-surface cursor-pointer'}`}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e0e0', background: page === 1 ? '#f5f5f5' : '#fff', cursor: page === 1 ? 'not-allowed' : 'pointer', color: page === 1 ? '#a0a0a0' : '#222' }}
               >
                 <ChevronLeft size={20} />
               </button>
-              <span className="wl-page-text" style={{ fontSize: '14px', color: '#717171', fontWeight: 500 }}>
+              <span className="text-sm font-medium text-on-surface-variant">
                 Page {page} of {totalPages}
               </span>
               <button
-                className="wl-page-btn"
+                className={`flex items-center justify-center w-9 h-9 rounded-full border ${page === totalPages ? 'bg-surface-container border-outline-variant text-on-surface-variant cursor-not-allowed' : 'bg-surface-container-lowest border-outline-variant text-on-surface cursor-pointer'}`}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e0e0', background: page === totalPages ? '#f5f5f5' : '#fff', cursor: page === totalPages ? 'not-allowed' : 'pointer', color: page === totalPages ? '#a0a0a0' : '#222' }}
               >
                 <ChevronRight size={20} />
               </button>

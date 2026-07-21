@@ -2,11 +2,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { getProfile, updatePersonalInfo, updateAddress, uploadAvatar, deleteAvatar } from '../../api/user-api/profileApi';
 import { AuthContext } from '../../store/AuthContext';
 import ProfileView from '../../components/user/profile/ProfileView';
-import AvatarUpload from '../../components/user/profile/AvatarUpload';
-import BaseProfilePage from '../../components/common/profileUi/BaseProfilePage';
+import AvatarUpload from '../../components/common/ProfileUi/AvatarUpload';
+import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
 import { toast } from 'sonner';
 import { formatMemberSince } from '../../utils/dateFormatter';
-import '../../components/user/profile/Profile.css';
+import '../../components/common/ProfileUi/Profile.css';
 
 function ProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -17,9 +17,7 @@ function ProfilePage() {
   const fetchProfileDetails = async () => {
     try {
       const response = await getProfile();
-      if (response.success) {
-        setProfile(response.data);
-      }
+      if (response) { setProfile(response); }
     } catch (err) {
       toast.error(err.message || 'Failed to load profile details.');
     } finally {
@@ -33,21 +31,12 @@ function ProfilePage() {
 
   const handleSavePersonal = async (formData) => {
     const response = await updatePersonalInfo(formData);
-    if (response.success) {
-      setProfile(response.data);
-      updateUser({ profile: { firstName: response.data.firstName, lastName: response.data.lastName } });
-      setEditingSection(null);
-      toast.success('Personal information updated!');
-    }
+    if (response) { setProfile(response); updateUser({ profile: { firstName: response.firstName, lastName: response.lastName } }); setEditingSection(null); toast.success('Personal information updated!'); }
   };
 
   const handleSaveAddress = async (formData) => {
     const response = await updateAddress(formData);
-    if (response.success) {
-      setProfile(response.data);
-      setEditingSection(null);
-      toast.success('Address updated!');
-    }
+    if (response) { setProfile(response); setEditingSection(null); toast.success('Address updated!'); }
   };
 
   const handleAvatarSuccess = (imgUrl) => {
@@ -134,3 +123,4 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
+

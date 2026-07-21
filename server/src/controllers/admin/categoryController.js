@@ -9,9 +9,9 @@ import {
 
 export const createCategory = async (req, res) => {
     try {
-
+        const categoryData = { ...req.body };
         const category =
-            await createCategoryService(req.body);
+            await createCategoryService(categoryData, req.file);
 
         res.status(201).json({
             success: true,
@@ -60,11 +60,12 @@ export const updateCategory = async (req, res) => {
     try {
 
         const { categoryId } = req.params;
-
+        const updateData = { ...req.body };
         const updatedCategory =
             await updateCategoryService(
                 categoryId,
-                req.body
+                updateData,
+                req.file
             );
 
         res.status(200).json({
@@ -102,8 +103,8 @@ export const toggleCategoryStatus = async (req, res) => {
             success: true,
             message: `Category ${
                 isActive
-                    ? "activated"
-                    : "blocked"
+                    ? "published"
+                    : "unpublished"
             } successfully`,
             data: category
         });

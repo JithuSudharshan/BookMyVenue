@@ -40,3 +40,5 @@ export const removeFromWishlist = async (venueId) => {
     throw new Error(error.response?.data?.message || error.message || 'Failed to remove from wishlist.');
   }
 };
+
+

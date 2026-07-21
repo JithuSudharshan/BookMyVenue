@@ -72,7 +72,7 @@ const VendorOnboarding = () => {
             Thank you for completing your profile. Our team will review your details and get back to you soon.
           </p>
           <button 
-            onClick={() => navigate('/vendor-dashboard')}
+            onClick={() => navigate('/vendor/dashboard')}
             className="w-full py-3 bg-primary text-white rounded-xl font-label-lg hover:bg-primary/90 transition shadow-sm"
           >
             Go to Dashboard
@@ -141,3 +141,4 @@ const VendorOnboarding = () => {
 };
 
 export default VendorOnboarding;
+

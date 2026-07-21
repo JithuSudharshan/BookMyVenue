@@ -2,9 +2,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { personalInfoSchema, addressSchema } from '../../../validations/profileValidation.js';
-import FormField from '../../common/profileUi/FormField';
-import InfoRow from '../../common/profileUi/InfoRow';
-import ProfilePanel from '../../common/profileUi/ProfilePanel';
+import FormField from '../../common/ProfileUi/FormField';
+import InfoRow from '../../common/ProfileUi/InfoRow';
+import ProfilePanel from '../../common/ProfileUi/ProfilePanel';
 
 /* ── Inline edit: Personal Info ── */
 function PersonalInfoForm({ profile, onSave, onCancel }) {
@@ -240,3 +240,4 @@ function ProfileView({
 }
 
 export default ProfileView;
+
