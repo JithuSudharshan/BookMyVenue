@@ -19,20 +19,13 @@ import PendingVerification from './pages/PendingVerification';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import VendorDashboard from './pages/vendor/VendorDashboard';
-import VendorApplicationStatus from './pages/vendor/VendorApplicationStatus';
-
 import ProfilePage from './pages/customer/ProfilePage';
 import BookingsPage from './pages/customer/BookingsPage';
 import WishlistPage from './pages/customer/WishlistPage';
 import WalletPage from './pages/common/WalletPage';
 import VendorSignup from './pages/VendorSignup';
-import VendorProfilePage from './pages/vendor/VendorProfilePage';
 import OAuthSuccess from './pages/OAuthSuccess';
 import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
-import MyVenuesPage from './pages/vendor/VenueManagement';
-import VenueDetailPage from './pages/venues/VenueDetailPage';
-import VendorBookingsPage from './pages/vendor/VendorBookingsPage';
 import { Toaster } from 'sonner';
 
 const Unauthorized = () => <div className="p-8 text-error">You are not authorized to view this page.</div>;
@@ -82,19 +75,11 @@ function App() {
 
           {/* Protected Routes for Vendors */}
           <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-              <Route path="/vendor/application-status" element={<VendorApplicationStatus />} />
-              <Route path="/vendor/profile" element={<VendorProfilePage />} />
-              <Route path="/vendor/venues" element={<MyVenuesPage />} />
-              <Route path="/vendor/venues/:id" element={<VenueDetailPage />} />
-              <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
-              <Route path="/vendor/wallet" element={<WalletPage />} />
-            </Route>
             <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
-            
-            {/* Vendor Sub-router for Venue Management */}
-            <Route path="/vendor/*" element={<VendorRoutes />} />
+            <Route element={<DashboardLayout />}>
+              {/* Vendor Sub-router handles dashboard, venues, bookings, profile, etc. */}
+              <Route path="/vendor/*" element={<VendorRoutes />} />
+            </Route>
           </Route>
 
           {/* Protected Routes for Admins */}
