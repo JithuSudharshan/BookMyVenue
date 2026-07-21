@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import BaseCard from '../ui/BaseCard'
 import { FiMapPin, FiUsers, FiMoreVertical, FiStar } from 'react-icons/fi'
 
 const VenueCard = ({ venue, onViewDetails }) => {
@@ -21,7 +22,7 @@ const VenueCard = ({ venue, onViewDetails }) => {
   const isDraft = venue.approval?.status === 'draft'
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+    <BaseCard>
       {/* Card Header: status badge + menu */}
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
         {isActive
@@ -77,8 +78,9 @@ const VenueCard = ({ venue, onViewDetails }) => {
           {isDraft ? 'Continue' : 'View Details'}
         </button>
       </div>
-    </div>
+    </BaseCard>
   )
 }
 
 export default VenueCard
+

@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
+import BaseCard from '../ui/BaseCard'
 import { FiHeart, FiStar, FiUsers } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../store/AuthContext'
@@ -77,10 +78,7 @@ const ListingVenueCard = ({ venue }) => {
   }
 
   return (
-    <div
-      onClick={() => navigate(`/venues/${venueId}`)}
-      className="group cursor-pointer"
-    >
+    <BaseCard onClick={() => navigate(`/venues/${venueId}`)} className="group p-3 hover:shadow-md transition-all">
       {/* Image Container */}
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100 mb-3">
         {venue.image && !imgError ? (
@@ -163,8 +161,9 @@ const ListingVenueCard = ({ venue }) => {
           </span>
         </p>
       </div>
-    </div>
+    </BaseCard>
   )
 }
 
 export default ListingVenueCard
+
