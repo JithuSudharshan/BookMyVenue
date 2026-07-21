@@ -17,9 +17,7 @@ function ProfilePage() {
   const fetchProfileDetails = async () => {
     try {
       const response = await getProfile();
-      if (response.success) {
-        setProfile(response.data);
-      }
+      if (response) { setProfile(response); }
     } catch (err) {
       toast.error(err.message || 'Failed to load profile details.');
     } finally {
@@ -33,21 +31,12 @@ function ProfilePage() {
 
   const handleSavePersonal = async (formData) => {
     const response = await updatePersonalInfo(formData);
-    if (response.success) {
-      setProfile(response.data);
-      updateUser({ profile: { firstName: response.data.firstName, lastName: response.data.lastName } });
-      setEditingSection(null);
-      toast.success('Personal information updated!');
-    }
+    if (response) { setProfile(response); updateUser({ profile: { firstName: response.firstName, lastName: response.lastName } }); setEditingSection(null); toast.success('Personal information updated!'); }
   };
 
   const handleSaveAddress = async (formData) => {
     const response = await updateAddress(formData);
-    if (response.success) {
-      setProfile(response.data);
-      setEditingSection(null);
-      toast.success('Address updated!');
-    }
+    if (response) { setProfile(response); setEditingSection(null); toast.success('Address updated!'); }
   };
 
   const handleAvatarSuccess = (imgUrl) => {
@@ -134,3 +123,4 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
+

@@ -7,7 +7,7 @@ import axiosInstance from '../axiosConfig.js';
 export const getWishlist = async (page = 1, limit = 20) => {
   try {
     const response = await axiosInstance.get(`/customer/wishlist?page=${page}&limit=${limit}`);
-    return response.data?.data ?? response.data;
+    return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch wishlist.');
   }
@@ -21,7 +21,7 @@ export const getWishlist = async (page = 1, limit = 20) => {
 export const addToWishlist = async (venueId) => {
   try {
     const response = await axiosInstance.post(`/customer/wishlist/${venueId}`);
-    return response.data?.data ?? response.data;
+    return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to add to wishlist.');
   }
@@ -35,9 +35,10 @@ export const addToWishlist = async (venueId) => {
 export const removeFromWishlist = async (venueId) => {
   try {
     const response = await axiosInstance.delete(`/customer/wishlist/${venueId}`);
-    return response.data?.data ?? response.data;
+    return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to remove from wishlist.');
   }
 };
+
 

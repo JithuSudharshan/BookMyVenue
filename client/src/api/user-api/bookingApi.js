@@ -9,9 +9,10 @@ import axiosInstance from '../axiosConfig.js';
 export const getCustomerBookings = async (page = 1, limit = 10, filter = 'All') => {
   try {
     const response = await axiosInstance.get(`/customer/bookings?page=${page}&limit=${limit}&filter=${filter}`);
-    return response.data?.data ?? response.data;
+    return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch bookings.');
   }
 };
+
 
