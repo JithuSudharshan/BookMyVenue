@@ -82,14 +82,14 @@ function WalletPage() {
           )}
         </div>
         <div className="wp-balance-icon">
-          <Wallet size={48} strokeWidth={1.5} color="#fff" />
+          <Wallet size={48} strokeWidth={1.5} className="text-white" />
         </div>
       </div>
 
 
 
       {error && (
-        <div style={{ padding: 16, background: '#fce8e6', color: '#d93025', borderRadius: 10, marginBottom: 24, fontSize: 14 }}>
+        <div className="p-4 bg-error-container text-on-error-container rounded-lg mb-6 text-sm">
           {error}
         </div>
       )}

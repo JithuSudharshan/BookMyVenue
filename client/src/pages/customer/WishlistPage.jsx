@@ -58,8 +58,8 @@ function WishlistPage() {
 
   if (loading && wishlist.length === 0) {
     return (
-      <div className="wl-page" style={{ textAlign: 'center', paddingTop: 80 }}>
-        <p style={{ color: '#717171' }}>Loading wishlist...</p>
+      <div className="wl-page flex flex-col items-center pt-20">
+        <p className="text-on-surface-variant font-body-md">Loading wishlist...</p>
       </div>
     );
   }
@@ -74,7 +74,7 @@ function WishlistPage() {
             Venues you've saved for later. Revisit and book when you're ready.
           </p>
           {!loading && totalItems > 0 && (
-            <p style={{ marginTop: '8px', fontSize: '13px', color: '#717171' }}>
+            <p className="mt-2 text-[13px] text-on-surface-variant">
               Showing {wishlist.length > 0 ? (page - 1) * LIMIT + 1 : 0} - {(page - 1) * LIMIT + wishlist.length} of {totalItems} venues
             </p>
           )}
@@ -84,7 +84,7 @@ function WishlistPage() {
       </div>
 
       {error && (
-        <div style={{ padding: 16, background: '#fce8e6', color: '#d93025', borderRadius: 8, marginBottom: 24 }}>
+        <div className="p-4 bg-error-container text-on-error-container rounded-lg mb-6">
           {error}
         </div>
       )}
@@ -118,7 +118,7 @@ function WishlistPage() {
                     {image ? (
                       <img src={image} alt={venue.name} className="wl-card-img" />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', color: '#a0a0a0' }}>
+                      <div className="w-full h-full flex items-center justify-center bg-surface-container text-on-surface-variant">
                         <ImageIcon size={40} />
                       </div>
                     )}
@@ -153,7 +153,7 @@ function WishlistPage() {
                     <div className="wl-venue-stats">
                       {venue.capacity && (
                         <div className="wl-stat-chip">
-                          <Users size={14} color="#717171" />
+                          <Users size={14} className="text-on-surface-variant" />
                           <span>{venue.capacity} Guests</span>
                         </div>
                       )}
@@ -184,21 +184,19 @@ function WishlistPage() {
           {totalPages > 1 && (
             <div className="wl-pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '32px' }}>
               <button
-                className="wl-page-btn"
+                className={`flex items-center justify-center w-9 h-9 rounded-full border ${page === 1 ? 'bg-surface-container border-outline-variant text-on-surface-variant cursor-not-allowed' : 'bg-surface-container-lowest border-outline-variant text-on-surface cursor-pointer'}`}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e0e0', background: page === 1 ? '#f5f5f5' : '#fff', cursor: page === 1 ? 'not-allowed' : 'pointer', color: page === 1 ? '#a0a0a0' : '#222' }}
               >
                 <ChevronLeft size={20} />
               </button>
-              <span className="wl-page-text" style={{ fontSize: '14px', color: '#717171', fontWeight: 500 }}>
+              <span className="text-sm font-medium text-on-surface-variant">
                 Page {page} of {totalPages}
               </span>
               <button
-                className="wl-page-btn"
+                className={`flex items-center justify-center w-9 h-9 rounded-full border ${page === totalPages ? 'bg-surface-container border-outline-variant text-on-surface-variant cursor-not-allowed' : 'bg-surface-container-lowest border-outline-variant text-on-surface cursor-pointer'}`}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e0e0', background: page === totalPages ? '#f5f5f5' : '#fff', cursor: page === totalPages ? 'not-allowed' : 'pointer', color: page === totalPages ? '#a0a0a0' : '#222' }}
               >
                 <ChevronRight size={20} />
               </button>

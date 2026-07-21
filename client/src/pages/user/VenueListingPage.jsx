@@ -103,7 +103,7 @@ const ListingSearchBar = () => {
               {dateDisplay ? dateDisplay : 'Any week'} • {guests > 0 ? `${guests} guests` : 'Add guests'}
             </span>
           </div>
-          <div className="w-8 h-8 bg-[#E53935] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
             <FiSearch className="w-3.5 h-3.5 text-white" />
           </div>
         </div>
@@ -173,7 +173,7 @@ const ListingSearchBar = () => {
           <button
             onClick={handleSearch}
             className={`
-              flex items-center justify-center rounded-full bg-[#E53935] hover:bg-red-700
+              flex items-center justify-center rounded-full bg-primary hover:bg-primary/90
               text-white font-semibold transition-all duration-200 shadow-md hover:shadow-lg
               ${activeField ? 'w-auto px-4 h-10 gap-2' : 'w-10 h-10'}
             `}
