@@ -23,12 +23,13 @@ import ProfilePage from './pages/customer/ProfilePage';
 import BookingsPage from './pages/customer/BookingsPage';
 import WishlistPage from './pages/customer/WishlistPage';
 import WalletPage from './pages/common/WalletPage';
-import VendorSignup from './pages/VendorSignup';
+import NotFound from './pages/common/NotFound';
 import OAuthSuccess from './pages/OAuthSuccess';
+import VendorSignup from './pages/VendorSignup';
 import VendorOnboarding from './pages/vendor-onboarding/VendorOnboarding';
 import { Toaster } from 'sonner';
-
-const Unauthorized = () => <div className="p-8 text-error">You are not authorized to view this page.</div>;
+import { ROLES } from './utils/roles';
+import Unauthorized from './pages/common/Unauthorized';
 
 function App() {
   return (
@@ -65,7 +66,7 @@ function App() {
           {/* Semi-Public Routes (Accessible by logged-in customers who want to become vendors) */}
           <Route path="/vendor-signup" element={<VendorSignup />} />
           {/* Protected Routes for Customers */}
-          <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.CUSTOMER]} />}>
             {/* Customer Dashboard — with sidebar layout */}
             <Route element={<DashboardLayout />}>
               <Route path="/customer/profile" element={<ProfilePage />} />
@@ -76,7 +77,7 @@ function App() {
           </Route>
 
           {/* Protected Routes for Vendors */}
-          <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.VENDOR]} />}>
             <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
             <Route element={<DashboardLayout />}>
               {/* Vendor Sub-router handles dashboard, venues, bookings, profile, etc. */}
@@ -85,7 +86,7 @@ function App() {
           </Route>
 
           {/* Protected Routes for Admins */}
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
             {/* Admin Sub-router */}
             <Route path="/admin/*" element={<AdminRoutes />} />
           </Route>
@@ -98,8 +99,8 @@ function App() {
           {/* Public Discovery / User Routes (Includes Landing Page) */}
           <Route path="/*" element={<UserRoutes />} />
           
-          {/* Fallback Catch-all Route (Redirects back to AuthRedirect) */}
-          <Route path="*" element={<AuthRedirect />} />
+          {/* Fallback Catch-all Route (Redirects to 404 Page) */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>
