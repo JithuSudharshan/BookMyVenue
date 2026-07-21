@@ -24,7 +24,7 @@ const HeroSection = () => {
       so search panel dropdowns (z-[200]) inside always float on top of everything.
       overflow-visible is critical — lets dropdown panels escape this section's bounds.
     */
-    <div className="relative w-full z-[50] overflow-visible">
+    <div className="relative w-full z-0 overflow-visible">
 
       {/* ── Background Image Layer ── */}
       <div className="absolute inset-0 overflow-hidden">
