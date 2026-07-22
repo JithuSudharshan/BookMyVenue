@@ -4,7 +4,7 @@ import Pagination from '../../components/admin/Pagination';
 import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
-import { getVendors } from '../../services/adminService';
+import { getVendors } from '../../api/admin-api/adminApi';
 import { formatDate, vendorEmail } from '../../utils/formatters';
 
 function VendorApprovalCenter() {
@@ -19,7 +19,7 @@ function VendorApprovalCenter() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const loadVendors = async () => {
     setLoading(true);
@@ -105,7 +105,7 @@ function VendorApprovalCenter() {
           <table>
             <thead>
               <tr>
-                <th>Business Name</th>
+
                 <th>Owner Name</th>
                 <th>Email</th>
                 <th>Submitted Date</th>
@@ -116,9 +116,7 @@ function VendorApprovalCenter() {
             <tbody>
               {vendors.map((vendor) => (
                 <tr key={vendor._id}>
-                  <td>
-                    <strong>{vendor.businessName}</strong>
-                  </td>
+
                   <td>{vendor.ownerName}</td>
                   <td>{vendorEmail(vendor)}</td>
                   <td>{formatDate(vendor.createdAt)}</td>

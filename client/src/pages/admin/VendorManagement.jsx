@@ -9,7 +9,7 @@ import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
 import usePagination from '../../hooks/usePagination';
-import { updateUserBlockStatus, getVendors, updateVendorVerification, getDashboardStats } from '../../services/adminService';
+import { updateUserBlockStatus, getVendors, updateVendorVerification, getDashboardStats } from '../../api/admin-api/adminApi';
 import { formatDate, vendorEmail, vendorUserId } from '../../utils/formatters';
 
 function VendorManagement() {
@@ -27,7 +27,7 @@ function VendorManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const loadVendors = async () => {
     setLoading(true);
@@ -121,16 +121,9 @@ function VendorManagement() {
         </div>
       </div>
 
-      <section className="metric-grid three">
+      <section className="metric-grid two">
         <MetricCard title="Total Vendors" value={totalCount} detail="+12% this month" icon={Building2} tone="green" />
         <MetricCard title="Pending Verifications" value={pendingCount} detail="Requires attention" icon={ShieldOff} tone="amber" />
-        <MetricCard
-          title="Top Performing"
-          value={topVendor?.businessName || 'No vendor yet'}
-          detail="Future revenue API placeholder"
-          icon={ShieldCheck}
-          tone="mint"
-        />
       </section>
 
       <section className="table-card">
@@ -138,7 +131,7 @@ function VendorManagement() {
           <SearchBox
             value={query}
             onChange={setQuery}
-            placeholder="Search by business name or email..."
+            placeholder="Search by vendor name or email..."
           />
           <div className="segmented-control">
             <button
@@ -172,7 +165,7 @@ function VendorManagement() {
             <table>
               <thead>
                 <tr>
-                  <th>Business Name</th>
+
                   <th>Owner Name</th>
                   <th>Email</th>
                   <th>Verification Status</th>
@@ -185,9 +178,7 @@ function VendorManagement() {
                   const blocked = Boolean(vendor.userId?.isBlocked);
                   return (
                     <tr key={vendor._id}>
-                      <td>
-                        <strong>{vendor.businessName}</strong>
-                      </td>
+
                       <td>
                         {vendor.ownerName}
                       </td>
@@ -203,9 +194,9 @@ function VendorManagement() {
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <Link
-                             to={`/admin/vendors/${vendor._id}`}
-                             className="icon-text-button secondary-button"
-                             style={{ textDecoration: 'none' }}
+                            to={`/admin/vendors/${vendor._id}`}
+                            className="icon-text-button secondary-button"
+                            style={{ textDecoration: 'none' }}
                           >
                             <Eye size={15} />
                             <span>View</span>
@@ -235,7 +226,7 @@ function VendorManagement() {
       {pendingAction ? (
         <ConfirmModal
           title="Confirm vendor update"
-          message={`Apply this action to ${pendingAction.vendor.businessName}?`}
+          message={`Apply this action to ${pendingAction.vendor.fullName}?`}
           confirmLabel="Confirm"
           danger={pendingAction.type === 'block' || pendingAction.type === 'reject'}
           onCancel={() => setPendingAction(null)}

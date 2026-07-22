@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MetricCard from '../../components/admin/MetricCard';
 import StateBlock from '../../components/admin/StateBlock';
-import { getDashboardStats } from '../../services/adminService';
+import { getDashboardStats } from '../../api/admin-api/adminApi';
 import { formatNumber } from '../../utils/formatters';
 
 function AdminDashboard() {
@@ -62,7 +62,7 @@ function AdminDashboard() {
         <MetricCard 
           title="Total Venues" 
           value={stats.totalVenues !== undefined ? formatNumber(stats.totalVenues) : "0"} 
-          detail="Pending Phase 2" 
+          detail="Under Review" 
           icon={CalendarCheck} 
           tone="violet" 
         />
@@ -95,21 +95,21 @@ function AdminDashboard() {
         <article className="approval-panel">
           <div className="approval-count">
             <div>
-              <h2>Pending Approvals</h2>
-              <p>{formatNumber(stats.pendingVerifications)} vendor applications need review.</p>
+              <h2>Under Review</h2>
+              <p>{formatNumber(stats.pendingVerifications)} vendor applications are under review.</p>
             </div>
             <strong>{formatNumber(stats.pendingVerifications)}</strong>
           </div>
           {stats.recentPendingVendors && stats.recentPendingVendors.length > 0 ? (
             stats.recentPendingVendors.map((vendor) => (
               <div className="approval-item" key={vendor._id}>
-                <span>{vendor.businessName} (Verification)</span>
+                <span>{vendor.fullName} (Verification)</span>
                 <TrendingUp size={15} />
               </div>
             ))
           ) : (
             <div className="approval-item">
-              <span>No pending approvals</span>
+              <span>No applications under review</span>
             </div>
           )}
           <button 

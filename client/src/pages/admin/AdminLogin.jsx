@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { getAdminToken } from '../../services/httpService';
-import { loginAdmin } from '../../services/adminService';
+import { loginAdmin } from '../../api/admin-api/adminApi';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

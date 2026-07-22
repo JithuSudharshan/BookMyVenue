@@ -6,7 +6,7 @@ import SearchBox from '../../components/admin/SearchBox';
 import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
-import { updateUserBlockStatus, getUsers } from '../../services/adminService';
+import { updateUserBlockStatus, getUsers } from '../../api/admin-api/adminApi';
 import { formatDate } from '../../utils/formatters';
 
 function ClientManagement() {
@@ -23,7 +23,7 @@ function ClientManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const loadUsers = async () => {
     setLoading(true);
@@ -88,7 +88,6 @@ function ClientManagement() {
           <h1>Client Management</h1>
           <p>Directory of all registered clients and event planners.</p>
         </div>
-        <button className="secondary-button" type="button">Export CSV</button>
       </div>
 
       <section className="table-card">

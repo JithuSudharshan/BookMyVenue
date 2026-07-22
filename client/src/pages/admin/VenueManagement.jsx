@@ -1,12 +1,13 @@
-import { Eye, MapPin } from 'lucide-react';
+import { Eye, EyeOff, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import ConfirmModal from '../../components/admin/ConfirmModal';
 import Pagination from '../../components/admin/Pagination';
 import SearchBox from '../../components/admin/SearchBox';
 import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
-import { getAdminVenues } from '../../services/adminService';
+import { getAdminVenues, updateVenueVisibility } from '../../api/admin-api/adminApi';
 import { formatDate } from '../../utils/formatters';
 
 function VenueManagement() {
@@ -22,7 +23,20 @@ function VenueManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
+  const [pendingAction, setPendingAction] = useState(null);
+
+  const handleConfirm = async () => {
+    try {
+      const isDeactivate = pendingAction.type === 'deactivate';
+      await updateVenueVisibility(pendingAction.venue._id, isDeactivate ? 'inactive' : 'active');
+      setToast({ type: 'success', message: `Venue ${isDeactivate ? 'deactivated' : 'activated'} successfully.` });
+      setPendingAction(null);
+      await loadVenues();
+    } catch (err) {
+      setToast({ type: 'error', message: err.message });
+    }
+  };
 
   const loadVenues = async () => {
     setLoading(true);
@@ -94,11 +108,11 @@ function VenueManagement() {
               All Venues
             </button>
             <button
-              className={statusFilter === 'Pending' ? 'active' : ''}
+              className={statusFilter === 'under_review' ? 'active' : ''}
               type="button"
-              onClick={() => setStatusFilter('Pending')}
+              onClick={() => setStatusFilter('under_review')}
             >
-              Pending Review
+              Under Review
             </button>
             <button
               className={statusFilter === 'Approved' ? 'active' : ''}
@@ -129,6 +143,7 @@ function VenueManagement() {
                   <th>Capacity</th>
                   <th>Price</th>
                   <th>Approval Status</th>
+                  <th>Visibility</th>
                   <th>Submitted</th>
                   <th>Actions</th>
                 </tr>
@@ -147,16 +162,30 @@ function VenueManagement() {
                     <td>
                       <StatusBadge status={venue.approval?.status} />
                     </td>
+                    <td>
+                      <StatusBadge status={venue.venueStatus || 'inactive'} />
+                    </td>
                     <td>{formatDate(venue.approval?.submittedAt || venue.createdAt)}</td>
                     <td>
-                      <Link
-                        to={`/admin/venues/${venue._id}`}
-                        className="icon-text-button secondary-button"
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <Eye size={15} />
-                        <span>View</span>
-                      </Link>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <Link
+                          to={`/admin/venues/${venue._id}`}
+                          className="icon-text-button secondary-button"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Eye size={15} />
+                          <span>View</span>
+                        </Link>
+                        {venue.approval?.status === 'approved' && (
+                          <button
+                            className={venue.venueStatus === 'active' ? 'icon-text-button danger' : 'icon-text-button approve'}
+                            type="button"
+                            onClick={() => setPendingAction({ type: venue.venueStatus === 'active' ? 'deactivate' : 'activate', venue })}
+                          >
+                            {venue.venueStatus === 'active' ? <EyeOff size={15} /> : <Eye size={15} />}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -167,6 +196,17 @@ function VenueManagement() {
           </div>
         ) : null}
       </section>
+
+      {pendingAction ? (
+        <ConfirmModal
+          title={pendingAction.type === 'deactivate' ? 'Deactivate venue?' : 'Activate venue?'}
+          message={`Are you sure you want to ${pendingAction.type === 'deactivate' ? 'deactivate' : 'activate'} "${pendingAction.venue.name}"?`}
+          confirmLabel={pendingAction.type === 'deactivate' ? 'Deactivate' : 'Activate'}
+          danger={pendingAction.type === 'deactivate'}
+          onCancel={() => setPendingAction(null)}
+          onConfirm={handleConfirm}
+        />
+      ) : null}
     </div>
   );
 }

@@ -14,16 +14,26 @@ const userSchema = new mongoose.Schema(
         'Please add a valid email',
       ],
     },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
     password: {
       type: String,
-      required: [true, 'Please add a password'],
+      required: function() { return this.authProvider === 'local'; },
       minlength: 8,
       select: false, // Don't return password by default
     },
     role: {
       type: String,
-      enum: ['user', 'vendor', 'admin'],
-      default: 'user',
+      enum: ['customer', 'vendor', 'admin'],
+      default: 'customer',
     },
     isEmailVerified: {
       type: Boolean,
@@ -39,17 +49,8 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
   }
 );
-
-userSchema.virtual('profile', {
-  ref: 'CustomerProfile',
-  localField: '_id',
-  foreignField: 'userId',
-  justOne: true
-});
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
@@ -65,6 +66,20 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Add dynamic virtual for profile based on role
+userSchema.virtual('profile', {
+  ref: (doc) => {
+    if (doc.role === 'vendor') return 'Vendor';
+    return 'Customer';
+  },
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: true
+});
+
+userSchema.set('toObject', { virtuals: true });
+userSchema.set('toJSON', { virtuals: true });
 
 const User = mongoose.model('User', userSchema);
 

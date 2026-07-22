@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   UserRoundCog,
   Users,
+  Receipt,
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getSavedAdmin } from '../../services/httpService';
@@ -18,6 +19,7 @@ const navItems = [
   { to: '/admin/vendors', label: 'Vendors', icon: Building2 },
   { to: '/admin/vendor-approvals', label: 'Vendor Verification', icon: ShieldCheck },
   { to: '/admin/venues', label: 'Venues', icon: CalendarCheck },
+  { to: '/admin/bookings', label: 'Bookings', icon: Receipt },
 ];
 
 function Sidebar() {

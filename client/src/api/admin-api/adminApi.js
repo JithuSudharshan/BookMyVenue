@@ -1,4 +1,4 @@
-import { request, saveAdminSession } from './httpService';
+import { request, saveAdminSession } from '../../services/httpService.js';
 
 export const loginAdmin = async (credentials) => {
   const admin = await request('/admin/login', {
@@ -49,3 +49,18 @@ export const updateVenueStatus = (venueId, status, rejectionReason) =>
     method: 'PATCH',
     body: JSON.stringify({ status, ...(rejectionReason && { rejectionReason }) }),
   });
+
+export const updateVenueVisibility = (venueId, venueStatus) =>
+  request(`/admin/venues/${venueId}/visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ venueStatus }),
+  });
+
+export const getBookings = (params = {}) => {
+  const queryStr = new URLSearchParams(params).toString();
+  return request(`/admin/bookings${queryStr ? `?${queryStr}` : ''}`);
+};
+
+export const getBookingById = (bookingId) => request(`/admin/bookings/${bookingId}`);
+
+export const getBookingStats = () => request('/admin/bookings/stats');

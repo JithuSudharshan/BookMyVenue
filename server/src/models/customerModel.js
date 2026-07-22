@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const customerProfileSchema = new mongoose.Schema(
+const customerSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +24,7 @@ const customerProfileSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
-      default: 'default.jpg',
+      default: null,
     },
     wishlist: [
       {
@@ -41,8 +41,9 @@ const customerProfileSchema = new mongoose.Schema(
     address: {
       street: String,
       city: String,
+      district: String,
       state: String,
-      zipCode: String,
+      pinCode: String,
       country: String,
     },
   },
@@ -51,6 +52,6 @@ const customerProfileSchema = new mongoose.Schema(
   }
 );
 
-const CustomerProfile = mongoose.model('CustomerProfile', customerProfileSchema);
+const Customer = mongoose.model('Customer', customerSchema);
 
-export default CustomerProfile;
+export default Customer;

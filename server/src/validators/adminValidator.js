@@ -18,8 +18,8 @@ export const verifyVendorSchema = z.object({
     id: objectIdSchema,
   }),
   body: z.object({
-    status: z.enum(["approved", "rejected", "pending", "changes_requested"], {
-      errorMap: () => ({ message: "Status must be 'approved', 'rejected', 'pending', or 'changes_requested'" }),
+    status: z.enum(["requested", "approved", "rejected", "under_review", "changes_requested"], {
+      errorMap: () => ({ message: "Status must be 'requested', 'approved', 'rejected', 'under_review', or 'changes_requested'" }),
     }),
     adminRemarks: z.string().optional(),
   }).refine((data) => {
@@ -68,5 +68,16 @@ export const updateVenueStatusSchema = z.object({
   }, {
     message: "Reason for rejection is required",
     path: ["rejectionReason"],
+  }),
+});
+
+export const updateVenueVisibilitySchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+  body: z.object({
+    venueStatus: z.enum(["active", "inactive"], {
+      errorMap: () => ({ message: "venueStatus must be 'active' or 'inactive'" }),
+    }),
   }),
 });

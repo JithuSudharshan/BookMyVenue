@@ -9,6 +9,7 @@ import VendorManagement from '../pages/admin/VendorManagement';
 import VendorApprovalCenter from '../pages/admin/VendorApprovalCenter';
 import VenueManagement from '../pages/admin/VenueManagement';
 import VenueDetails from '../pages/admin/VenueDetails';
+import BookingManagement from '../pages/admin/BookingManagement';
 
 export default function AdminRoutes() {
   return (
@@ -21,8 +22,10 @@ export default function AdminRoutes() {
         <Route path="vendors" element={<VendorManagement />} />
         <Route path="vendor-approvals" element={<VendorApprovalCenter />} />
         <Route path="vendors/:id" element={<VendorDetails />} />
+         <Route path="vendorDetail/:id" element={<VendorDetails />} />
         <Route path="venues" element={<VenueManagement />} />
         <Route path="venues/:id" element={<VenueDetails />} />
+        <Route path="bookings" element={<BookingManagement />} />
       </Route>
     </Routes>
   );

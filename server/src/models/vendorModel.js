@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const vendorProfileSchema = new mongoose.Schema(
+const vendorSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,8 +12,8 @@ const vendorProfileSchema = new mongoose.Schema(
     // --- Onboarding Flow ---
     onboardingStatus: {
       type: String,
-      enum: ['incomplete', 'pending', 'approved', 'rejected', 'changes_requested'],
-      default: 'incomplete',
+      enum: ['incomplete', 'under_review', 'approved', 'rejected', 'requested', 'changes_requested'],
+      default: 'incomplete', 
     },
     onboardingStep: {
       type: Number,
@@ -56,7 +56,7 @@ const vendorProfileSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
-      default: 'default.jpg',
+      default: null,
     },
 
     // --- Step 2: Address & Role ---
@@ -97,15 +97,20 @@ const vendorProfileSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
   }
 );
 
-vendorProfileSchema.virtual('ownerName').get(function() {
-  return this.fullName || `${this.firstName || ''} ${this.lastName || ''}`.trim() || 'N/A';
+// Virtual for ownerName used by frontend Admin Dashboard
+vendorSchema.virtual('ownerName').get(function() {
+  if (this.fullName) return this.fullName;
+  if (this.firstName && this.lastName) return `${this.firstName} ${this.lastName}`;
+  if (this.firstName) return this.firstName;
+  return 'Unknown';
 });
 
-const VendorProfile = mongoose.model('VendorProfile', vendorProfileSchema);
+vendorSchema.set('toObject', { virtuals: true });
+vendorSchema.set('toJSON', { virtuals: true });
 
-export default VendorProfile;
+const Vendor = mongoose.model('Vendor', vendorSchema);
+
+export default Vendor;

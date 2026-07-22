@@ -40,52 +40,48 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
         Showing <strong>{startItem}–{endItem}</strong> of <strong>{totalItems}</strong>
       </span>
 
-      {totalPages > 1 ? (
-        <>
-          <button
-            className="pagination-btn"
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => onPageChange(currentPage - 1)}
-            aria-label="Previous page"
-          >
-            <ChevronLeft size={16} />
-            <span>Prev</span>
-          </button>
+      <button
+        className="pagination-btn"
+        type="button"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        aria-label="Previous page"
+      >
+        <ChevronLeft size={16} />
+        <span>Prev</span>
+      </button>
 
-          <div className="pagination-pages">
-            {getPageNumbers().map((page) =>
-              typeof page === 'string' ? (
-                <span className="pagination-ellipsis" key={page}>
-                  …
-                </span>
-              ) : (
-                <button
-                  className={`pagination-page ${page === currentPage ? 'active' : ''}`}
-                  type="button"
-                  key={page}
-                  onClick={() => onPageChange(page)}
-                  aria-label={`Page ${page}`}
-                  aria-current={page === currentPage ? 'page' : undefined}
-                >
-                  {page}
-                </button>
-              )
-            )}
-          </div>
+      <div className="pagination-pages">
+        {getPageNumbers().map((page) =>
+          typeof page === 'string' ? (
+            <span className="pagination-ellipsis" key={page}>
+              …
+            </span>
+          ) : (
+            <button
+              className={`pagination-page ${page === currentPage ? 'active' : ''}`}
+              type="button"
+              key={page}
+              onClick={() => onPageChange(page)}
+              aria-label={`Page ${page}`}
+              aria-current={page === currentPage ? 'page' : undefined}
+            >
+              {page}
+            </button>
+          )
+        )}
+      </div>
 
-          <button
-            className="pagination-btn"
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => onPageChange(currentPage + 1)}
-            aria-label="Next page"
-          >
-            <span>Next</span>
-            <ChevronRight size={16} />
-          </button>
-        </>
-      ) : null}
+      <button
+        className="pagination-btn"
+        type="button"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+        aria-label="Next page"
+      >
+        <span>Next</span>
+        <ChevronRight size={16} />
+      </button>
     </div>
   );
 }

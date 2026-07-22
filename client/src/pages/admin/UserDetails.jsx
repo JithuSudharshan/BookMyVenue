@@ -5,7 +5,7 @@ import ConfirmModal from '../../components/admin/ConfirmModal';
 import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
-import { updateUserBlockStatus, getUserById } from '../../services/adminService';
+import { updateUserBlockStatus, getUserById } from '../../api/admin-api/adminApi';
 import { formatDate } from '../../utils/formatters';
 
 function UserDetails() {
