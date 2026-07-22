@@ -92,19 +92,19 @@ function BookingManagement() {
   }, []);
 
   return (
-    <div className="page-stack">
+    <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
 
-      <div className="page-heading">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <span className="page-kicker">Booking Monitoring</span>
-          <h1>Bookings Directory</h1>
-          <p>Monitor status, transactions, and overview details of all platform bookings.</p>
+          <span className="text-admin-red text-[14px] font-extrabold">Booking Monitoring</span>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink mt-1">Bookings Directory</h1>
+          <p className="block text-muted text-[12px] mt-1">Monitor status, transactions, and overview details of all platform bookings.</p>
         </div>
       </div>
 
       {stats && (
-        <section className="metric-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+        <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
           <MetricCard
             title="Total Bookings"
             value={stats.totalBookings || 0}
@@ -138,20 +138,24 @@ function BookingManagement() {
         </section>
       )}
 
-      <section className="table-card">
-        <div className="table-toolbar" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '12px' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col gap-3 mb-[18px]">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
             <SearchBox
               value={query}
               onChange={setQuery}
               placeholder="Search by Booking ID, Customer, or Venue..."
             />
 
-            <div className="segmented-control">
+            <div className="flex flex-wrap gap-1.5">
               {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((status) => (
                 <button
                   key={status}
-                  className={statusFilter === status ? 'active' : ''}
+                  className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                    statusFilter === status 
+                      ? 'text-white bg-admin-red border-admin-red' 
+                      : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+                  }`}
                   type="button"
                   onClick={() => {
                     setStatusFilter(status);
@@ -164,9 +168,8 @@ function BookingManagement() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-            {/* Single Date Filter */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="flex flex-wrap gap-2.5 items-center">
+            <div className="flex items-center gap-1.5">
               <input
                 type="date"
                 value={date}
@@ -174,17 +177,7 @@ function BookingManagement() {
                   setDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                style={{
-                  height: '38px',
-                  padding: '0 12px',
-                  borderRadius: '7px',
-                  border: '1px solid var(--line)',
-                  background: '#fff',
-                  fontSize: '13px',
-                  color: 'var(--ink)',
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
+                className="h-[38px] px-3 rounded-[7px] border border-line bg-white text-[13px] text-ink outline-none cursor-pointer hover:border-admin-red transition-colors"
                 aria-label="Filter by date"
               />
               {date && (
@@ -193,9 +186,8 @@ function BookingManagement() {
                     setDate('');
                     setCurrentPage(1);
                   }}
-                  className="secondary-button"
+                  className="min-h-[38px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all"
                   type="button"
-                  style={{ minHeight: '38px', marginLeft: '6px' }}
                 >
                   Clear Date
                 </button>
@@ -208,46 +200,45 @@ function BookingManagement() {
         {error ? <StateBlock title="Unable to load bookings" message={error} /> : null}
 
         {!loading && !error ? (
-          <div className="table-scroll">
-            <table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse">
               <thead>
-                <tr>
-                  <th>Booking ID</th>
-                  <th>Customer</th>
-                  <th>Venue</th>
-                  <th> Date</th>
-                  <th>Booking Status</th>
-                  <th>Payment Status</th>
-                  <th>Total Amount</th>
-                  <th>Actions</th>
+                <tr className="border-b border-line">
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Booking ID</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Customer</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Venue</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider"> Date</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Booking Status</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Payment Status</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Total Amount</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.map((booking) => (
-                  <tr key={booking._id}>
-                    <td>
-                      <strong>{booking._id.substring(0, 8)}...</strong>
+                  <tr key={booking._id} className="hover:bg-panel transition-colors border-b border-line">
+                    <td className="p-[16px_12px] text-sm font-bold text-ink">
+                      {booking._id.substring(0, 8)}...
                     </td>
-                    <td>
-                      <div>{booking.userId?.profile?.firstName ? `${booking.userId.profile.firstName} ${booking.userId.profile.lastName || ''}` : 'N/A'}</div>
-                      <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{booking.userId?.email || 'N/A'}</span>
+                    <td className="p-[16px_12px] text-sm text-ink">
+                      <div className="font-semibold">{booking.userId?.profile?.firstName ? `${booking.userId.profile.firstName} ${booking.userId.profile.lastName || ''}` : 'N/A'}</div>
+                      <span className="text-[11px] text-muted block mt-0.5">{booking.userId?.email || 'N/A'}</span>
                     </td>
-                    <td>{booking.venueId?.name || 'N/A'}</td>
-                    <td>{formatDate(booking.bookingDate)}</td>
-                    <td>
+                    <td className="p-[16px_12px] text-sm text-ink">{booking.venueId?.name || 'N/A'}</td>
+                    <td className="p-[16px_12px] text-sm text-ink">{formatDate(booking.bookingDate)}</td>
+                    <td className="p-[16px_12px]">
                       <StatusBadge status={booking.bookingStatus} />
                     </td>
-                    <td>
+                    <td className="p-[16px_12px]">
                       <StatusBadge status={booking.paymentStatus} />
                     </td>
-                    <td>
-                      <strong>₹{booking.totalAmount?.toLocaleString() || 0}</strong>
+                    <td className="p-[16px_12px] text-sm font-bold text-ink">
+                      ₹{booking.totalAmount?.toLocaleString() || 0}
                     </td>
-                    <td>
+                    <td className="p-[16px_12px]">
                       <button
                         onClick={() => setSelectedBooking(booking)}
-                        className="secondary-button"
-                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px', width: '32px', height: '32px', borderRadius: '6px' }}
+                        className="inline-flex items-center justify-center p-1.5 w-8 h-8 rounded-md text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all"
                         type="button"
                         title="View Details"
                         aria-label="View Details"

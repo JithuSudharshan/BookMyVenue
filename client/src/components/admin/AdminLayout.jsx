@@ -9,11 +9,11 @@ function AdminLayout() {
   }
 
   return (
-    <div className="admin-shell">
+    <div className="grid grid-cols-1 lg:grid-cols-[250px_minmax(0,1fr)] min-h-screen">
       <Sidebar />
-      <div className="admin-main">
+      <div className="min-w-0">
         <Topbar />
-        <main className="admin-content">
+        <main className="p-6 lg:p-[36px_42px]">
           <Outlet />
         </main>
       </div>

@@ -81,39 +81,51 @@ function ClientManagement() {
   };
 
   return (
-    <div className="page-stack">
+    <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-      <div className="page-heading with-actions">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <h1>Client Management</h1>
-          <p>Directory of all registered clients and event planners.</p>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink">Client Management</h1>
+          <p className="block text-muted text-[12px] mt-1">Directory of all registered clients and event planners.</p>
         </div>
       </div>
 
-      <section className="table-card">
-        <div className="table-toolbar">
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-[18px] justify-between">
           <SearchBox
             value={query}
             onChange={setQuery}
             placeholder="Search clients by email..."
           />
-          <div className="segmented-control">
+          <div className="flex flex-wrap gap-1.5">
             <button
-              className={statusFilter === 'All' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'All'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('All')}
             >
               All Clients
             </button>
             <button
-              className={statusFilter === 'Active' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'Active'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('Active')}
             >
               Active
             </button>
             <button
-              className={statusFilter === 'Suspended' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'Suspended'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('Suspended')}
             >
@@ -125,33 +137,37 @@ function ClientManagement() {
         {loading ? <StateBlock title="Loading clients" message="Fetching registered users." /> : null}
         {error ? <StateBlock title="Unable to load clients" message={error} /> : null}
         {!loading && !error ? (
-          <div className="table-scroll">
-            <table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse">
               <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Created Date</th>
-                  <th>Last Login</th>
-                  <th>Actions</th>
+                <tr className="border-b border-line">
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Name</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Email</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Status</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Created Date</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Last Login</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user._id}>
-                    <td>
-                      <strong>{user.profile ? `${user.profile.firstName} ${user.profile.lastName || ''}`.trim() : <span className="table-subtext">No profile</span>}</strong>
+                  <tr key={user._id} className="hover:bg-panel transition-colors border-b border-line">
+                    <td className="p-[16px_12px] text-sm text-ink font-bold">
+                      {user.profile ? `${user.profile.firstName} ${user.profile.lastName || ''}`.trim() : <span className="text-xs text-muted block">No profile</span>}
                     </td>
-                    <td>
+                    <td className="p-[16px_12px] text-sm text-ink">
                       {user.email}
                     </td>
-                    <td><StatusBadge status={user.isBlocked ? 'Suspended' : 'Active'} /></td>
-                    <td>{formatDate(user.createdAt)}</td>
-                    <td>{formatDate(user.lastLogin)}</td>
-                    <td>
+                    <td className="p-[16px_12px]"><StatusBadge status={user.isBlocked ? 'Suspended' : 'Active'} /></td>
+                    <td className="p-[16px_12px] text-sm text-ink">{formatDate(user.createdAt)}</td>
+                    <td className="p-[16px_12px] text-sm text-ink">{formatDate(user.lastLogin)}</td>
+                    <td className="p-[16px_12px]">
                       <button
-                        className={user.isBlocked ? 'icon-text-button approve' : 'icon-text-button danger'}
+                        className={`inline-flex items-center gap-1.5 min-h-[32px] px-2.5 border rounded-[7px] text-[12px] font-extrabold bg-white transition-all ${
+                          user.isBlocked
+                            ? 'text-[#047857] border-line hover:border-green-200 hover:bg-green-50'
+                            : 'text-admin-red border-line hover:border-[#fecaca] hover:bg-admin-red-soft'
+                        }`}
                         type="button"
                         onClick={() => setPendingAction({ type: user.isBlocked ? 'unblock' : 'block', user })}
                       >

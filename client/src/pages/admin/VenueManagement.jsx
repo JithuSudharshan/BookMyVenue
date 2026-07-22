@@ -82,47 +82,63 @@ function VenueManagement() {
   }, [currentPage, statusFilter, debouncedSearch]);
 
   return (
-    <div className="page-stack">
+    <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-      <div className="page-heading">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <span className="page-kicker">Venue Management</span>
-          <h1>Venue Directory</h1>
-          <p>Review and manage all venue submissions.</p>
+          <span className="text-admin-red text-[14px] font-extrabold">Venue Management</span>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink mt-1">Venue Directory</h1>
+          <p className="block text-muted text-[12px] mt-1">Review and manage all venue submissions.</p>
         </div>
       </div>
 
-      <section className="table-card">
-        <div className="table-toolbar">
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-[18px] justify-between">
           <SearchBox
             value={query}
             onChange={setQuery}
             placeholder="Search by venue name or city..."
           />
-          <div className="segmented-control">
+          <div className="flex flex-wrap gap-1.5">
             <button
-              className={statusFilter === 'All' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'All'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('All')}
             >
               All Venues
             </button>
             <button
-              className={statusFilter === 'under_review' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'under_review'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('under_review')}
             >
               Under Review
             </button>
             <button
-              className={statusFilter === 'Approved' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'Approved'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('Approved')}
             >
               Approved
             </button>
             <button
-              className={statusFilter === 'Rejected' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'Rejected'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('Rejected')}
             >
@@ -134,51 +150,54 @@ function VenueManagement() {
         {loading ? <StateBlock title="Loading venues" message="Fetching venue listings." /> : null}
         {error ? <StateBlock title="Unable to load venues" message={error} /> : null}
         {!loading && !error ? (
-          <div className="table-scroll">
-            <table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse">
               <thead>
-                <tr>
-                  <th>Venue Name</th>
-                  <th>Location</th>
-                  <th>Capacity</th>
-                  <th>Price</th>
-                  <th>Approval Status</th>
-                  <th>Visibility</th>
-                  <th>Submitted</th>
-                  <th>Actions</th>
+                <tr className="border-b border-line">
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Venue Name</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Location</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Capacity</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Price</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Approval Status</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Visibility</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Submitted</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {venues.map((venue) => (
-                  <tr key={venue._id}>
-                    <td>
-                      <strong>{venue.name}</strong>
+                  <tr key={venue._id} className="hover:bg-panel transition-colors border-b border-line">
+                    <td className="p-[16px_12px] text-sm text-ink font-bold">
+                      {venue.name}
                     </td>
-                    <td>
+                    <td className="p-[16px_12px] text-sm text-ink">
                       {venue.location?.city ? `${venue.location.city}, ${venue.location.state || ''}`.trim().replace(/,$/, '') : 'Not specified'}
                     </td>
-                    <td>{venue.capacity || 'N/A'}</td>
-                    <td>{venue.price != null ? `₹${venue.price.toLocaleString()}` : 'N/A'}</td>
-                    <td>
+                    <td className="p-[16px_12px] text-sm text-ink">{venue.capacity || 'N/A'}</td>
+                    <td className="p-[16px_12px] text-sm text-ink">{venue.price != null ? `₹${venue.price.toLocaleString()}` : 'N/A'}</td>
+                    <td className="p-[16px_12px]">
                       <StatusBadge status={venue.approval?.status} />
                     </td>
-                    <td>
+                    <td className="p-[16px_12px]">
                       <StatusBadge status={venue.venueStatus || 'inactive'} />
                     </td>
-                    <td>{formatDate(venue.approval?.submittedAt || venue.createdAt)}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <td className="p-[16px_12px] text-sm text-ink">{formatDate(venue.approval?.submittedAt || venue.createdAt)}</td>
+                    <td className="p-[16px_12px]">
+                      <div className="flex gap-2">
                         <Link
                           to={`/admin/venues/${venue._id}`}
-                          className="icon-text-button secondary-button"
-                          style={{ textDecoration: 'none' }}
+                          className="min-h-[32px] px-3 rounded-[7px] text-[12px] font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all inline-flex items-center gap-1.5"
                         >
                           <Eye size={15} />
                           <span>View</span>
                         </Link>
                         {venue.approval?.status === 'approved' && (
                           <button
-                            className={venue.venueStatus === 'active' ? 'icon-text-button danger' : 'icon-text-button approve'}
+                            className={`inline-flex items-center justify-center p-1.5 w-8 h-8 rounded-md bg-white border transition-all ${
+                              venue.venueStatus === 'active' 
+                                ? 'text-admin-red border-line hover:border-[#fecaca] hover:bg-admin-red-soft' 
+                                : 'text-[#047857] border-line hover:border-green-200 hover:bg-green-50'
+                            }`}
                             type="button"
                             onClick={() => setPendingAction({ type: venue.venueStatus === 'active' ? 'deactivate' : 'activate', venue })}
                           >

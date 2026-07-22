@@ -59,16 +59,16 @@ function UserDetails() {
   }
 
   return (
-    <div className="page-stack">
+    <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-      <div className="page-heading with-actions">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <span className="page-kicker">Client Management</span>
-          <h1>Client Profile</h1>
-          <p>Detailed view of client information and activity.</p>
+          <span className="text-admin-red text-[14px] font-extrabold">Client Management</span>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink mt-1">Client Profile</h1>
+          <p className="block text-muted text-[12px] mt-1">Detailed view of client information and activity.</p>
         </div>
         <button
-          className="secondary-button"
+          className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all self-start sm:self-auto"
           type="button"
           onClick={() => navigate(-1)}
         >
@@ -76,46 +76,50 @@ function UserDetails() {
         </button>
       </div>
 
-      <section className="approval-detail">
-        <div className="approval-detail-header">
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-5 border-b border-line mb-6">
           <div>
-            <h1>{selectedUser.profile ? `${selectedUser.profile.firstName} ${selectedUser.profile.lastName || ''}`.trim() : 'No Profile Set'}</h1>
-            <p>Account Type: Client</p>
+            <h1 className="m-0 text-2xl font-bold text-ink">{selectedUser.profile ? `${selectedUser.profile.firstName} ${selectedUser.profile.lastName || ''}`.trim() : 'No Profile Set'}</h1>
+            <p className="block text-muted text-xs mt-1">Account Type: Client</p>
           </div>
           <StatusBadge status={selectedUser.isBlocked ? 'Suspended' : 'Active'} />
         </div>
 
-        <div className="detail-grid">
-          <article className="detail-card">
-            <h2><User size={18} /> Personal Information</h2>
-            <dl>
-              <dt>Full Name</dt>
-              <dd>{selectedUser.profile ? `${selectedUser.profile.firstName} ${selectedUser.profile.lastName || ''}`.trim() : 'N/A'}</dd>
-              <dt>Email Address</dt>
-              <dd><Mail size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} />{selectedUser.email}</dd>
-              <dt>Phone Number</dt>
-              <dd><Phone size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} />{selectedUser.profile?.phone || 'Not provided'}</dd>
-              <dt>Location</dt>
-              <dd><MapPin size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} />{selectedUser.profile?.address ? `${selectedUser.profile.address.city || ''}, ${selectedUser.profile.address.state || ''}`.replace(/^,\s/, '') || 'Not provided' : 'Not provided'}</dd>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] items-start">
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><User size={18} className="text-admin-red" /> Personal Information</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Full Name</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{selectedUser.profile ? `${selectedUser.profile.firstName} ${selectedUser.profile.lastName || ''}`.trim() : 'N/A'}</dd>
+              <dt className="text-muted text-xs">Email Address</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm"><Mail size={14} className="inline align-text-bottom mr-1 text-[#6b5555]" />{selectedUser.email}</dd>
+              <dt className="text-muted text-xs">Phone Number</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm"><Phone size={14} className="inline align-text-bottom mr-1 text-[#6b5555]" />{selectedUser.profile?.phone || 'Not provided'}</dd>
+              <dt className="text-muted text-xs">Location</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm"><MapPin size={14} className="inline align-text-bottom mr-1 text-[#6b5555]" />{selectedUser.profile?.address ? `${selectedUser.profile.address.city || ''}, ${selectedUser.profile.address.state || ''}`.replace(/^,\s/, '') || 'Not provided' : 'Not provided'}</dd>
             </dl>
           </article>
 
-          <article className="detail-card">
-            <h2><Calendar size={18} /> Account Activity</h2>
-            <dl>
-              <dt>Account Created</dt>
-              <dd>{formatDate(selectedUser.createdAt)}</dd>
-              <dt>Last Login Date</dt>
-              <dd>{formatDate(selectedUser.lastLogin)}</dd>
-              <dt>Account Status</dt>
-              <dd>{selectedUser.isBlocked ? 'Suspended by Admin' : 'Active and Verified'}</dd>
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><Calendar size={18} className="text-admin-red" /> Account Activity</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Account Created</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{formatDate(selectedUser.createdAt)}</dd>
+              <dt className="text-muted text-xs">Last Login Date</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{formatDate(selectedUser.lastLogin)}</dd>
+              <dt className="text-muted text-xs">Account Status</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{selectedUser.isBlocked ? 'Suspended by Admin' : 'Active and Verified'}</dd>
             </dl>
           </article>
         </div>
         
-        <div className="approval-actions" style={{ justifyContent: 'flex-start', marginTop: '1rem' }}>
+        <div className="flex items-center justify-start gap-[14px] mt-6">
           <button
-            className={selectedUser.isBlocked ? 'primary-button' : 'secondary-danger-button'}
+            className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold border transition-all ${
+              selectedUser.isBlocked 
+                ? 'text-white bg-admin-red border-admin-red hover:bg-admin-red-dark hover:border-admin-red-dark' 
+                : 'text-admin-red bg-white border-[#fecaca] hover:bg-admin-red-soft hover:text-admin-red-dark'
+            }`}
             type="button"
             onClick={() => setPendingAction({ type: selectedUser.isBlocked ? 'unblock' : 'block', user: selectedUser })}
           >

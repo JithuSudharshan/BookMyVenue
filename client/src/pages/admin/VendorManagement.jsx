@@ -111,45 +111,57 @@ function VendorManagement() {
   const topVendor = vendors[0];
 
   return (
-    <div className="page-stack">
+    <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-      <div className="page-heading">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <span className="page-kicker">Vendor Management</span>
-          <h1>Vendor Directory</h1>
-          <p>Directory of venue owners and business partners.</p>
+          <span className="text-admin-red text-[14px] font-extrabold">Vendor Management</span>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink mt-1">Vendor Directory</h1>
+          <p className="block text-muted text-[12px] mt-1">Directory of venue owners and business partners.</p>
         </div>
       </div>
 
-      <section className="metric-grid two">
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <MetricCard title="Total Vendors" value={totalCount} detail="+12% this month" icon={Building2} tone="green" />
         <MetricCard title="Pending Verifications" value={pendingCount} detail="Requires attention" icon={ShieldOff} tone="amber" />
       </section>
 
-      <section className="table-card">
-        <div className="table-toolbar">
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-[18px] justify-between">
           <SearchBox
             value={query}
             onChange={setQuery}
             placeholder="Search by vendor name or email..."
           />
-          <div className="segmented-control">
+          <div className="flex flex-wrap gap-1.5">
             <button
-              className={statusFilter === 'All' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'All'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('All')}
             >
               All Vendors
             </button>
             <button
-              className={statusFilter === 'Active' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'Active'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('Active')}
             >
               Active
             </button>
             <button
-              className={statusFilter === 'Suspended' ? 'active' : ''}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
+                statusFilter === 'Suspended'
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
+              }`}
               type="button"
               onClick={() => setStatusFilter('Suspended')}
             >
@@ -161,48 +173,49 @@ function VendorManagement() {
         {loading ? <StateBlock title="Loading vendors" message="Fetching vendor profiles." /> : null}
         {error ? <StateBlock title="Unable to load vendors" message={error} /> : null}
         {!loading && !error ? (
-          <div className="table-scroll">
-            <table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse">
               <thead>
-                <tr>
-
-                  <th>Owner Name</th>
-                  <th>Email</th>
-                  <th>Verification Status</th>
-                  <th>Account Status</th>
-                  <th>Actions</th>
+                <tr className="border-b border-line">
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Owner Name</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Email</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Verification Status</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Account Status</th>
+                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {vendors.map((vendor) => {
                   const blocked = Boolean(vendor.userId?.isBlocked);
                   return (
-                    <tr key={vendor._id}>
-
-                      <td>
+                    <tr key={vendor._id} className="hover:bg-panel transition-colors border-b border-line">
+                      <td className="p-[16px_12px] text-sm text-ink font-bold">
                         {vendor.ownerName}
                       </td>
-                      <td>
+                      <td className="p-[16px_12px] text-sm text-ink">
                         {vendorEmail(vendor)}
                       </td>
-                      <td>
+                      <td className="p-[16px_12px]">
                         <StatusBadge status={vendor.onboardingStatus} />
                       </td>
-                      <td>
+                      <td className="p-[16px_12px]">
                         <StatusBadge status={blocked ? 'Suspended' : 'Active'} />
                       </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <td className="p-[16px_12px]">
+                        <div className="flex gap-2">
                           <Link
                             to={`/admin/vendors/${vendor._id}`}
-                            className="icon-text-button secondary-button"
-                            style={{ textDecoration: 'none' }}
+                            className="min-h-[32px] px-3 rounded-[7px] text-[12px] font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all inline-flex items-center gap-1.5"
                           >
                             <Eye size={15} />
                             <span>View</span>
                           </Link>
                           <button
-                            className={blocked ? 'icon-text-button approve' : 'icon-text-button danger'}
+                            className={`inline-flex items-center gap-1.5 min-h-[32px] px-2.5 border rounded-[7px] text-[12px] font-extrabold bg-white transition-all ${
+                              blocked
+                                ? 'text-[#047857] border-line hover:border-green-200 hover:bg-green-50'
+                                : 'text-admin-red border-line hover:border-[#fecaca] hover:bg-admin-red-soft'
+                            }`}
                             type="button"
                             disabled={!vendorUserId(vendor)}
                             onClick={() => setPendingAction({ type: blocked ? 'unblock' : 'block', vendor })}

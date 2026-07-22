@@ -16,24 +16,22 @@ function BookingDetailsModal({ booking, onClose }) {
   if (!booking) return null;
 
   return (
-    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+    <div className="fixed inset-0 z-20 grid place-items-center p-5 bg-[#27272a]/35" role="presentation" onClick={onClose}>
       <section 
-        className="confirm-modal" 
+        className="w-full max-w-[720px] max-h-[90vh] overflow-y-auto p-6 bg-white rounded-lg shadow-modal" 
         role="dialog" 
         aria-modal="true" 
         aria-labelledby="modal-title"
-        style={{ width: 'min(720px, 100%)', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--line)', paddingBottom: '0.75rem' }}>
+        <div className="flex justify-between items-center mb-6 border-b border-line pb-3">
           <div>
-            <span className="page-kicker">Booking Details</span>
-            <h2 id="modal-title" style={{ margin: '4px 0 0 0' }}>{booking._id}</h2>
+            <span className="text-admin-red text-[14px] font-extrabold">Booking Details</span>
+            <h2 id="modal-title" className="m-0 mt-1 text-xl font-bold text-ink">{booking._id}</h2>
           </div>
           <button 
             onClick={onClose} 
-            className="secondary-button" 
-            style={{ minWidth: '36px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', height: '36px' }}
+            className="min-h-[36px] min-w-[36px] h-[36px] w-[36px] p-0 flex items-center justify-center rounded-full text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all" 
             type="button"
             aria-label="Close modal"
           >
@@ -41,74 +39,74 @@ function BookingDetailsModal({ booking, onClose }) {
           </button>
         </div>
 
-        <div className="detail-grid">
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-[18px] items-start">
           {/* Booking Information */}
-          <article className="detail-card">
-            <h2>
-              <Tag size={18} /> Booking Information
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink">
+              <Tag size={18} className="text-admin-red" /> Booking Information
             </h2>
-            <dl>
-              <dt>Booking ID</dt>
-              <dd>{booking._id}</dd>
-              <dt>Booking Date</dt>
-              <dd>{formatDate(booking.bookingDate)}</dd>
-              <dt>Booking Status</dt>
-              <dd><StatusBadge status={booking.bookingStatus} /></dd>
-              <dt>Payment Status</dt>
-              <dd><StatusBadge status={booking.paymentStatus} /></dd>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Booking ID</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking._id}</dd>
+              <dt className="text-muted text-xs">Booking Date</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{formatDate(booking.bookingDate)}</dd>
+              <dt className="text-muted text-xs">Booking Status</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm"><StatusBadge status={booking.bookingStatus} /></dd>
+              <dt className="text-muted text-xs">Payment Status</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm"><StatusBadge status={booking.paymentStatus} /></dd>
             </dl>
           </article>
 
           {/* Customer Information */}
-          <article className="detail-card">
-            <h2>
-              <User size={18} /> Customer Account
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink">
+              <User size={18} className="text-admin-red" /> Customer Account
             </h2>
-            <dl>
-              <dt>Name</dt>
-              <dd>{booking.userId?.profile?.firstName ? `${booking.userId.profile.firstName} ${booking.userId.profile.lastName || ''}` : 'N/A'}</dd>
-              <dt>Email</dt>
-              <dd style={{ wordBreak: 'break-all' }}>{booking.userId?.email || 'N/A'}</dd>
-              <dt>Phone</dt>
-              <dd>{booking.userId?.profile?.phone || 'N/A'}</dd>
-              <dt>Status</dt>
-              <dd>{booking.userId?.isBlocked ? 'Suspended' : 'Active'}</dd>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Name</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.userId?.profile?.firstName ? `${booking.userId.profile.firstName} ${booking.userId.profile.lastName || ''}` : 'N/A'}</dd>
+              <dt className="text-muted text-xs">Email</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm break-all">{booking.userId?.email || 'N/A'}</dd>
+              <dt className="text-muted text-xs">Phone</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.userId?.profile?.phone || 'N/A'}</dd>
+              <dt className="text-muted text-xs">Status</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.userId?.isBlocked ? 'Suspended' : 'Active'}</dd>
             </dl>
           </article>
 
           {/* Venue Information */}
-          <article className="detail-card" style={{ gridColumn: '1 / -1' }}>
-            <h2>
-              <Building2 size={18} /> Venue Information
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin md:col-span-2">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink">
+              <Building2 size={18} className="text-admin-red" /> Venue Information
             </h2>
-            <dl>
-              <dt>Venue Name</dt>
-              <dd>{booking.venueId?.name || 'N/A'}</dd>
-              <dt>City / State</dt>
-              <dd>{booking.venueId?.location?.city ? `${booking.venueId.location.city}, ${booking.venueId.location.state || ''}`.replace(/,\s*$/, '') : 'N/A'}</dd>
-              <dt>Full Address</dt>
-              <dd>{booking.venueId?.location?.address || 'N/A'}</dd>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Venue Name</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.venueId?.name || 'N/A'}</dd>
+              <dt className="text-muted text-xs">City / State</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.venueId?.location?.city ? `${booking.venueId.location.city}, ${booking.venueId.location.state || ''}`.replace(/,\s*$/, '') : 'N/A'}</dd>
+              <dt className="text-muted text-xs">Full Address</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.venueId?.location?.address || 'N/A'}</dd>
             </dl>
           </article>
 
           {/* Booked Slots */}
-          <article className="detail-card" style={{ gridColumn: '1 / -1' }}>
-            <h2>
-              <Calendar size={18} /> Booked Slots & Guests
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin md:col-span-2">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink">
+              <Calendar size={18} className="text-admin-red" /> Booked Slots & Guests
             </h2>
-            <dl>
-              <dt>Guest Count</dt>
-              <dd>{booking.guestCount || 0} guests</dd>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Guest Count</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{booking.guestCount || 0} guests</dd>
             </dl>
-            <div style={{ marginTop: '12px' }}>
-              <strong style={{ fontSize: '13px', color: 'var(--muted)' }}>Slots:</strong>
+            <div className="mt-3">
+              <strong className="text-[13px] text-muted font-bold">Slots:</strong>
               {booking.slotIds && booking.slotIds.length > 0 ? (
-                <ul style={{ margin: '4px 0 0 0', paddingLeft: '1.25rem', fontSize: '13px' }}>
+                <ul className="m-0 mt-1 pl-5 text-[13px] list-disc text-ink">
                   {booking.slotIds.map((slot, index) => (
-                    <li key={slot._id || index} style={{ marginBottom: '4px' }}>
+                    <li key={slot._id || index} className="mb-1">
                       {typeof slot === 'object' ? (
                         <>
-                          <strong>Slot {index + 1}:</strong> {slot.startTime} - {slot.endTime} ({slot.date ? formatDate(slot.date) : 'N/A'}) - Price: ₹{slot.price?.toLocaleString()}
+                          <strong className="font-bold">Slot {index + 1}:</strong> {slot.startTime} - {slot.endTime} ({slot.date ? formatDate(slot.date) : 'N/A'}) - Price: ₹{slot.price?.toLocaleString()}
                         </>
                       ) : (
                         <>Slot ID: {slot}</>
@@ -117,30 +115,30 @@ function BookingDetailsModal({ booking, onClose }) {
                   ))}
                 </ul>
               ) : (
-                <span style={{ fontSize: '13px', color: 'var(--muted)', display: 'block', marginTop: '4px' }}>No slots details populated</span>
+                <span className="text-[13px] text-muted block mt-1">No slots details populated</span>
               )}
             </div>
           </article>
 
           {/* Pricing Breakdown */}
-          <article className="detail-card" style={{ gridColumn: '1 / -1' }}>
-            <h2>
-              <Landmark size={18} /> Pricing Details
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin md:col-span-2">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink">
+              <Landmark size={18} className="text-admin-red" /> Pricing Details
             </h2>
-            <dl>
-              <dt style={{ color: 'var(--ink)' }}>Total Amount</dt>
-              <dd>₹{booking.totalAmount?.toLocaleString() || 0}</dd>
-              <dt style={{ color: 'var(--green)' }}>Advance Paid</dt>
-              <dd style={{ color: 'var(--green)' }}>₹{booking.advanceAmount?.toLocaleString() || 0}</dd>
-              <dt style={{ color: 'var(--admin-red)' }}>Balance Due</dt>
-              <dd style={{ color: 'var(--admin-red)' }}>₹{((booking.totalAmount || 0) - (booking.advanceAmount || 0)).toLocaleString()}</dd>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-ink text-xs font-bold">Total Amount</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">₹{booking.totalAmount?.toLocaleString() || 0}</dd>
+              <dt className="text-green text-xs font-bold">Advance Paid</dt>
+              <dd className="m-0 font-extrabold text-green text-sm">₹{booking.advanceAmount?.toLocaleString() || 0}</dd>
+              <dt className="text-admin-red text-xs font-bold">Balance Due</dt>
+              <dd className="m-0 font-extrabold text-admin-red text-sm">₹{((booking.totalAmount || 0) - (booking.advanceAmount || 0)).toLocaleString()}</dd>
             </dl>
           </article>
 
         </div>
 
-        <div className="modal-actions" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--line)', paddingTop: '0.75rem', justifyContent: 'flex-end' }}>
-          <button className="primary-button" type="button" onClick={onClose}>
+        <div className="flex items-center justify-end gap-3.5 mt-6 border-t border-line pt-3">
+          <button className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-white bg-admin-red border border-admin-red hover:bg-admin-red-dark hover:border-admin-red-dark transition-all" type="button" onClick={onClose}>
             Close details
           </button>
         </div>

@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --admin-red: #b80016;
   --admin-red-dark: #970012;

@@ -32,17 +32,17 @@ function Sidebar() {
   };
 
   return (
-    <aside className="admin-sidebar">
+    <aside className="sticky top-0 flex flex-col justify-between h-auto lg:h-screen p-[22px_18px] bg-white border-b lg:border-b-0 lg:border-r border-line lg:sticky static">
       <div>
-        <div className="brand-block">
-          <div className="brand-mark">B</div>
+        <div className="flex items-center gap-2.5 mb-7">
+          <div className="grid place-items-center w-[38px] h-[38px] rounded-[7px] text-white font-extrabold bg-admin-red">B</div>
           <div>
-            <strong>BookMyVenue</strong>
-            <span>Admin Control Panel</span>
+            <strong className="block text-admin-red text-[15px] font-bold">BookMyVenue</strong>
+            <span className="block text-muted text-[12px]">Admin Control Panel</span>
           </div>
         </div>
 
-        <nav className="side-nav" aria-label="Admin navigation">
+        <nav className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-1" aria-label="Admin navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -50,7 +50,13 @@ function Sidebar() {
                 end={item.end}
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) => 
+                  `flex items-center gap-2.5 min-h-[38px] px-3 text-sm font-bold rounded-md transition-all ${
+                    isActive 
+                      ? 'text-white bg-admin-red' 
+                      : 'text-[#6b5555] hover:bg-admin-red-soft hover:text-admin-red'
+                  }`
+                }
               >
                 <Icon size={17} />
                 <span>{item.label}</span>
@@ -60,19 +66,19 @@ function Sidebar() {
         </nav>
       </div>
 
-      <div className="sidebar-footer">
-        <button className="ghost-row" type="button">
+      <div className="grid gap-3 pt-[18px] border-t border-line mt-4 lg:mt-0">
+        <button className="flex items-center gap-2 text-gray-500 bg-transparent border-0 text-sm font-bold hover:text-admin-red transition-colors" type="button">
           <CircleHelp size={16} />
           <span>Help Center</span>
         </button>
-        <div className="admin-mini">
-          <div className="avatar">{getInitials(admin?.name || 'Admin')}</div>
+        <div className="flex items-center gap-2.5">
+          <div className="grid place-items-center w-[34px] h-[34px] rounded-full text-white text-xs font-extrabold bg-gradient-to-br from-[#0f2f3a] to-[#45656b]">{getInitials(admin?.name || 'Admin')}</div>
           <div>
-            <strong>{admin?.name || 'Admin User'}</strong>
-            <span>{admin?.role || 'System Admin'}</span>
+            <strong className="block text-admin-red text-[15px] font-bold">{admin?.name || 'Admin User'}</strong>
+            <span className="block text-muted text-[12px]">{admin?.role || 'System Admin'}</span>
           </div>
         </div>
-        <button className="logout-button" type="button" onClick={handleLogout}>
+        <button className="flex items-center gap-2 text-admin-red bg-transparent border-0 text-sm font-bold hover:text-admin-red-dark transition-colors" type="button" onClick={handleLogout}>
           <LogOut size={16} />
           <span>Logout</span>
         </button>

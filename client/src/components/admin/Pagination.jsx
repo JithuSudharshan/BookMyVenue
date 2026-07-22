@@ -35,13 +35,13 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
   };
 
   return (
-    <div className="pagination">
-      <span className="pagination-info">
-        Showing <strong>{startItem}–{endItem}</strong> of <strong>{totalItems}</strong>
+    <div className="flex items-center justify-center gap-1.5 py-[18px] pb-1">
+      <span className="mr-auto text-muted text-[13px]">
+        Showing <strong className="font-bold">{startItem}–{endItem}</strong> of <strong className="font-bold">{totalItems}</strong>
       </span>
 
       <button
-        className="pagination-btn"
+        className="inline-flex items-center gap-1 min-h-[34px] px-3 text-[#6b5555] text-[13px] font-bold bg-white border border-line rounded-[7px] disabled:opacity-40 disabled:cursor-not-allowed hover:not-disabled:bg-admin-red-soft hover:not-disabled:border-[#fecaca] hover:not-disabled:text-admin-red transition-all"
         type="button"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
@@ -51,15 +51,19 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
         <span>Prev</span>
       </button>
 
-      <div className="pagination-pages">
+      <div className="flex items-center gap-1">
         {getPageNumbers().map((page) =>
           typeof page === 'string' ? (
-            <span className="pagination-ellipsis" key={page}>
+            <span className="grid place-items-center min-w-[28px] h-[34px] text-muted text-sm tracking-[2px]" key={page}>
               …
             </span>
           ) : (
             <button
-              className={`pagination-page ${page === currentPage ? 'active' : ''}`}
+              className={`grid place-items-center min-w-[34px] h-[34px] px-1 text-[13px] font-bold border rounded-[7px] transition-all ${
+                page === currentPage
+                  ? 'text-white bg-admin-red border-admin-red'
+                  : 'text-[#6b5555] bg-transparent border-transparent hover:bg-admin-red-soft hover:border-[#fecaca] hover:text-admin-red'
+              }`}
               type="button"
               key={page}
               onClick={() => onPageChange(page)}
@@ -73,7 +77,7 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
       </div>
 
       <button
-        className="pagination-btn"
+        className="inline-flex items-center gap-1 min-h-[34px] px-3 text-[#6b5555] text-[13px] font-bold bg-white border border-line rounded-[7px] disabled:opacity-40 disabled:cursor-not-allowed hover:not-disabled:bg-admin-red-soft hover:not-disabled:border-[#fecaca] hover:not-disabled:text-admin-red transition-all"
         type="button"
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}

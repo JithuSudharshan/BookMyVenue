@@ -102,24 +102,24 @@ function VenueDetails() {
   const approvalStatus = venue.approval?.status;
 
   return (
-    <div className="page-stack">
+    <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
       
-      <div className="page-heading with-actions">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <span className="page-kicker">Venue Management</span>
-          <h1>Venue Details</h1>
-          <p>Review venue information and make approval decisions.</p>
+          <span className="text-admin-red text-[14px] font-extrabold">Venue Management</span>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink mt-1">Venue Details</h1>
+          <p className="block text-muted text-[12px] mt-1">Review venue information and make approval decisions.</p>
         </div>
       </div>
 
-      <section className="approval-detail">
-        <div className="approval-detail-header">
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-5 border-b border-line mb-6">
           <div>
-            <h1>{venue.name}</h1>
-            <p>{venue.location?.city ? `${venue.location.city}, ${venue.location.state || ''}`.trim().replace(/,$/, '') : 'Location not specified'}</p>
+            <h1 className="m-0 text-2xl font-bold text-ink">{venue.name}</h1>
+            <p className="block text-muted text-xs mt-1">{venue.location?.city ? `${venue.location.city}, ${venue.location.state || ''}`.trim().replace(/,$/, '') : 'Location not specified'}</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="flex gap-2">
             <StatusBadge status={approvalStatus} />
             {approvalStatus === 'approved' && (
               <StatusBadge status={venue.venueStatus === 'active' ? 'Active' : 'Inactive'} />
@@ -127,27 +127,26 @@ function VenueDetails() {
           </div>
         </div>
 
-        <div className="detail-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] items-start">
           {/* Card 1: Venue Information */}
-          <article className="detail-card">
-            <h2><FileText size={18} /> Venue Information</h2>
-            <dl>
-              <dt>Description</dt>
-              <dd>{venue.description || 'No description provided'}</dd>
-              <dt>Category</dt>
-              <dd>{venue.categoryId?.name || venue.categoryId || 'Not specified'}</dd>
-              <dt>Subcategory</dt>
-              <dd>{venue.subcategoryId?.name || venue.subcategoryId || 'Not specified'}</dd>
-              <dt>Venue Images</dt>
-              <dd>
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><FileText size={18} className="text-admin-red" /> Venue Information</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Description</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.description || 'No description provided'}</dd>
+              <dt className="text-muted text-xs">Category</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.categoryId?.name || venue.categoryId || 'Not specified'}</dd>
+              <dt className="text-muted text-xs">Subcategory</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.subcategoryId?.name || venue.subcategoryId || 'Not specified'}</dd>
+              <dt className="text-muted text-xs">Venue Images</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">
                 {venue.images && venue.images.length > 0 ? (
                   <button 
-                    className="secondary-button" 
+                    className="min-h-[28px] px-3 rounded-[7px] text-xs font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all" 
                     onClick={() => {
                       setCurrentImageIndex(0);
                       setIsImageViewerOpen(true);
                     }}
-                    style={{ padding: '4px 12px', fontSize: '13px' }}
                   >
                     View {venue.images.length} Images
                   </button>
@@ -157,72 +156,72 @@ function VenueDetails() {
           </article>
 
           {/* Card 2: Operations & Pricing */}
-          <article className="detail-card">
-            <h2><Users size={18} /> Operations & Pricing</h2>
-            <dl>
-              <dt>Capacity</dt>
-              <dd>{venue.capacity ? `${venue.capacity} guests` : 'Not specified'}</dd>
-              <dt>Price</dt>
-              <dd>{venue.price != null ? `₹${venue.price.toLocaleString()}` : 'Not specified'}</dd>
-              <dt>Booking Model</dt>
-              <dd>{venue.bookingModel ? venue.bookingModel.charAt(0).toUpperCase() + venue.bookingModel.slice(1) : 'Not specified'}</dd>
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><Users size={18} className="text-admin-red" /> Operations & Pricing</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Capacity</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.capacity ? `${venue.capacity} guests` : 'Not specified'}</dd>
+              <dt className="text-muted text-xs">Price</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.price != null ? `₹${venue.price.toLocaleString()}` : 'Not specified'}</dd>
+              <dt className="text-muted text-xs">Booking Model</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.bookingModel ? venue.bookingModel.charAt(0).toUpperCase() + venue.bookingModel.slice(1) : 'Not specified'}</dd>
               {venue.bookingConfig?.openingTime && (
                 <>
-                  <dt>Operating Hours</dt>
-                  <dd>{venue.bookingConfig.openingTime} – {venue.bookingConfig.closingTime}</dd>
+                  <dt className="text-muted text-xs">Operating Hours</dt>
+                  <dd className="m-0 font-extrabold text-ink text-sm">{venue.openingTime || venue.bookingConfig.openingTime} – {venue.closingTime || venue.bookingConfig.closingTime}</dd>
                 </>
               )}
             </dl>
           </article>
 
           {/* Card 3: Owner Details */}
-          <article className="detail-card">
-            <h2><User size={18} /> Owner Details</h2>
-            <dl>
-              <dt>Name</dt>
-              <dd>{venue.vendor?.fullName || venue.vendor?.firstName || 'Not specified'}</dd>
-              <dt>Email</dt>
-              <dd>
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><User size={18} className="text-admin-red" /> Owner Details</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Name</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.vendor?.fullName || venue.vendor?.firstName || 'Not specified'}</dd>
+              <dt className="text-muted text-xs">Email</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">
                 {venue.vendor?.email || venue.vendor?.accountEmail ? (
-                  <a href={`mailto:${venue.vendor?.email || venue.vendor?.accountEmail}`}>
+                  <a href={`mailto:${venue.vendor?.email || venue.vendor?.accountEmail}`} className="text-admin-red hover:underline">
                     {venue.vendor?.email || venue.vendor?.accountEmail}
                   </a>
                 ) : 'Not provided'}
               </dd>
-              <dt>Phone</dt>
-              <dd>
+              <dt className="text-muted text-xs">Phone</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">
                 {venue.vendor?.phone ? (
-                  <a href={`tel:${venue.vendor?.phone}`}>{venue.vendor?.phone}</a>
+                  <a href={`tel:${venue.vendor?.phone}`} className="text-admin-red hover:underline">{venue.vendor?.phone}</a>
                 ) : 'Not provided'}
               </dd>
             </dl>
           </article>
 
-          {/* Card 3: Location Details */}
-          <article className="detail-card">
-            <h2><MapPin size={18} /> Location Details</h2>
-            <dl>
-              <dt>Address</dt>
-              <dd>{venue.location?.address || 'Not provided'}</dd>
-              <dt>City</dt>
-              <dd>{venue.location?.city || 'Not provided'}</dd>
-              <dt>State</dt>
-              <dd>{venue.location?.state || 'Not provided'}</dd>
-              <dt>Pincode</dt>
-              <dd>{venue.location?.pincode || 'Not provided'}</dd>
+          {/* Card 4: Location Details */}
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><MapPin size={18} className="text-admin-red" /> Location Details</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Address</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.location?.address || 'Not provided'}</dd>
+              <dt className="text-muted text-xs">City</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.location?.city || 'Not provided'}</dd>
+              <dt className="text-muted text-xs">State</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.location?.state || 'Not provided'}</dd>
+              <dt className="text-muted text-xs">Pincode</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.location?.pincode || 'Not provided'}</dd>
             </dl>
           </article>
 
-          {/* Card 4: Amenities & Rules */}
-          <article className="detail-card">
-            <h2><List size={18} /> Amenities & Rules</h2>
-            <dl>
-              <dt>Amenities</dt>
-              <dd>{venue.amenities?.length ? venue.amenities.join(', ') : 'None specified'}</dd>
-              <dt>Rules</dt>
-              <dd>
+          {/* Card 5: Amenities & Rules */}
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><List size={18} className="text-admin-red" /> Amenities & Rules</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Amenities</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">{venue.amenities?.length ? venue.amenities.join(', ') : 'None specified'}</dd>
+              <dt className="text-muted text-xs">Rules</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm">
                 {venue.rules?.length ? (
-                  <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                  <ul className="pl-5 list-disc m-0">
                     {venue.rules.map((rule, index) => <li key={index}>{rule}</li>)}
                   </ul>
                 ) : 'None specified'}
@@ -230,22 +229,22 @@ function VenueDetails() {
             </dl>
           </article>
 
-          {/* Card 5: Approval Timeline */}
-          <article className="detail-card">
-            <h2><Clock size={18} /> Approval Timeline</h2>
-            <dl>
-              <dt>Approval Status</dt>
-              <dd><StatusBadge status={approvalStatus} /></dd>
+          {/* Card 6: Approval Timeline */}
+          <article className="p-[18px_20px] bg-surface border border-line rounded-lg shadow-admin">
+            <h2 className="m-0 text-lg font-bold flex items-center gap-2 text-ink"><Clock size={18} className="text-admin-red" /> Approval Timeline</h2>
+            <dl className="grid grid-cols-[max-content_1fr] gap-[10px_20px] mt-3.5">
+              <dt className="text-muted text-xs">Approval Status</dt>
+              <dd className="m-0 font-extrabold text-ink text-sm"><StatusBadge status={approvalStatus} /></dd>
               {approvalStatus === 'approved' && (
                 <>
-                  <dt>Visibility Status</dt>
-                  <dd><StatusBadge status={venue.venueStatus} /></dd>
+                  <dt className="text-muted text-xs">Visibility Status</dt>
+                  <dd className="m-0 font-extrabold text-ink text-sm"><StatusBadge status={venue.venueStatus} /></dd>
                 </>
               )}
               {approvalStatus !== 'approved' && venue.approval?.rejectionReason && (
                 <>
-                  <dt>Rejection Reason</dt>
-                  <dd>{venue.approval.rejectionReason}</dd>
+                  <dt className="text-muted text-xs">Rejection Reason</dt>
+                  <dd className="m-0 font-extrabold text-ink text-sm">{venue.approval.rejectionReason}</dd>
                 </>
               )}
             </dl>
@@ -253,29 +252,29 @@ function VenueDetails() {
         </div>
 
         {venue.slots && venue.slots.length > 0 && (
-          <section className="table-card" style={{ marginTop: '20px' }}>
-            <div className="table-toolbar" style={{ padding: '16px 20px', borderBottom: '1px solid var(--line)' }}>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Available Slots</h3>
+          <section className="bg-surface border border-line rounded-lg shadow-admin mt-5">
+            <div className="flex items-center justify-between p-[16px_20px] border-b border-line">
+              <h3 className="m-0 text-[15px] font-semibold text-ink">Available Slots</h3>
             </div>
-            <div className="table-scroll">
-              <table>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] border-collapse">
                 <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Price</th>
-                    <th>Status</th>
+                  <tr className="border-b border-line">
+                    <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Date</th>
+                    <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Start Time</th>
+                    <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">End Time</th>
+                    <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Price</th>
+                    <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {venue.slots.map((slot) => (
-                    <tr key={slot._id}>
-                      <td>{formatDate(slot.date)}</td>
-                      <td>{slot.startTime}</td>
-                      <td>{slot.endTime}</td>
-                      <td>₹{slot.price?.toLocaleString()}</td>
-                      <td><StatusBadge status={slot.isBooked ? 'Booked' : 'Available'} /></td>
+                    <tr key={slot._id} className="hover:bg-panel transition-colors border-b border-line">
+                      <td className="p-[16px_12px] text-sm text-ink">{formatDate(slot.date)}</td>
+                      <td className="p-[16px_12px] text-sm text-ink">{slot.startTime}</td>
+                      <td className="p-[16px_12px] text-sm text-ink">{slot.endTime}</td>
+                      <td className="p-[16px_12px] text-sm text-ink">₹{slot.price?.toLocaleString()}</td>
+                      <td className="p-[16px_12px]"><StatusBadge status={slot.isBooked ? 'Booked' : 'Available'} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -284,18 +283,18 @@ function VenueDetails() {
           </section>
         )}
 
-        <div className="approval-actions">
+        <div className="flex items-center justify-between gap-3.5 mt-6 border-t border-line pt-4">
           {['submitted', 'under_review'].includes(approvalStatus) && (
             <>
               <button
-                className="secondary-danger-button"
+                className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-admin-red bg-white border border-[#fecaca] hover:bg-admin-red-soft hover:text-admin-red-dark transition-all"
                 type="button"
                 onClick={() => setPendingAction({ type: 'reject' })}
               >
                 Reject
               </button>
               <button
-                className="primary-button"
+                className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-white bg-admin-red border border-admin-red hover:bg-admin-red-dark hover:border-admin-red-dark transition-all ml-auto"
                 type="button"
                 onClick={() => setPendingAction({ type: 'approve' })}
               >
@@ -305,7 +304,11 @@ function VenueDetails() {
           )}
           {approvalStatus === 'approved' && (
             <button
-              className={venue.venueStatus === 'active' ? 'secondary-danger-button' : 'primary-button'}
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold border transition-all ${
+                venue.venueStatus === 'active' 
+                  ? 'text-admin-red bg-white border-[#fecaca] hover:bg-admin-red-soft hover:text-admin-red-dark' 
+                  : 'text-white bg-admin-red border border-admin-red hover:bg-admin-red-dark hover:border-admin-red-dark'
+              }`}
               type="button"
               onClick={() => setPendingAction({ type: venue.venueStatus === 'active' ? 'deactivate' : 'activate' })}
             >
@@ -318,20 +321,12 @@ function VenueDetails() {
       {/* Image Viewer Overlay */}
       {isImageViewerOpen && (
         <div 
-          className="modal-overlay" 
+          className="fixed inset-0 bg-black/85 z-[9999] flex flex-col items-center justify-center p-5"
           onClick={() => setIsImageViewerOpen(false)} 
-          style={{
-            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', 
-            flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-          }}
         >
           <button 
             onClick={() => setIsImageViewerOpen(false)} 
-            style={{ 
-              position: 'absolute', top: '24px', right: '32px', background: 'transparent', 
-              border: 'none', color: '#fff', fontSize: '32px', cursor: 'pointer' 
-            }}
+            className="absolute top-6 right-8 bg-transparent border-0 text-white text-4xl cursor-pointer hover:text-admin-red transition-colors"
           >
             &times;
           </button>
@@ -339,26 +334,24 @@ function VenueDetails() {
           <img 
             src={venue.images[currentImageIndex].url} 
             alt="Venue image" 
-            style={{ maxWidth: '90%', maxHeight: '75vh', objectFit: 'contain', borderRadius: '8px' }}
+            className="max-w-[90%] max-h-[75vh] object-contain rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()} 
           />
           
           {venue.images.length > 1 && (
-            <div style={{ marginTop: '24px', display: 'flex', gap: '20px', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <div className="mt-6 flex gap-5 items-center" onClick={(e) => e.stopPropagation()}>
               <button 
-                className="secondary-button" 
+                className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-ink bg-white border border-transparent hover:bg-admin-red hover:text-white transition-all"
                 onClick={() => setCurrentImageIndex(prev => prev === 0 ? venue.images.length - 1 : prev - 1)}
-                style={{ backgroundColor: '#fff', color: '#000', border: 'none' }}
               >
                 Previous
               </button>
-              <span style={{ color: '#fff', fontWeight: 500 }}>
+              <span className="text-white font-bold text-sm">
                 {currentImageIndex + 1} / {venue.images.length}
               </span>
               <button 
-                className="secondary-button" 
+                className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-ink bg-white border border-transparent hover:bg-admin-red hover:text-white transition-all"
                 onClick={() => setCurrentImageIndex(prev => prev === venue.images.length - 1 ? 0 : prev + 1)}
-                style={{ backgroundColor: '#fff', color: '#000', border: 'none' }}
               >
                 Next
               </button>
@@ -401,9 +394,9 @@ function VenueDetails() {
           onConfirm={handleConfirm}
         >
           {pendingAction.type === 'reject' && (
-            <div className="modal-input-group" style={{ marginTop: '1rem' }}>
-              <label htmlFor="rejectReason" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
-                Reason for Rejection <span style={{ color: 'var(--danger-color, #ef4444)' }}>*</span>
+            <div className="mt-4">
+              <label htmlFor="rejectReason" className="block text-sm font-semibold text-ink mb-1.5">
+                Reason for Rejection <span className="text-admin-red">*</span>
               </label>
               <textarea
                 id="rejectReason"
@@ -414,9 +407,11 @@ function VenueDetails() {
                   if (formErrors.rejectReason) setFormErrors({});
                 }}
                 placeholder="Please explain why this venue is being rejected..."
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: formErrors.rejectReason ? '1px solid var(--danger-color, #ef4444)' : '1px solid var(--border-color, #ccc)', fontFamily: 'inherit' }}
+                className={`w-full p-2.5 rounded-[7px] text-sm text-ink outline-none bg-white border ${
+                  formErrors.rejectReason ? 'border-admin-red' : 'border-line hover:border-admin-red focus:border-admin-red'
+                } transition-colors`}
               />
-              {formErrors.rejectReason && <div className="field-error" style={{ color: 'var(--danger-color, #ef4444)', fontSize: '0.85rem', marginTop: '0.25rem' }}>{formErrors.rejectReason}</div>}
+              {formErrors.rejectReason && <div className="text-admin-red text-xs mt-1">{formErrors.rejectReason}</div>}
             </div>
           )}
         </ConfirmModal>
