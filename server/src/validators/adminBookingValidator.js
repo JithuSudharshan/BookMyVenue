@@ -23,3 +23,16 @@ export const bookingIdParamSchema = z.object({
     id: objectIdSchema,
   }),
 });
+
+export const cancelBookingSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }),
+  body: z.object({
+    cancellationReason: z.enum(['Disputes', 'Fraud', 'Legal issues', 'Emergencies', 'Support intervention'], {
+      invalid_type_error: "Cancellation reason must be one of: Disputes, Fraud, Legal issues, Emergencies, Support intervention",
+      required_error: "Cancellation reason is required",
+    }),
+    cancellationDescription: z.string().optional(),
+  }),
+});

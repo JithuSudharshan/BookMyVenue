@@ -1,12 +1,12 @@
 import { Eye, Calendar, Building2, Users, Receipt, Landmark } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Pagination from '../../components/admin/Pagination';
 import SearchBox from '../../components/admin/SearchBox';
 import StateBlock from '../../components/admin/StateBlock';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Toast from '../../components/admin/Toast';
 import MetricCard from '../../components/admin/MetricCard';
-import BookingDetailsModal from '../../components/admin/BookingDetailsModal';
 import { getBookings, getBookingStats } from '../../api/admin-api/adminApi';
 import { formatDate } from '../../utils/formatters';
 
@@ -28,9 +28,7 @@ function BookingManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 5;
-
-  // Selected booking for Details Modal
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const navigate = useNavigate();
 
   // Debounce search query
   useEffect(() => {
@@ -210,7 +208,6 @@ function BookingManagement() {
                   <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider"> Date</th>
                   <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Booking Status</th>
                   <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Payment Status</th>
-                  <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Total Amount</th>
                   <th className="p-[16px_12px] text-left text-[#7b6b6b] text-[11px] font-black uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -232,12 +229,9 @@ function BookingManagement() {
                     <td className="p-[16px_12px]">
                       <StatusBadge status={booking.paymentStatus} />
                     </td>
-                    <td className="p-[16px_12px] text-sm font-bold text-ink">
-                      ₹{booking.totalAmount?.toLocaleString() || 0}
-                    </td>
                     <td className="p-[16px_12px]">
                       <button
-                        onClick={() => setSelectedBooking(booking)}
+                        onClick={() => navigate(`/admin/bookings/${booking._id}`)}
                         className="inline-flex items-center justify-center p-1.5 w-8 h-8 rounded-md text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all"
                         type="button"
                         title="View Details"
@@ -263,12 +257,6 @@ function BookingManagement() {
         ) : null}
       </section>
 
-      {selectedBooking && (
-        <BookingDetailsModal
-          booking={selectedBooking}
-          onClose={() => setSelectedBooking(null)}
-        />
-      )}
     </div>
   );
 }

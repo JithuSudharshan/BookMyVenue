@@ -4,7 +4,7 @@ import Vendor from "../../models/vendorModel.js";
 import Slot from "../../models/slotModel.js";
 import "../../models/categoryModel.js";
 import "../../models/subcategoryModel.js";
-export const getAllVenuesAdmin = async ({ search, status, sort, page = 1, limit = 10 } = {}) => {
+export const getAllVenuesAdmin = async ({ search, status, visibility, sort, page = 1, limit = 10 } = {}) => {
   let query = {};
   if (status && status !== 'All') {
     if (status.toLowerCase() === 'under_review') {
@@ -14,6 +14,14 @@ export const getAllVenuesAdmin = async ({ search, status, sort, page = 1, limit 
     }
   } else {
     query['approval.status'] = { $ne: 'draft' };
+  }
+
+  if (visibility && visibility !== 'All') {
+    query.venueStatus = visibility.toLowerCase();
+    // When filtering by operational status/visibility, we only want to show approved venues
+    if (!status || status === 'All') {
+      query['approval.status'] = 'approved';
+    }
   }
 
   if (search) {

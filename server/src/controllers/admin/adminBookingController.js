@@ -2,6 +2,7 @@ import {
   getAdminBookingsService,
   getAdminBookingByIdService,
   getAdminBookingStatsService,
+  cancelAdminBookingService,
 } from "../../services/admin/adminBookingService.js";
 
 /**
@@ -50,6 +51,28 @@ export const getAdminBookingById = async (req, res) => {
     res.status(200).json(booking);
   } catch (error) {
     res.status(error.message === "Booking not found" ? 404 : 500).json({
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Cancel a booking by its ID.
+ */
+export const cancelAdminBooking = async (req, res) => {
+  try {
+    const { cancellationReason, cancellationDescription } = req.body;
+    const booking = await cancelAdminBookingService(req.params.id, {
+      cancellationReason,
+      cancellationDescription,
+    });
+    res.status(200).json({
+      message: "Booking cancelled successfully",
+      booking,
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || (error.message === "Booking not found" ? 404 : 500);
+    res.status(statusCode).json({
       message: error.message,
     });
   }

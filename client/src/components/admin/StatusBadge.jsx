@@ -12,6 +12,9 @@ const statusClasses = {
   submitted: 'text-[#b45309] bg-[#fef3c7]',
   'pending.review': 'text-[#b45309] bg-[#fef3c7]',
   partially_paid: 'text-[#b45309] bg-[#fef3c7]',
+  requested: 'text-[#b45309] bg-[#fef3c7]',
+  changes_requested: 'text-[#b45309] bg-[#fef3c7]',
+  incomplete: 'text-[#6b5555] bg-[#f4f4f5]',
 
   rejected: 'text-admin-red bg-[#fee2e2]',
   suspended: 'text-admin-red bg-[#fee2e2]',
@@ -22,11 +25,20 @@ const statusClasses = {
   failed: 'text-admin-red bg-[#fee2e2]',
 };
 
+const statusLabels = {
+  requested: 'New Application',
+  changes_requested: 'Awaiting Changes',
+  under_review: 'Under Review',
+  incomplete: 'Incomplete',
+  submitted: 'New Submission',
+};
+
 function StatusBadge({ status }) {
   const normalized = String(status || 'unknown').toLowerCase();
   const stateColor = statusClasses[normalized] || 'text-[#6b5555] bg-[#f4f4f5]';
+  const displayLabel = statusLabels[normalized] || status || 'Unknown';
 
-  return <span className={`inline-flex items-center min-h-[24px] px-2.5 text-[12px] font-extrabold rounded-full capitalize ${stateColor}`}>{status || 'Unknown'}</span>;
+  return <span className={`inline-flex items-center min-h-[24px] px-2.5 text-[12px] font-extrabold rounded-full capitalize ${stateColor}`}>{displayLabel}</span>;
 }
 
 export default StatusBadge;

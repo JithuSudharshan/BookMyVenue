@@ -2,6 +2,7 @@ import Booking from "../../models/bookingModel.js";
 import User from "../../models/userModel.js";
 import Customer from "../../models/customerModel.js";
 import Venue from "../../models/venueModel.js";
+import Slot from "../../models/slotModel.js";
 
 export const getAllBookings = async ({
   search,
@@ -122,12 +123,59 @@ export const getBookingById = async (id) => {
   return await Booking.findById(id)
     .populate({
       path: "userId",
+      select: "email role isBlocked createdAt",
       populate: {
         path: "profile"
       }
     })
-    .populate("venueId")
+    .populate({
+      path: "venueId",
+      populate: {
+        path: "vendorId",
+        select: "email role isBlocked",
+        populate: {
+          path: "profile",
+          select: "fullName firstName lastName phone email onboardingStatus roleInBusiness address"
+        }
+      }
+    })
     .populate("slotIds");
+};
+
+export const cancelBookingById = async (id, { cancellationReason, cancellationDescription }) => {
+  const booking = await Booking.findById(id);
+  if (!booking) return null;
+
+  const cancellableStatuses = ["Pending", "Confirmed"];
+  if (!cancellableStatuses.includes(booking.bookingStatus)) {
+    const err = new Error(`Cannot cancel a booking with status: ${booking.bookingStatus}`);
+    err.statusCode = 409;
+    throw err;
+  }
+
+  booking.bookingStatus = "Cancelled";
+  booking.cancellationReason = cancellationReason;
+  booking.cancellationDescription = cancellationDescription;
+
+  if (booking.advanceAmount > 0) {
+    booking.paymentStatus = "Refunded";
+  }
+  await booking.save();
+
+  // Liberate slots
+  if (booking.slotIds && booking.slotIds.length > 0) {
+    const validSlotObjectIds = booking.slotIds.filter(id => 
+      id && typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id)
+    );
+    if (validSlotObjectIds.length > 0) {
+      await Slot.updateMany(
+        { _id: { $in: validSlotObjectIds } },
+        { $set: { isBooked: false } }
+      );
+    }
+  }
+
+  return booking;
 };
 
 export const getBookingStats = async () => {

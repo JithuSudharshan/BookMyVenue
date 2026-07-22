@@ -46,6 +46,14 @@ const bookingSchema = new mongoose.Schema(
       required: [true, 'Please provide the advance amount'],
       min: [0, 'Advance amount cannot be negative'],
     },
+    cancellationReason: {
+      type: String,
+      enum: ['Disputes', 'Fraud', 'Legal issues', 'Emergencies', 'Support intervention'],
+    },
+    cancellationDescription: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

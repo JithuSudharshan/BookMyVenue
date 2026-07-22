@@ -16,7 +16,15 @@ export const getDashboardCounts = async () => {
     .limit(3)
     .select("fullName createdAt");
 
-  const totalVenues = await Venue.countDocuments();
+  const totalVenues = await Venue.countDocuments({ 'approval.status': { $ne: 'draft' } });
+  const pendingApprovalVenues = await Venue.countDocuments({
+    'approval.status': { $in: ['submitted', 'under_review'] },
+  });
+  const approvedVenues = await Venue.countDocuments({ 'approval.status': 'approved' });
+  const rejectedVenues = await Venue.countDocuments({ 'approval.status': 'rejected' });
+
+  const approvedVendors = await Vendor.countDocuments({ onboardingStatus: "approved" });
+  const suspendedVendors = await User.countDocuments({ role: "vendor", isBlocked: true });
 
   return {
     totalUsers,
@@ -24,5 +32,10 @@ export const getDashboardCounts = async () => {
     pendingVerifications,
     recentPendingVendors,
     totalVenues,
+    approvedVendors,
+    suspendedVendors,
+    pendingApprovalVenues,
+    approvedVenues,
+    rejectedVenues,
   };
 };

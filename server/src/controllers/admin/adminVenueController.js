@@ -9,11 +9,12 @@ export const getAdminVenues = async (req, res) => {
   try {
     const search = req.query.search || req.query.q || "";
     const status = req.query.status || "All";
+    const visibility = req.query.visibility || "";
     const sort = req.query.sort || "";
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
 
-    const { data, total } = await getAdminVenuesService({ search, status, sort, page, limit });
+    const { data, total } = await getAdminVenuesService({ search, status, visibility, sort, page, limit });
 
     res.status(200).json({
       data,

@@ -64,3 +64,9 @@ export const getBookings = (params = {}) => {
 export const getBookingById = (bookingId) => request(`/admin/bookings/${bookingId}`);
 
 export const getBookingStats = () => request('/admin/bookings/stats');
+
+export const cancelBooking = (bookingId, cancellationData) =>
+  request(`/admin/bookings/${bookingId}/cancel`, {
+    method: 'PATCH',
+    body: JSON.stringify(cancellationData),
+  });

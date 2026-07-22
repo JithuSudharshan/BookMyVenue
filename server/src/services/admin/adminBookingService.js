@@ -2,6 +2,7 @@ import {
   getAllBookings,
   getBookingById,
   getBookingStats,
+  cancelBookingById,
 } from "../../repositories/admin/adminBookingRepository.js";
 
 /**
@@ -28,8 +29,21 @@ export const getAdminBookingByIdService = async (id) => {
 };
 
 /**
- * Retrieves aggregated booking count statistics.
- * @returns {Promise<Object>} Status breakdown counts.
+ * Cancels a single booking by ID and liberates its slots.
+ * @param {string} id - The booking ID.
+ * @param {Object} details - Cancellation reasons.
+ * @returns {Promise<Object>} The updated booking document.
+ */
+export const cancelAdminBookingService = async (id, { cancellationReason, cancellationDescription }) => {
+  const booking = await cancelBookingById(id, { cancellationReason, cancellationDescription });
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+  return booking;
+};
+
+/**
+ * Aggregates booking statistics.
  */
 export const getAdminBookingStatsService = async () => {
   return await getBookingStats();

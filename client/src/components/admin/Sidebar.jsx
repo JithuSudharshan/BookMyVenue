@@ -4,7 +4,6 @@ import {
   CircleHelp,
   Gauge,
   LogOut,
-  ShieldCheck,
   UserRoundCog,
   Users,
   Receipt,
@@ -17,7 +16,6 @@ const navItems = [
   { to: '/admin', label: 'Dashboard', icon: Gauge, end: true },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/vendors', label: 'Vendors', icon: Building2 },
-  { to: '/admin/vendor-approvals', label: 'Vendor Verification', icon: ShieldCheck },
   { to: '/admin/venues', label: 'Venues', icon: CalendarCheck },
   { to: '/admin/bookings', label: 'Bookings', icon: Receipt },
 ];
