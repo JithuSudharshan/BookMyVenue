@@ -6,6 +6,7 @@ import ClientManagement from '../pages/admin/ClientManagement';
 import UserDetails from '../pages/admin/UserDetails';
 import VendorDetails from '../pages/admin/VendorDetails';
 import VendorManagement from '../pages/admin/VendorManagement';
+import CategoryManagement from '../pages/admin/CategoryManagement';
 import VenueManagement from '../pages/admin/VenueManagement';
 import VenueDetails from '../pages/admin/VenueDetails';
 import BookingManagement from '../pages/admin/BookingManagement';
@@ -23,6 +24,7 @@ export default function AdminRoutes() {
         <Route path="vendor-approvals" element={<Navigate to="/admin/vendors?tab=review" replace />} />
         <Route path="vendors/:id" element={<VendorDetails />} />
         <Route path="vendorDetail/:id" element={<VendorDetails />} />
+        <Route path="/categories" element={<CategoryManagement />} />
         <Route path="venues" element={<VenueManagement />} />
         <Route path="venues/:id" element={<VenueDetails />} />
         <Route path="bookings" element={<BookingManagement />} />

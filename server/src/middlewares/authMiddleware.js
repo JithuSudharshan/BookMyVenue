@@ -1,36 +1,31 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import Admin from '../models/adminModel.js';
+import userRepository from '../repositories/userRepository.js';
 
 // Protect routes
 export const protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  // Read token from the 'accessToken' cookie
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
+
+  if (token) {
     try {
-      // Get token from header
-      token = req.headers.authorization.split(' ')[1];
-
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET );
+      const secret = process.env.JWT_SECRET || 'secret123';
+      const decoded = jwt.verify(token, secret);
 
-      // Get user from the token (check both User and Admin collections)
-      let user = await User.findById(decoded.id).select('-password');
-      
-      if (!user) {
-        user = await Admin.findById(decoded.id).select('-password');
-      }
-
-      req.user = user;
+      // Get user from the token
+      req.user = await userRepository.findUserById(decoded.id);
 
       if (!req.user) {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
-      // Check if user is blocked (only relevant for regular Users)
+      // Check if user is blocked
       if (req.user.isBlocked) {
         return res.status(403).json({ message: 'Your account has been blocked.' });
       }

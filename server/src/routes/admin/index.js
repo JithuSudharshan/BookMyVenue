@@ -1,4 +1,5 @@
 import express from "express";
+<<<<<<< HEAD
 import { protect, authorize } from "../../middlewares/authMiddleware.js";
 
 import authRoutes from "./adminAuthRoutes.js";
@@ -24,3 +25,16 @@ router.use("/venues", venueRoutes);
 router.use("/bookings", bookingRoutes);
 
 export default router;
+=======
+
+import categoryRoutes from "./categoryRoute.js";
+import subcategoryRoutes from "./subcategoryRoute.js";
+
+const router = express.Router();
+
+router.use("/categories", categoryRoutes);
+
+router.use("/subcategories", subcategoryRoutes);
+
+export default router;
+>>>>>>> origin/dev

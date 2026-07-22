@@ -1,0 +1,342 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.wl-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+  color: #1a1a1a;
+}
+
+/* ── Header ── */
+.wl-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.wl-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.wl-subtitle {
+  font-size: 15px;
+  color: #717171;
+}
+
+/* ── Controls (Filter/Sort) ── */
+.wl-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wl-select {
+  padding: 10px 36px 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #ebebeb;
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;utf8,<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23717171" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #484848;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.wl-select:hover {
+  border-color: #222;
+}
+
+.wl-search {
+  position: relative;
+  width: 240px;
+}
+
+.wl-search input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: 24px;
+  border: 1px solid #ebebeb;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wl-search input:focus {
+  border-color: #ff385c;
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+}
+
+.wl-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #717171;
+  pointer-events: none;
+}
+
+/* ── Grid ── */
+.wl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+/* ── Card ── */
+.wl-card {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #ebebeb;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.wl-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+}
+
+/* Image */
+.wl-card-img-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  position: relative;
+  overflow: hidden;
+  background: #f7f7f9;
+}
+
+.wl-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.wl-card:hover .wl-card-img {
+  transform: scale(1.03);
+}
+
+.wl-card-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+}
+
+/* Wishlist Heart Toggle */
+.wl-toggle-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+  color: #ff385c;
+}
+
+.wl-toggle-btn:hover {
+  transform: scale(1.05);
+  background: #fff;
+}
+
+.wl-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.wl-toggle-btn.removing {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Content */
+.wl-card-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.wl-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.wl-venue-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+.wl-venue-loc {
+  font-size: 14px;
+  color: #717171;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wl-venue-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: auto;
+  padding-bottom: 16px;
+}
+
+.wl-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #484848;
+}
+
+/* Footer / Actions */
+.wl-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #ebebeb;
+  padding-top: 16px;
+  margin-top: 4px;
+}
+
+.wl-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.wl-price-label {
+  font-size: 12px;
+  color: #717171;
+  font-weight: 400;
+}
+
+.wl-action-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #ff385c;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s;
+  display: inline-block;
+}
+
+.wl-action-btn:hover {
+  background: #e31c5f;
+}
+
+/* ── Empty State ── */
+.wl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  background: #ffffff;
+  border: 1px dashed #dcdcdc;
+  border-radius: 20px;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.wl-empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #fff1f3;
+  color: #ff385c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.wl-empty-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.wl-empty-subtitle {
+  color: #717171;
+  max-width: 360px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.wl-empty-btn {
+  padding: 12px 28px;
+  background: #ff385c;
+  color: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.wl-empty-btn:hover {
+  background: #e31c5f;
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .wl-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .wl-controls {
+    width: 100%;
+  }
+  
+  .wl-search {
+    width: 100%;
+  }
+  
+  .wl-select {
+    flex: 1;
+  }
+}
