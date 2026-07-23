@@ -1,5 +1,6 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 // Pages
 import VendorDashboard from '../pages/vendor/VendorDashboard';
@@ -11,22 +12,39 @@ import VendorVenueDetailPage from '../pages/vendor/VendorVenueDetailPage';
 import VendorBookingsPage from '../pages/vendor/VendorBookingsPage';
 import WalletPage from '../pages/common/WalletPage';
 
+const VendorGuard = () => {
+  const { user } = useAuth();
+  const status = user?.profile?.onboardingStatus;
+  
+  if (status === 'incomplete') {
+    return <Navigate to="/vendor/onboarding" replace />;
+  }
+  if (['requested', 'under_review', 'rejected', 'changes_requested'].includes(status)) {
+    return <Navigate to="/vendor/application-status" replace />;
+  }
+  
+  return <Outlet />;
+};
+
 const VendorRoutes = () => {
   return (
     <Routes>
       <Route index element={<Navigate to="dashboard" replace />} />
-      <Route path="dashboard" element={<VendorDashboard />} />
       <Route path="application-status" element={<VendorApplicationStatus />} />
-      <Route path="profile" element={<VendorProfilePage />} />
       
-      {/* Venue Management */}
-      <Route path="venues" element={<VenueManagement />} />
-      <Route path="venues/add" element={<AddVenue />} />
-      <Route path="venues/edit/:id" element={<AddVenue />} />
-      <Route path="venues/:id" element={<VendorVenueDetailPage />} />
-      
-      <Route path="bookings" element={<VendorBookingsPage />} />
-      <Route path="wallet" element={<WalletPage />} />
+      <Route element={<VendorGuard />}>
+        <Route path="dashboard" element={<VendorDashboard />} />
+        <Route path="profile" element={<VendorProfilePage />} />
+        
+        {/* Venue Management */}
+        <Route path="venues" element={<VenueManagement />} />
+        <Route path="venues/add" element={<AddVenue />} />
+        <Route path="venues/edit/:id" element={<AddVenue />} />
+        <Route path="venues/:id" element={<VendorVenueDetailPage />} />
+        
+        <Route path="bookings" element={<VendorBookingsPage />} />
+        <Route path="wallet" element={<WalletPage />} />
+      </Route>
     </Routes>
   );
 };

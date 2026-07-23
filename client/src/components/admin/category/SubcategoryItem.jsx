@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiMoreVertical, FiEdit2, FiEyeOff, FiEye, FiTrash2 } from 'react-icons/fi';
+import { MoreVertical, Edit2, EyeOff, Eye, Trash2 } from 'lucide-react';
 
 const SubcategoryItem = ({ subcategory, parentIsActive, onEdit, onToggleStatus, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -19,11 +19,11 @@ const SubcategoryItem = ({ subcategory, parentIsActive, onEdit, onToggleStatus, 
   const effectivelyActive = parentIsActive && subcategory.isActive;
 
   return (
-    <div className={`flex items-center justify-between p-3 mb-2 rounded-md border border-gray-100 ${!effectivelyActive ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
-      <span className={`text-sm font-medium ${!subcategory.isActive ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+    <div className={`flex items-center justify-between p-3 mb-2 rounded-md border border-line ${!effectivelyActive ? 'bg-panel' : 'bg-surface hover:bg-panel'}`}>
+      <span className={`text-[13px] font-bold ${!subcategory.isActive ? 'text-muted line-through' : 'text-ink'}`}>
         {subcategory.name}
         {!parentIsActive && subcategory.isActive && (
-          <span className="ml-2 text-[10px] text-amber-500 font-normal italic">(hidden — parent unpublished)</span>
+          <span className="ml-2 text-[10px] text-admin-amber font-normal italic">(hidden — parent unpublished)</span>
         )}
       </span>
       
@@ -34,40 +34,40 @@ const SubcategoryItem = ({ subcategory, parentIsActive, onEdit, onToggleStatus, 
           title={!parentIsActive ? 'Publish the parent category first' : ''}
           className={`p-1 rounded-md transition-colors
             ${parentIsActive
-              ? 'hover:bg-gray-200 text-gray-500 cursor-pointer'
-              : 'text-gray-300 cursor-not-allowed'
+              ? 'hover:bg-line text-muted cursor-pointer'
+              : 'text-[#d1c7c7] cursor-not-allowed'
             }`}
         >
-          <FiMoreVertical size={16} />
+          <MoreVertical size={16} />
         </button>
 
         {showMenu && (
-          <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg py-1 z-dropdown border border-gray-200">
+          <div className="absolute right-0 mt-1 w-48 bg-surface rounded-md shadow-admin py-1 z-dropdown border border-line">
             <button
               onClick={() => { setShowMenu(false); onEdit(subcategory); }}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+              className="w-full text-left px-4 py-2 text-sm text-ink hover:bg-panel flex items-center"
             >
-              <FiEdit2 className="mr-2" size={14} /> Edit Subcategory
+              <Edit2 className="mr-2" size={14} /> Edit Subcategory
             </button>
             <button
               onClick={() => { 
                 setShowMenu(false); 
                 onToggleStatus(subcategory); 
               }}
-              className={`w-full text-left px-4 py-2 text-sm flex items-center ${subcategory.isActive ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+              className={`w-full text-left px-4 py-2 text-sm flex items-center ${subcategory.isActive ? 'text-admin-red hover:bg-admin-red-soft' : 'text-admin-green hover:bg-[#dcfce7]'}`}
             >
               {subcategory.isActive ? (
-                <><FiEyeOff className="mr-2" size={14} /> Unpublish</>
+                <><EyeOff className="mr-2" size={14} /> Unpublish</>
               ) : (
-                <><FiEye className="mr-2" size={14} /> Publish</>
+                <><Eye className="mr-2" size={14} /> Publish</>
               )}
             </button>
-            <hr className="my-1 border-gray-100" />
+            <hr className="my-1 border-line" />
             <button
               onClick={() => { setShowMenu(false); onDelete(subcategory); }}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+              className="w-full text-left px-4 py-2 text-sm text-admin-red hover:bg-admin-red-soft flex items-center"
             >
-              <FiTrash2 className="mr-2" size={14} /> Delete
+              <Trash2 className="mr-2" size={14} /> Delete
             </button>
           </div>
         )}

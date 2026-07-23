@@ -1,8 +1,8 @@
 const toneClasses = {
-  green: 'text-green bg-[#dcfce7]',
-  mint: 'text-green bg-[#dcfce7]',
-  blue: 'text-blue bg-[#dbeafe]',
-  amber: 'text-amber bg-[#fef3c7]',
+  green: 'text-admin-green bg-[#dcfce7]',
+  mint: 'text-admin-green bg-[#dcfce7]',
+  blue: 'text-admin-blue bg-[#dbeafe]',
+  amber: 'text-admin-amber bg-[#fef3c7]',
   violet: 'text-[#7c3aed] bg-[#ede9fe]',
   red: 'text-admin-red bg-admin-red-soft',
 };

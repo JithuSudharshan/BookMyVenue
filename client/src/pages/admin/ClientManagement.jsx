@@ -122,14 +122,14 @@ function ClientManagement() {
             </button>
             <button
               className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
-                statusFilter === 'Suspended'
+                statusFilter === 'Inactive'
                   ? 'text-white bg-admin-red border-admin-red'
                   : 'text-[#6b5555] bg-white border-line hover:bg-admin-red-soft hover:text-admin-red'
               }`}
               type="button"
-              onClick={() => setStatusFilter('Suspended')}
+              onClick={() => setStatusFilter('Inactive')}
             >
-              Suspended
+              Inactive
             </button>
           </div>
         </div>
@@ -158,7 +158,7 @@ function ClientManagement() {
                     <td className="p-[16px_12px] text-sm text-ink">
                       {user.email}
                     </td>
-                    <td className="p-[16px_12px]"><StatusBadge status={user.isBlocked ? 'Suspended' : 'Active'} /></td>
+                    <td className="p-[16px_12px]"><StatusBadge status={user.isBlocked ? 'Inactive' : 'Active'} /></td>
                     <td className="p-[16px_12px] text-sm text-ink">{formatDate(user.createdAt)}</td>
                     <td className="p-[16px_12px] text-sm text-ink">{formatDate(user.lastLogin)}</td>
                     <td className="p-[16px_12px]">

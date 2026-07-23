@@ -23,8 +23,7 @@ export default function AdminRoutes() {
         <Route path="vendors" element={<VendorManagement />} />
         <Route path="vendor-approvals" element={<Navigate to="/admin/vendors?tab=review" replace />} />
         <Route path="vendors/:id" element={<VendorDetails />} />
-        <Route path="vendorDetail/:id" element={<VendorDetails />} />
-        <Route path="/categories" element={<CategoryManagement />} />
+        <Route path="categories" element={<CategoryManagement />} />
         <Route path="venues" element={<VenueManagement />} />
         <Route path="venues/:id" element={<VenueDetails />} />
         <Route path="bookings" element={<BookingManagement />} />

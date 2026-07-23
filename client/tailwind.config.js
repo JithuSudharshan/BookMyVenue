@@ -60,7 +60,23 @@ export default {
         "on-tertiary-fixed-variant": "#004494",
         "inverse-on-surface": "#f1f1f1",
         "on-secondary": "#ffffff",
-        "outline-sep": "#e6bdb8"
+        "outline-sep": "#e6bdb8",
+        /* ── Admin panel design tokens ───────────────────────────────── */
+        "admin-red":      "var(--admin-red)",
+        "admin-red-dark": "var(--admin-red-dark)",
+        "admin-red-soft": "var(--admin-red-soft)",
+        "ink":            "var(--ink)",
+        "muted":          "var(--muted)",
+        "line":           "var(--line)",
+        "panel":          "var(--panel)",
+        "bg":             "var(--bg)",
+        "admin-green":    "var(--green)",
+        "admin-amber":    "var(--amber)",
+        "admin-blue":     "var(--blue)"
+      },
+      "boxShadow": {
+        /* shadow-admin — used on cards, login panel, sidebar */
+        "admin": "var(--shadow)"
       },
       "borderRadius": {
         "DEFAULT": "0.25rem",

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { User, CalendarDays, Heart, Wallet, LayoutDashboard, Building2, FileText, LogOut } from 'lucide-react';
+import { User, CalendarDays, Heart, Wallet, LayoutDashboard, Building2, FileText, LogOut, Lock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const CUSTOMER_NAV_ITEMS = [
@@ -34,15 +34,11 @@ export const DashboardSidebar = ({ sidebarOpen, setSidebarOpen, isVendor }) => {
     return (first + last).toUpperCase() || (isVendor ? 'V' : 'U');
   };
 
-  const isVendorAppStatusVisible = isVendor && 
-    (user?.profile?.onboardingStatus === 'requested' || 
-     user?.profile?.onboardingStatus === 'under_review' || 
-     user?.profile?.onboardingStatus === 'rejected' ||
-     user?.profile?.onboardingStatus === 'changes_requested');
-
+  const isVendorApproved = user?.profile?.onboardingStatus === 'approved';
+  
   const NAV_ITEMS = isVendor 
-    ? (isVendorAppStatusVisible 
-        ? [{ path: '/vendor/application-status', icon: FileText, label: 'App Status' }, ...VENDOR_NAV_ITEMS] 
+    ? (!isVendorApproved 
+        ? [{ path: '/vendor/application-status', icon: FileText, label: 'App Status' }, ...VENDOR_NAV_ITEMS]
         : VENDOR_NAV_ITEMS)
     : CUSTOMER_NAV_ITEMS;
 
@@ -72,20 +68,34 @@ export const DashboardSidebar = ({ sidebarOpen, setSidebarOpen, isVendor }) => {
 
         <nav className="dl-nav">
           <p className="dl-nav-section-label">{sectionLabel}</p>
-          {NAV_ITEMS.map(({ path, icon: Icon, label }) => (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === '/vendor/dashboard'}
-              className={({ isActive }) =>
-                `dl-nav-item ${isActive ? 'active' : ''}`
-              }
-              onClick={() => setSidebarOpen(false)}
-            >
-              <Icon size={18} className="dl-nav-icon" />
-              <span>{label}</span>
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map(({ path, icon: Icon, label }) => {
+            const isLocked = isVendor && !isVendorApproved && ['Dashboard', 'Profile', 'My Venues', 'Bookings', 'Wallet'].includes(label);
+
+            return isLocked ? (
+              <div
+                key={path}
+                className="dl-nav-item opacity-50 cursor-not-allowed flex items-center"
+                title="Complete onboarding to unlock this feature"
+              >
+                <Icon size={18} className="dl-nav-icon text-gray-400" />
+                <span className="flex-1 text-gray-500">{label}</span>
+                <Lock size={14} className="text-gray-400" />
+              </div>
+            ) : (
+              <NavLink
+                key={path}
+                to={path}
+                end={path === '/vendor/dashboard'}
+                className={({ isActive }) =>
+                  `dl-nav-item ${isActive ? 'active' : ''}`
+                }
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Icon size={18} className="dl-nav-icon" />
+                <span>{label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
         <button className="dl-sidebar-logout" onClick={handleLogout}>

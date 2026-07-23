@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { X } from 'lucide-react';
 
 const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
@@ -90,14 +90,14 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center shrink-0">
-          <h3 className="text-lg font-bold text-gray-900">
+    <div className="fixed inset-0 z-modal flex items-center justify-center bg-[#00000040] backdrop-blur-[2px] p-4">
+      <div className="bg-surface rounded-xl shadow-admin w-full max-w-md flex flex-col max-h-[90vh] border border-line">
+        <div className="px-6 py-4 border-b border-line flex justify-between items-center shrink-0">
+          <h3 className="text-lg font-bold text-ink">
             {initialData ? 'Edit Category' : 'Create Category'}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <FiX size={20} />
+          <button onClick={onClose} className="text-muted hover:text-ink transition-colors">
+            <X size={20} />
           </button>
         </div>
         
@@ -111,14 +111,14 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Category Name *</label>
+              <label className="block text-sm font-semibold text-ink mb-1">Category Name *</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                  errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primary'
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-admin-red-soft transition-all text-sm ${
+                  errors.name ? 'border-red-500 focus:border-red-500' : 'border-line focus:border-admin-red text-ink'
                 }`}
                 placeholder="e.g., Wedding Halls"
               />
@@ -126,11 +126,11 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Category Image *</label>
+              <label className="block text-sm font-semibold text-ink mb-2">Category Image *</label>
               
               {imagePreview && (
                 <div className="mb-3 relative group w-fit">
-                  <img src={imagePreview} alt="Preview" className="h-32 w-auto object-cover rounded-lg border border-gray-200 shadow-sm" />
+                  <img src={imagePreview} alt="Preview" className="h-32 w-auto object-cover rounded-lg border border-line shadow-sm" />
                 </div>
               )}
               
@@ -139,17 +139,17 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                 name="image"
                 accept="image/jpeg, image/png, image/webp"
                 onChange={handleImageChange}
-                className="w-full text-sm text-gray-500
+                className="w-full text-sm text-muted
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-full file:border-0
                   file:text-sm file:font-semibold
-                  file:bg-red-50 file:text-primary
-                  hover:file:bg-red-100 transition-colors cursor-pointer"
+                  file:bg-admin-red-soft file:text-admin-red
+                  hover:file:bg-[#fecaca] transition-colors cursor-pointer"
               />
               {errors.image ? (
                 <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.image}</p>
               ) : (
-                <p className="mt-1.5 text-xs text-gray-500">Select an image file (JPG, PNG, WebP) up to 5MB.</p>
+                <p className="mt-1.5 text-xs text-muted">Select an image file (JPG, PNG, WebP) up to 5MB.</p>
               )}
             </div>
           </div>
@@ -159,14 +159,14 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-line rounded-md text-sm font-bold text-muted hover:bg-panel transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-primary/90 disabled:opacity-70 transition-colors flex items-center shadow-sm"
+              className="px-4 py-2 bg-admin-red text-white rounded-md text-sm font-bold hover:bg-admin-red-dark disabled:opacity-70 transition-colors flex items-center shadow-sm"
             >
               {loading ? 'Saving...' : 'Save Category'}
             </button>

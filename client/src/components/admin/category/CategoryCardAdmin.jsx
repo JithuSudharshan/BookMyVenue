@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiMoreVertical, FiEdit2, FiEyeOff, FiEye, FiPlus } from 'react-icons/fi';
+import { MoreVertical, Edit2, EyeOff, Eye, Plus } from 'lucide-react';
 import SubcategoryItem from './SubcategoryItem';
 
 const CategoryCardAdmin = ({ 
@@ -27,11 +27,11 @@ const CategoryCardAdmin = ({
   }, []);
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col transition-all ${!category.isActive ? 'opacity-60 grayscale-[20%]' : ''}`}>
+    <div className={`bg-surface rounded-xl shadow-admin border border-line overflow-hidden flex flex-col transition-all ${!category.isActive ? 'opacity-60 grayscale-[20%]' : ''}`}>
       {!category.isActive && (
-        <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5 flex items-center gap-2">
-          <FiEyeOff size={12} className="text-gray-500 flex-shrink-0" />
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="bg-panel border-b border-line px-4 py-1.5 flex items-center gap-2">
+          <EyeOff size={12} className="text-muted flex-shrink-0" />
+          <span className="text-xs font-semibold text-muted uppercase tracking-wider">
             Unpublished — Hidden from users
           </span>
         </div>
@@ -50,8 +50,8 @@ const CategoryCardAdmin = ({
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 truncate">{category.name}</h3>
-              <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-md mt-1 ${category.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+              <h3 className="text-lg font-bold text-ink truncate">{category.name}</h3>
+              <span className={`inline-block px-2 py-1 text-[10px] font-black rounded-md mt-1 uppercase ${category.isActive ? 'bg-[#dcfce7] text-admin-green' : 'bg-panel border border-line text-muted'}`}>
                 {category.isActive ? 'PUBLISHED' : 'UNPUBLISHED'}
               </span>
             </div>
@@ -59,27 +59,27 @@ const CategoryCardAdmin = ({
             <div className="relative" ref={menuRef}>
               <button 
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-50 text-gray-500 transition-colors"
+                className="p-1.5 rounded-md border border-line hover:bg-panel text-muted transition-colors"
               >
-                <FiMoreVertical size={16} />
+                <MoreVertical size={16} />
               </button>
 
               {showMenu && (
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg py-1 z-dropdown border border-gray-200">
+                <div className="absolute right-0 mt-1 w-48 bg-surface rounded-md shadow-admin py-1 z-dropdown border border-line">
                   <button
                     onClick={() => { setShowMenu(false); onEditCategory(category); }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    className="w-full text-left px-4 py-2 text-sm text-ink hover:bg-panel flex items-center"
                   >
-                    <FiEdit2 className="mr-2" size={14} /> Edit Category
+                    <Edit2 className="mr-2" size={14} /> Edit Category
                   </button>
                   <button
                     onClick={() => { setShowMenu(false); onToggleCategoryStatus(category); }}
-                    className={`w-full text-left px-4 py-2 text-sm flex items-center ${category.isActive ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center ${category.isActive ? 'text-admin-red hover:bg-admin-red-soft' : 'text-admin-green hover:bg-[#dcfce7]'}`}
                   >
                     {category.isActive ? (
-                      <><FiEyeOff className="mr-2" size={14} /> Unpublish</>
+                      <><EyeOff className="mr-2" size={14} /> Unpublish</>
                     ) : (
-                      <><FiEye className="mr-2" size={14} /> Publish</>
+                      <><Eye className="mr-2" size={14} /> Publish</>
                     )}
                   </button>
                 </div>
@@ -90,8 +90,8 @@ const CategoryCardAdmin = ({
       </div>
 
       <div className="px-5 pb-5 flex-1 flex flex-col">
-        <div className="border-t border-gray-100 pt-4 mb-3">
-          <h4 className="text-sm font-bold text-gray-900 mb-3">Subcategories ({category.subcategories?.length || 0})</h4>
+        <div className="border-t border-line pt-4 mb-3">
+          <h4 className="text-[11px] font-black uppercase text-[#7b6b6b] mb-3 tracking-wider">Subcategories ({category.subcategories?.length || 0})</h4>
           
           <div className="space-y-1 pr-1">
             {category.subcategories && category.subcategories.length > 0 ? (
@@ -109,7 +109,7 @@ const CategoryCardAdmin = ({
                 {!showAllSubs && category.subcategories.length > 4 && (
                   <button
                     onClick={() => setShowAllSubs(true)}
-                    className="text-xs font-semibold text-primary hover:text-red-700 w-full text-center py-2 transition-colors"
+                    className="text-xs font-semibold text-admin-red hover:text-admin-red-dark w-full text-center py-2 transition-colors"
                   >
                     Show {category.subcategories.length - 4} more ↓
                   </button>
@@ -117,14 +117,14 @@ const CategoryCardAdmin = ({
                 {showAllSubs && category.subcategories.length > 4 && (
                   <button
                     onClick={() => setShowAllSubs(false)}
-                    className="text-xs font-semibold text-gray-500 hover:text-gray-700 w-full text-center py-2 transition-colors"
+                    className="text-xs font-semibold text-muted hover:text-ink w-full text-center py-2 transition-colors"
                   >
                     Show less ↑
                   </button>
                 )}
               </>
             ) : (
-              <p className="text-sm text-gray-500 italic text-center py-2">No subcategories yet</p>
+              <p className="text-sm text-muted italic text-center py-2">No subcategories yet</p>
             )}
           </div>
         </div>
@@ -136,11 +136,11 @@ const CategoryCardAdmin = ({
             title={!category.isActive ? 'Publish the category first to add subcategories' : ''}
             className={`w-full py-2 flex items-center justify-center border border-dashed rounded-md text-sm font-medium transition-colors
               ${category.isActive
-                ? 'border-primary text-primary hover:bg-red-50 cursor-pointer'
-                : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                ? 'border-admin-red text-admin-red hover:bg-admin-red-soft cursor-pointer'
+                : 'border-line text-[#d1c7c7] cursor-not-allowed'
               }`}
           >
-            <FiPlus className="mr-1" size={16} /> Add Subcategory
+            <Plus className="mr-1" size={16} /> Add Subcategory
           </button>
         </div>
       </div>

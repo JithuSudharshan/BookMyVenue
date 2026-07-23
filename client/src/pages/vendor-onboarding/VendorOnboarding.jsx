@@ -11,7 +11,6 @@ const VendorOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,7 +49,7 @@ const VendorOnboarding = () => {
     try {
       await vendorApi.submitForReview();
       toast.success('Application submitted successfully!');
-      setIsSuccess(true);
+      navigate('/vendor/application-status');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit application.');
     } finally {
@@ -60,27 +59,7 @@ const VendorOnboarding = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-surface-container-lowest">Loading...</div>;
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center p-4">
-        <div className="bg-surface p-8 rounded-3xl shadow-lg border border-outline-variant max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-success" />
-          </div>
-          <h2 className="font-headline-md mb-2">Application Submitted!</h2>
-          <p className="text-on-surface-variant mb-6">
-            Thank you for completing your profile. Our team will review your details and get back to you soon.
-          </p>
-          <button 
-            onClick={() => navigate('/vendor/dashboard')}
-            className="w-full py-3 bg-primary text-white rounded-xl font-label-lg hover:bg-primary/90 transition shadow-sm"
-          >
-            Go to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface-container-lowest flex flex-col">

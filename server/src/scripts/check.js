@@ -1,0 +1,1 @@
+import mongoose from 'mongoose'; import dotenv from 'dotenv'; dotenv.config(); mongoose.connect(process.env.MONGO_URI).then(async () => { const db = mongoose.connection.db; const cats = await db.collection('categories').find({}).toArray(); console.log('Categories:', cats); process.exit(0); });

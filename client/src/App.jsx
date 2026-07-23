@@ -1,6 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './store/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import PublicRoute from './routes/PublicRoute';
@@ -45,8 +44,7 @@ function App() {
           }
         }}
       />
-      <Router>
-        <Routes>
+      <Routes>
           {/* Dedicated Auth Redirect */}
           <Route path="/auth-redirect" element={<AuthRedirect />} />
 
@@ -86,11 +84,8 @@ function App() {
             </Route>
           </Route>
 
-          {/* Protected Routes for Admins */}
-          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
-            {/* Admin Sub-router */}
-            <Route path="/admin/*" element={<AdminRoutes />} />
-          </Route>
+          {/* Admin Routes (handles its own protection internally) */}
+          <Route path="/admin/*" element={<AdminRoutes />} />
 
           {/* Public/Shared Venue Routes */}
           {/* /venues/:id removed — vendor venue detail is now at /vendor/venues/:id */}
@@ -103,7 +98,6 @@ function App() {
           {/* Fallback Catch-all Route (Redirects to 404 Page) */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Router>
     </AuthProvider>
   );
 }

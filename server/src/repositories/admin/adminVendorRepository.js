@@ -13,7 +13,7 @@ export const getAllVendors = async ({ search, status, accountStatus, page = 1, l
   }
 
   if (accountStatus && accountStatus !== 'All') {
-    const isBlocked = accountStatus === 'Suspended';
+    const isBlocked = accountStatus === 'Blocked';
     const users = await User.find({ role: 'vendor', isBlocked }).select('_id');
     const userIds = users.map(u => u._id);
     vendorQuery.userId = { $in: userIds };

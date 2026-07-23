@@ -7,6 +7,7 @@ import {
   UserRoundCog,
   Users,
   Receipt,
+  LayoutGrid
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getSavedAdmin } from '../../services/httpService';
@@ -17,6 +18,7 @@ const navItems = [
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/vendors', label: 'Vendors', icon: Building2 },
   { to: '/admin/venues', label: 'Venues', icon: CalendarCheck },
+  { to: '/admin/categories', label: 'Categories', icon: LayoutGrid },
   { to: '/admin/bookings', label: 'Bookings', icon: Receipt },
 ];
 
@@ -48,11 +50,10 @@ function Sidebar() {
                 end={item.end}
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => 
-                  `flex items-center gap-2.5 min-h-[38px] px-3 text-sm font-bold rounded-md transition-all ${
-                    isActive 
-                      ? 'text-white bg-admin-red' 
-                      : 'text-[#6b5555] hover:bg-admin-red-soft hover:text-admin-red'
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 min-h-[38px] px-3 text-sm font-bold rounded-md transition-all ${isActive
+                    ? 'text-white bg-admin-red'
+                    : 'text-[#6b5555] hover:bg-admin-red-soft hover:text-admin-red'
                   }`
                 }
               >

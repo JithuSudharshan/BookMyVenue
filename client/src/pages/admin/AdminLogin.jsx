@@ -1,9 +1,9 @@
-import { Lock, Mail } from 'lucide-react';
-import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { getAdminToken } from '../../services/httpService';
-import { loginAdmin } from '../../api/admin-api/adminApi';
+import { getAdminToken, clearAdminSession } from '../../services/httpService';
+import { loginAdmin, getDashboardStats } from '../../api/admin-api/adminApi';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -16,10 +16,16 @@ function AdminLogin() {
   const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  if (getAdminToken()) {
-    return <Navigate to="/admin" replace />;
-  }
+  // If admin token exists, redirect to admin home.
+  // Token validity is checked by the HTTP service interceptor when hitting endpoints.
+  useEffect(() => {
+    if (getAdminToken()) {
+      navigate('/admin', { replace: true });
+    }
+  }, []);
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -32,14 +38,14 @@ function AdminLogin() {
       await loginAdmin(parsedData);
       navigate('/admin', { replace: true });
     } catch (err) {
-      if (err instanceof z.ZodError) {
+      if (err instanceof z.ZodError && Array.isArray(err.errors)) {
         // Frontend Zod errors
         const fieldErrors = {};
         err.errors.forEach(e => {
           if (e.path[0]) fieldErrors[e.path[0]] = e.message;
         });
         setFormErrors(fieldErrors);
-      } else if (err.data && err.data.errors) {
+      } else if (err.data && Array.isArray(err.data.errors)) {
         // Backend Zod errors
         const fieldErrors = {};
         err.data.errors.forEach(e => {
@@ -51,6 +57,7 @@ function AdminLogin() {
       } else {
         setError(err.message);
       }
+
     } finally {
       setLoading(false);
     }
@@ -92,11 +99,19 @@ function AdminLogin() {
             }`}>
               <Lock size={16} className="text-[#6b5555]" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
                 className="w-full min-w-0 h-[38px] border-0 outline-none text-ink bg-transparent"
               />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-[#6b5555] hover:text-admin-red transition-colors focus:outline-none grid place-items-center"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
             {formErrors.password && <div className="text-admin-red text-xs mt-1">{formErrors.password}</div>}
           </label>

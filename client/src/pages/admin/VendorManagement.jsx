@@ -226,7 +226,7 @@ function VendorManagement() {
                 placeholder="Search by vendor name or email..."
               />
               <div className="flex flex-wrap gap-1.5">
-                {['All', 'Active', 'Suspended'].map((status) => (
+                {['All', 'Unblocked', 'Blocked'].map((status) => (
                   <button
                     key={status}
                     className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold transition-all border ${
@@ -286,7 +286,7 @@ function VendorManagement() {
                           <StatusBadge status={vendor.onboardingStatus} />
                         </td>
                         <td className="p-[16px_12px]">
-                          <StatusBadge status={blocked ? 'Suspended' : 'Active'} />
+                          <StatusBadge status={blocked ? 'Blocked' : 'Unblocked'} />
                         </td>
                         <td className="p-[16px_12px]">
                           <div className="flex gap-2">

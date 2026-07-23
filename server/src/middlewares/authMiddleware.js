@@ -1,6 +1,4 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel.js';
-import Admin from '../models/adminModel.js';
 import userRepository from '../repositories/userRepository.js';
 
 // Protect routes

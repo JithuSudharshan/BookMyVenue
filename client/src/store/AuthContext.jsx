@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { authApi } from '../api/auth-api/authApi';
 
 export const AuthContext = createContext();
@@ -6,6 +7,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   const fetchUser = async () => {
     try {
@@ -20,6 +22,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // Skip cookie-auth checks on admin routes; they manage their own session
+    if (location.pathname.startsWith('/admin')) {
+      setLoading(false);
+      return;
+    }
     fetchUser();
 
     const handleAuthLogout = () => {

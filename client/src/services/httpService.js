@@ -38,13 +38,21 @@ export const request = async (path, options = {}) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearAdminSession();
+      if (!window.location.pathname.endsWith('/admin/login')) {
+        window.location.replace('/admin/login');
+      }
+    }
     const error = new Error(data.message || 'Something went wrong. Please try again.');
     error.data = data;
     throw error;
   }
 
+  // Unwrap responseFormatter envelope for successful requests
+  if (data && data.success === true && 'data' in data) {
+    return data.data;
+  }
+
   return data;
 };
-
-
-

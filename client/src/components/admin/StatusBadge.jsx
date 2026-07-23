@@ -6,6 +6,7 @@ const statusClasses = {
   completed: 'text-[#047857] bg-[#d1fae5]',
   paid: 'text-[#047857] bg-[#d1fae5]',
   refunded: 'text-[#047857] bg-[#d1fae5]',
+  unblocked: 'text-[#047857] bg-[#d1fae5]',
 
   pending: 'text-[#b45309] bg-[#fef3c7]',
   under_review: 'text-[#b45309] bg-[#fef3c7]',
@@ -15,9 +16,11 @@ const statusClasses = {
   requested: 'text-[#b45309] bg-[#fef3c7]',
   changes_requested: 'text-[#b45309] bg-[#fef3c7]',
   incomplete: 'text-[#6b5555] bg-[#f4f4f5]',
+  inactive: 'text-[#6b5555] bg-[#f4f4f5]',
 
   rejected: 'text-admin-red bg-[#fee2e2]',
   suspended: 'text-admin-red bg-[#fee2e2]',
+  blocked: 'text-admin-red bg-[#fee2e2]',
   unverified: 'text-admin-red bg-[#fee2e2]',
   cancelled: 'text-admin-red bg-[#fee2e2]',
   no_show: 'text-admin-red bg-[#fee2e2]',
