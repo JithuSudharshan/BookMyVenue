@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   getCategories, createCategory, updateCategory, toggleCategoryStatus,
@@ -10,6 +10,8 @@ import CategoryCardAdmin from '../../components/admin/category/CategoryCardAdmin
 import CategoryFormModal from '../../components/admin/category/CategoryFormModal';
 import SubcategoryFormModal from '../../components/admin/category/SubcategoryFormModal';
 import ConfirmActionModal from '../../components/admin/category/ConfirmActionModal';
+import Pagination from '../../components/admin/Pagination';
+import SearchBox from '../../components/admin/SearchBox';
 
 const CategoryManagement = () => {
   // Data state
@@ -165,129 +167,100 @@ const CategoryManagement = () => {
   };
 
   return (
-    <div className="p-6 lg:p-8 min-h-screen bg-[#F8F9FA]">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+    <div className="grid gap-[26px]">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
-          <h1 className="text-2xl font-extrabold text-dark">Category Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage event categories and subcategories</p>
+          <h1 className="m-0 text-3xl sm:text-4xl font-extrabold leading-none text-ink">Category Management</h1>
+          <p className="block text-muted text-[12px] mt-1">Manage event categories and subcategories.</p>
         </div>
         
-        {/* Actions & Filters */}
-        <div className="flex flex-col items-end gap-3">
-          <button
-            onClick={() => setCategoryModal({ isOpen: true, data: null })}
-            className="flex items-center justify-center px-4 py-2 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
-          >
-            <FiPlus className="mr-2" /> Add Category
-          </button>
-
-          <div className="flex items-center gap-3 flex-wrap justify-end">
-            {/* Search */}
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm w-64 focus-within:border-primary transition-colors">
-            <FiSearch className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search categories..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm w-full text-dark placeholder-gray-400"
-            />
-          </div>
-          
-          <div className="relative">
-            <select 
-              value={status} 
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2 pr-8 text-sm font-semibold text-gray-600 hover:border-gray-300 focus:outline-none focus:border-primary shadow-sm cursor-pointer transition-colors"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Published</option>
-              <option value="inactive">Unpublished</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </div>
-          </div>
-          
-          <div className="relative">
-            <select 
-              value={sort} 
-              onChange={(e) => handleFilterChange('sort', e.target.value)}
-              className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2 pr-8 text-sm font-semibold text-gray-600 hover:border-gray-300 focus:outline-none focus:border-primary shadow-sm cursor-pointer transition-colors"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </div>
-          </div>
-        </div>
-        </div>
+        <button
+          onClick={() => setCategoryModal({ isOpen: true, data: null })}
+          className="inline-flex items-center gap-1.5 min-h-[36px] px-4 rounded-[7px] text-[13px] font-extrabold text-white bg-admin-red hover:bg-admin-red-dark transition-all shadow-sm self-start sm:self-auto"
+        >
+          <Plus size={16} /> Add Category
+        </button>
       </div>
 
-      {/* Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      ) : categories.length === 0 ? (
-        <div className="bg-white p-12 text-center rounded-xl border border-gray-200">
-          <p className="text-gray-500 text-lg">No categories found matching your criteria.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {categories.map(category => (
-            <CategoryCardAdmin
-              key={category._id}
-              category={category}
-              onEditCategory={(data) => setCategoryModal({ isOpen: true, data })}
-              onToggleCategoryStatus={handleToggleCategoryStatus}
-              onAddSubcategory={(parentId) => setSubcategoryModal({ isOpen: true, data: null, parentId })}
-              onEditSubcategory={(data) => setSubcategoryModal({ isOpen: true, data, parentId: null })}
-              onToggleSubcategoryStatus={handleToggleSubcategoryStatus}
-              onDeleteSubcategory={handleDeleteSubcategory}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!loading && pagination.totalPages > 1 && (
-        <div className="flex justify-center mt-10">
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPagination(p => ({ ...p, currentPage: Math.max(1, p.currentPage - 1) }))}
-              disabled={pagination.currentPage === 1}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
-            >
-              <FiChevronLeft className="w-4 h-4" />
-            </button>
-
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setPagination(p => ({ ...p, currentPage: page }))}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors shadow-sm ${pagination.currentPage === page
-                    ? 'bg-primary text-white'
-                    : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+      <section className="bg-surface border border-line rounded-lg shadow-admin p-[22px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-[18px] justify-between">
+          <SearchBox
+            value={search}
+            onChange={setSearch}
+            placeholder="Search categories..."
+          />
+          
+          <div className="flex items-center gap-3 flex-wrap justify-end">
+            <div className="relative">
+              <select 
+                value={status} 
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="appearance-none bg-white border border-line rounded-lg px-3 py-2 pr-8 text-sm font-semibold text-ink hover:border-gray-300 focus:outline-none focus:border-admin-red cursor-pointer transition-colors"
               >
-                {page}
-              </button>
-            ))}
-
-            <button
-              onClick={() => setPagination(p => ({ ...p, currentPage: Math.min(pagination.totalPages, p.currentPage + 1) }))}
-              disabled={pagination.currentPage === pagination.totalPages}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
-            >
-              <FiChevronRight className="w-4 h-4" />
-            </button>
+                <option value="all">All Status</option>
+                <option value="active">Published</option>
+                <option value="inactive">Unpublished</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <select 
+                value={sort} 
+                onChange={(e) => handleFilterChange('sort', e.target.value)}
+                className="appearance-none bg-white border border-line rounded-lg px-3 py-2 pr-8 text-sm font-semibold text-ink hover:border-gray-300 focus:outline-none focus:border-admin-red cursor-pointer transition-colors"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-admin-red"></div>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="bg-panel p-12 text-center rounded-xl border border-line">
+            <p className="text-muted text-sm font-medium">No categories found matching your criteria.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {categories.map(category => (
+              <CategoryCardAdmin
+                key={category._id}
+                category={category}
+                onEditCategory={(data) => setCategoryModal({ isOpen: true, data })}
+                onToggleCategoryStatus={handleToggleCategoryStatus}
+                onAddSubcategory={(parentId) => setSubcategoryModal({ isOpen: true, data: null, parentId })}
+                onEditSubcategory={(data) => setSubcategoryModal({ isOpen: true, data, parentId: null })}
+                onToggleSubcategoryStatus={handleToggleSubcategoryStatus}
+                onDeleteSubcategory={handleDeleteSubcategory}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && pagination.totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination 
+              currentPage={pagination.currentPage} 
+              totalPages={pagination.totalPages} 
+              totalItems={pagination.totalCategories} 
+              itemsPerPage={pagination.limit} 
+              onPageChange={(page) => setPagination(p => ({ ...p, currentPage: page }))} 
+            />
+          </div>
+        )}
+      </section>
 
       {/* Modals */}
       <CategoryFormModal

@@ -100,6 +100,17 @@ const vendorSchema = new mongoose.Schema(
   }
 );
 
+// Virtual for ownerName used by frontend Admin Dashboard
+vendorSchema.virtual('ownerName').get(function() {
+  if (this.fullName) return this.fullName;
+  if (this.firstName && this.lastName) return `${this.firstName} ${this.lastName}`;
+  if (this.firstName) return this.firstName;
+  return 'Unknown';
+});
+
+vendorSchema.set('toObject', { virtuals: true });
+vendorSchema.set('toJSON', { virtuals: true });
+
 const Vendor = mongoose.model('Vendor', vendorSchema);
 
 export default Vendor;

@@ -8,11 +8,11 @@ import {
 import StepIndicator from '../../components/vendor/form/StepIndicator'
 import ImageUploader from '../../components/vendor/form/ImageUploader'
 import { toast } from 'sonner'
-import { 
-  getVendorVenueById, 
-  createVenue, 
-  saveDraft, 
-  updateDraft, 
+import {
+  getVendorVenueById,
+  createVenue,
+  saveDraft,
+  updateDraft,
   updateVenue,
   submitVenue,
   getCategories
@@ -172,11 +172,10 @@ const Step1 = ({ form, setForm, errors, categoriesData }) => {
                 key={a}
                 type="button"
                 onClick={() => toggleAmenity(a)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  selected
-                    ? 'bg-primary text-white border-primary shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${selected
+                  ? 'bg-primary text-white border-primary shadow-sm'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary'
+                  }`}
               >
                 {selected && <FiCheck className="inline w-3 h-3 mr-1" />}
                 {a}
@@ -288,15 +287,13 @@ const Step3 = ({ form, setForm }) => (
         <button
           type="button"
           onClick={() => setForm(f => ({ ...f, bookingModel: 'daily' }))}
-          className={`flex-1 flex items-start gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-            form.bookingModel === 'daily'
-              ? 'border-primary bg-red-50'
-              : 'border-gray-200 bg-white hover:border-gray-300'
-          }`}
+          className={`flex-1 flex items-start gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${form.bookingModel === 'daily'
+            ? 'border-primary bg-red-50'
+            : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}
         >
-          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-            form.bookingModel === 'daily' ? 'border-primary' : 'border-gray-300'
-          }`}>
+          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${form.bookingModel === 'daily' ? 'border-primary' : 'border-gray-300'
+            }`}>
             {form.bookingModel === 'daily' && <div className="w-2.5 h-2.5 bg-primary rounded-full" />}
           </div>
           <div>
@@ -312,15 +309,13 @@ const Step3 = ({ form, setForm }) => (
         <button
           type="button"
           onClick={() => setForm(f => ({ ...f, bookingModel: 'hourly' }))}
-          className={`flex-1 flex items-start gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-            form.bookingModel === 'hourly'
-              ? 'border-primary bg-red-50'
-              : 'border-gray-200 bg-white hover:border-gray-300'
-          }`}
+          className={`flex-1 flex items-start gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer text-left ${form.bookingModel === 'hourly'
+            ? 'border-primary bg-red-50'
+            : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}
         >
-          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-            form.bookingModel === 'hourly' ? 'border-primary' : 'border-gray-300'
-          }`}>
+          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${form.bookingModel === 'hourly' ? 'border-primary' : 'border-gray-300'
+            }`}>
             {form.bookingModel === 'hourly' && <div className="w-2.5 h-2.5 bg-primary rounded-full" />}
           </div>
           <div>
@@ -335,11 +330,10 @@ const Step3 = ({ form, setForm }) => (
     </Field>
 
     {/* Info box */}
-    <div className={`rounded-xl px-5 py-4 border flex items-start gap-3 transition-all ${
-      form.bookingModel === 'daily'
-        ? 'bg-green-50 border-green-200'
-        : 'bg-blue-50 border-blue-200'
-    }`}>
+    <div className={`rounded-xl px-5 py-4 border flex items-start gap-3 transition-all ${form.bookingModel === 'daily'
+      ? 'bg-green-50 border-green-200'
+      : 'bg-blue-50 border-blue-200'
+      }`}>
       <FiInfo className={`w-4 h-4 mt-0.5 flex-shrink-0 ${form.bookingModel === 'daily' ? 'text-green-600' : 'text-blue-600'}`} />
       <p className={`text-sm font-medium ${form.bookingModel === 'daily' ? 'text-green-700' : 'text-blue-700'}`}>
         {form.bookingModel === 'daily'
@@ -435,22 +429,22 @@ const Step4 = ({ form, setForm, errors, categoriesData }) => {
           {/* Basic Info card */}
           <div className="bg-gray-50 rounded-2xl border border-gray-100 p-5">
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Basic Information</p>
-            <ReviewRow label="Venue Name"   value={form.name} />
-            <ReviewRow label="Category"     value={selectedCat?.name || form.category} />
-            <ReviewRow label="Subcategory"  value={selectedSub?.name || form.subcategory} />
-            <ReviewRow label="Capacity"     value={form.capacity ? `Up to ${form.capacity} guests` : null} />
-            <ReviewRow label="Amenities"    value={form.amenities.length > 0 ? form.amenities.join(', ') : null} />
+            <ReviewRow label="Venue Name" value={form.name} />
+            <ReviewRow label="Category" value={selectedCat?.name || form.category} />
+            <ReviewRow label="Subcategory" value={selectedSub?.name || form.subcategory} />
+            <ReviewRow label="Capacity" value={form.capacity ? `Up to ${form.capacity} guests` : null} />
+            <ReviewRow label="Amenities" value={form.amenities.length > 0 ? form.amenities.join(', ') : null} />
           </div>
 
           {/* Location card */}
           <div className="bg-gray-50 rounded-2xl border border-gray-100 p-5">
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Location & Media</p>
-            <ReviewRow label="Address"  value={form.address} />
-            <ReviewRow label="City"     value={form.city} />
-            <ReviewRow label="State"    value={form.state} />
-            <ReviewRow label="Pincode"  value={form.pincode} />
+            <ReviewRow label="Address" value={form.address} />
+            <ReviewRow label="City" value={form.city} />
+            <ReviewRow label="State" value={form.state} />
+            <ReviewRow label="Pincode" value={form.pincode} />
             <ReviewRow label="Maps Link" value={form.googleMapLink ? 'Linked ✓' : null} />
-            <ReviewRow label="Images"   value={form.images.length > 0 ? `${form.images.length} image${form.images.length !== 1 ? 's' : ''} uploaded` : null} />
+            <ReviewRow label="Images" value={form.images.length > 0 ? `${form.images.length} image${form.images.length !== 1 ? 's' : ''} uploaded` : null} />
           </div>
 
           {/* Booking card */}
@@ -497,9 +491,9 @@ const validate = (step, form) => {
       errs.description = 'Description cannot exceed 2000 characters';
     }
 
-    if (!form.category)           errs.category    = 'Please select a category';
-    if (!form.subcategory)        errs.subcategory = 'Please select a subcategory';
-    
+    if (!form.category) errs.category = 'Please select a category';
+    if (!form.subcategory) errs.subcategory = 'Please select a subcategory';
+
     if (!form.capacity) {
       errs.capacity = 'Capacity is required';
     } else if (Number(form.capacity) < 1) {
@@ -507,18 +501,18 @@ const validate = (step, form) => {
     }
   }
   if (step === 1) {
-    if (!form.address.trim())     errs.address  = 'Address is required';
-    if (!form.city)               errs.city     = 'City is required';
-    if (!form.state.trim())       errs.state    = 'State is required';
+    if (!form.address.trim()) errs.address = 'Address is required';
+    if (!form.city) errs.city = 'City is required';
+    if (!form.state.trim()) errs.state = 'State is required';
     if (!form.pincode.trim() || form.pincode.length !== 6) {
-      errs.pincode  = 'Valid 6-digit pincode required';
+      errs.pincode = 'Valid 6-digit pincode required';
     }
     if (!form.googleMapLink?.trim()) {
       errs.googleMapLink = 'Google Map link is required';
     } else if (!/^https?:\/\/(www\.)?google\.com\/maps.*|^https?:\/\/maps\.app\.goo\.gl\/.*/.test(form.googleMapLink)) {
       errs.googleMapLink = 'Please enter a valid Google Maps URL';
     }
-    if (form.images.length < 3)   errs.images   = 'Please upload at least 3 images';
+    if (form.images.length < 3) errs.images = 'Please upload at least 3 images';
   }
   if (step === 3) {
     if (!form.price || Number(form.price) < 0) {
@@ -533,7 +527,7 @@ const AddVenue = () => {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEditMode = !!id
-  
+
   const [currentStep, setCurrentStep] = useState(0)
   const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
@@ -569,11 +563,11 @@ const AddVenue = () => {
   const loadVenueDetails = async () => {
     try {
       const data = await getVendorVenueById(id)
-      
+
       const catId = data.categoryId || (typeof data.category === 'object' ? (data.category?._id || data.category?.id) : data.category)
       const subcatId = data.subcategoryId || (typeof data.subcategory === 'object' ? (data.subcategory?._id || data.subcategory?.id) : data.subcategory)
       const mappedImages = (data.images || []).map(img => img.url || img)
-      
+
       setForm({
         name: data.name || '',
         description: data.description || '',
@@ -630,7 +624,7 @@ const AddVenue = () => {
     formData.append('bookingModel', form.bookingModel)
     formData.append('price', Number(form.price))
     formData.append('rules', form.rules)
-    
+
     formData.append('amenities', JSON.stringify(form.amenities))
     formData.append('location', JSON.stringify({
       address: form.address,
@@ -639,7 +633,7 @@ const AddVenue = () => {
       pincode: form.pincode,
       googleMapLink: form.googleMapLink
     }))
-    
+
     if (form.bookingModel === 'hourly') {
       formData.append('operatingHours', JSON.stringify({
         start: form.openingTime,
@@ -655,11 +649,11 @@ const AddVenue = () => {
         formData.append('images', img)
       }
     })
-    
+
     if (existingImages.length > 0) {
       formData.append('images', JSON.stringify(existingImages))
     }
-    
+
     return formData
   }
 
@@ -723,11 +717,11 @@ const AddVenue = () => {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface w-full">
 
       {/* ── Top Bar ──────────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div className="sticky top-[64px] z-20 bg-white border-b border-gray-200 shadow-sm">
+        <div className="w-full px-6 md:px-10 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate('/vendor/venues')}
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-dark font-semibold transition-colors"
@@ -736,6 +730,13 @@ const AddVenue = () => {
           </button>
           <span className="font-extrabold text-primary text-lg">BookMyVenue</span>
           <div className="text-xs text-gray-400 font-medium">Step {currentStep + 1} of 4</div>
+        </div>
+        {/* Full width progress bar at the bottom of navbar */}
+        <div className="w-full h-1 bg-gray-100">
+          <div
+            className="h-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${((currentStep + 1) / 4) * 100}%` }}
+          />
         </div>
       </div>
 
@@ -811,8 +812,8 @@ const AddVenue = () => {
                   {submitting ? (
                     <>
                       <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                       </svg>
                       {isEditMode ? 'Updating...' : 'Submitting...'}
                     </>

@@ -61,7 +61,7 @@ const SubcategoryFormModal = ({ isOpen, onClose, onSubmit, initialData, parentCa
         type="button"
         onClick={onClose}
         disabled={loading}
-        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+        className="px-4 py-2 border border-line rounded-md text-sm font-bold text-muted hover:bg-panel transition-colors"
       >
         Cancel
       </button>
@@ -69,7 +69,7 @@ const SubcategoryFormModal = ({ isOpen, onClose, onSubmit, initialData, parentCa
         type="button"
         onClick={handleSubmit}
         disabled={loading}
-        className="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-primary/90 disabled:opacity-70 transition-colors flex items-center shadow-sm"
+        className="px-4 py-2 bg-admin-red text-white rounded-md text-sm font-bold hover:bg-admin-red-dark disabled:opacity-70 transition-colors flex items-center shadow-sm"
       >
         {loading ? 'Saving...' : 'Save'}
       </button>
@@ -93,13 +93,13 @@ const SubcategoryFormModal = ({ isOpen, onClose, onSubmit, initialData, parentCa
 
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Subcategory Name *</label>
+            <label className="block text-sm font-semibold text-ink mb-1">Subcategory Name *</label>
             <input
               type="text"
               value={name}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primary'
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-admin-red-soft transition-all text-sm text-ink ${
+                errors.name ? 'border-red-500 focus:border-red-500' : 'border-line focus:border-admin-red'
               }`}
               placeholder="e.g., Banquet Hall"
             />

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import VendorLockOverlay from '../components/vendor/VendorLockOverlay';
 import { DashboardHeader } from './partials/DashboardHeader';
 import { DashboardSidebar } from './partials/DashboardSidebar';
 import './DashboardLayout.css';
@@ -29,7 +28,6 @@ function DashboardLayout() {
 
         {/* "??"? Main Content "??"? */}
         <main className="dl-main" style={{ position: 'relative' }}>
-          {isVendor && <VendorLockOverlay />}
           {isVendor ? (
             <Outlet />
           ) : (

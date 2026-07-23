@@ -19,6 +19,20 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
+// Request Interceptor: Attach admin token for admin routes
+axiosInstance.interceptors.request.use(
+  (config) => {
+    if (config.url && config.url.startsWith('/admin')) {
+      const adminToken = localStorage.getItem('bookmyvenue_admin_token');
+      if (adminToken) {
+        config.headers.Authorization = `Bearer ${adminToken}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response Interceptor: Handle global errors and token refresh
 axiosInstance.interceptors.response.use(
   (response) => response,

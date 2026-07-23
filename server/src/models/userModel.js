@@ -67,6 +67,20 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// Add dynamic virtual for profile based on role
+userSchema.virtual('profile', {
+  ref: (doc) => {
+    if (doc.role === 'vendor') return 'Vendor';
+    return 'Customer';
+  },
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: true
+});
+
+userSchema.set('toObject', { virtuals: true });
+userSchema.set('toJSON', { virtuals: true });
+
 const User = mongoose.model('User', userSchema);
 
 export default User;
