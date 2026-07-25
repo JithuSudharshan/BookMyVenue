@@ -29,14 +29,10 @@ const VenueHostCard = ({ vendor }) => {
           
           <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{firstName}</h3>
           
-          <div className="flex divide-x divide-gray-200 mt-4 w-full">
-            <div className="flex-1 text-center px-4">
+          <div className="flex mt-4 w-full justify-center">
+            <div className="text-center px-4">
               <p className="font-bold text-lg text-gray-900">Verified</p>
               <p className="text-xs text-gray-500 font-medium">Partner</p>
-            </div>
-            <div className="flex-1 text-center px-4">
-              <p className="font-bold text-lg text-gray-900">100%</p>
-              <p className="text-xs text-gray-500 font-medium">Response rate</p>
             </div>
           </div>
         </div>
@@ -53,7 +49,6 @@ const VenueHostCard = ({ vendor }) => {
           <div>
             <h4 className="font-bold text-lg text-gray-900 mb-1">Host details</h4>
             <p className="text-gray-600">Hosting since {joinYear}</p>
-            <p className="text-gray-600">Responds within an hour</p>
           </div>
           
           <div className="pt-4 border-t border-gray-200 mt-6 flex items-start gap-4">

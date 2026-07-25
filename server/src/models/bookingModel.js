@@ -14,7 +14,8 @@ const bookingSchema = new mongoose.Schema(
     },
     slotIds: [
       {
-        type: String, // Assuming slot IDs or time references will be strings or ObjectIds
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Slot',
       },
     ],
     bookingDate: {

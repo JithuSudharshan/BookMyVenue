@@ -12,7 +12,7 @@ import {
 import { generateTimeOptions } from '../../utils/timeUtils';
 import { Calendar as CalendarIcon, Info } from 'lucide-react';
 
-const REASONS = ['Maintenance', 'Offline Booking', 'Other'];
+import { VENDOR_SLOT_REASONS as REASONS } from '../../utils/venueConstants';
 
 const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledgedSlots, onAcknowledged }) => {
   const [year, setYear] = useState(new Date().getFullYear());

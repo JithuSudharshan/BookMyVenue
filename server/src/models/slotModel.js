@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
-
-export const SLOT_REASONS = ['Maintenance', 'Offline Booking', 'Customer Booking', 'Other'];
+import { SLOT_REASONS } from '../utils/venueConstants.js';
 
 const blockedSlotSchema = new mongoose.Schema({
   fromTime:  { type: String, required: true },

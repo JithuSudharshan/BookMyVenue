@@ -15,6 +15,10 @@ export const findOverrideByVenueAndDate = async (venueId, date) => {
   return await Slot.findOne({ venueId, date }).lean();
 };
 
+export const findOverridesByVenueAndDates = async (venueId, dates) => {
+  return await Slot.find({ venueId, date: { $in: dates } }).lean();
+};
+
 export const upsertFullDayOverride = async (venueId, date, updateData) => {
   return await Slot.findOneAndUpdate(
     { venueId, date },
@@ -56,15 +60,6 @@ export const pullHourlySlotByBookingId = async (venueId, date, bookingId) => {
   );
 };
 
-export const pullHourlySlotByIndex = async (venueId, date, slotIndex) => {
-  // This wasn't explicitly requested as index based pull in the prompt's main bullet points for Phase 2, 
-  // but it's mentioned in the Phase 8 section "pullHourlySlot(venueId, date, slotIndex)".
-  // MongoDB doesn't support $pull by index natively easily, usually we pull by an identifier.
-  // Actually, wait, Phase 3 mentions: "If removing a specific hourly slot (by bookingId)".
-  // I will only implement what Phase 2 explicitly lists.
-  // Phase 2 explicitly says: pullHourlySlotByBookingId(venueId, date, bookingId)
-  throw new Error('Not implemented: Use pullHourlySlotByBookingId instead or pull by exact match.');
-};
 
 // If we need to pull by something other than bookingId (e.g. fromTime and toTime), we can add it here.
 export const pullHourlySlotByTime = async (venueId, date, fromTime, toTime) => {
