@@ -64,13 +64,15 @@ const VenueDetailPage = () => {
   ) : null;
 
   return (
-    <BaseVenueDetailPage 
-      venue={venue} 
-      loading={loading} 
-      backLabel="Venues" 
-      onBack={() => navigate('/venues')}
-      sidebarSlot={bookingSidebar}
-    />
+    <div className="bg-white min-h-screen">
+      <BaseVenueDetailPage 
+        venue={venue} 
+        loading={loading} 
+        backLabel="Venues" 
+        onBack={() => navigate('/venues')}
+        sidebarSlot={bookingSidebar}
+      />
+    </div>
   );
 };
 

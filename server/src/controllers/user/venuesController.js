@@ -1,5 +1,5 @@
 import { getVenuesService } from "../../services/user/venuesService.js";
-import * as slotManagementService from "../../services/vendor/slotManagementService.js";
+import { findOverridesByVenueAndMonth } from "../../repositories/vendor/slotOverrideRepository.js";
 
 export const LoadVenues = async (req, res) => {
     try {
@@ -34,7 +34,7 @@ export const getPublicSlotOverview = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Year and month are required' });
         }
 
-        const data = await slotManagementService.getMonthOverview(id, parseInt(year), parseInt(month));
+        const data = await findOverridesByVenueAndMonth(id, parseInt(year), parseInt(month));
         
         res.status(200).json({
             success: true,

@@ -5,9 +5,6 @@ import {
   IndianRupee,
   CheckCircle,
   ChevronLeft,
-  Calendar,
-  ShieldCheck,
-  CreditCard,
   Info
 } from 'lucide-react';
 import VenueImageMosaic from './VenueImageMosaic';
@@ -55,7 +52,7 @@ const BaseVenueDetailPage = ({
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-headline-lg text-on-surface mb-2">{venue.name}</h1>
+            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 mb-2">{venue.name}</h1>
             {customBadgesSlot}
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -94,14 +91,14 @@ const BaseVenueDetailPage = ({
               <p className="font-title-md text-on-surface">₹{venue.price?.toLocaleString('en-IN')}</p>
             </div>
             <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
-              <Calendar className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="font-label-sm text-on-surface-variant mb-1">Buffer Time</p>
-              <p className="font-title-md text-on-surface">{venue.bufferTime || 0} hrs</p>
+              <Info className="w-6 h-6 text-primary mx-auto mb-2" />
+              <p className="font-label-sm text-on-surface-variant mb-1">Booking Type</p>
+              <p className="font-title-md text-on-surface capitalize">{venue.bookingModel || 'daily'}</p>
             </div>
           </div>
 
           <div>
-            <h2 className="font-headline-sm text-on-surface mb-3">About this venue</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">About this venue</h2>
             <p className="font-body-lg text-on-surface-variant leading-relaxed whitespace-pre-line">
               {venue.description || 'No description provided.'}
             </p>
@@ -110,7 +107,7 @@ const BaseVenueDetailPage = ({
           <hr className="border-outline-variant" />
 
           <div>
-            <h2 className="font-headline-sm text-on-surface mb-5">Amenities</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">Amenities</h2>
             {venue.amenities && venue.amenities.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
                 {venue.amenities.map((amenity, idx) => (
@@ -124,28 +121,45 @@ const BaseVenueDetailPage = ({
               <p className="text-on-surface-variant font-body-md">No amenities listed.</p>
             )}
           </div>
+          {venue.vendorId && typeof venue.vendorId === 'object' && (
+            <>
+              <hr className="border-outline-variant" />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">Hosted by {venue.vendorId.name || 'Vendor'}</h2>
+                <div className="flex items-center gap-4">
+                  {venue.vendorId.profileImage ? (
+                    <img src={venue.vendorId.profileImage} alt="Vendor" className="w-16 h-16 rounded-full object-cover shadow-sm" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+                      {venue.vendorId.name ? venue.vendorId.name.charAt(0).toUpperCase() : 'V'}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-title-lg text-gray-900">{venue.vendorId.name}</p>
+                    <p className="text-gray-500 font-body-md">{venue.vendorId.email}</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <hr className="border-outline-variant" />
+
           <div>
-            <h2 className="font-headline-sm text-on-surface mb-5">Venue Rules & Policies</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">Venue Rules & Policies</h2>
             <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant space-y-4">
-              <div className="flex items-start gap-4">
-                <CreditCard className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-title-md text-on-surface">Advance Payment</h4>
-                  <p className="font-body-md text-on-surface-variant">
-                    {venue.advancePaymentPercentage ? `${venue.advancePaymentPercentage}% advance required to secure booking.` : 'Full payment required.'}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <ShieldCheck className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-title-md text-on-surface">Cancellation Policy</h4>
-                  <p className="font-body-md text-on-surface-variant">
-                    {venue.cancellationPolicy || 'Standard cancellation policy applies.'}
-                  </p>
-                </div>
-              </div>
+              {venue.rules && venue.rules.length > 0 ? (
+                <ul className="space-y-3">
+                  {venue.rules.map((rule, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-on-surface-variant font-body-md">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-on-surface-variant font-body-md">No specific rules listed by the vendor.</p>
+              )}
             </div>
           </div>
         </div>
