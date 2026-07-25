@@ -6,7 +6,11 @@ import {
   CheckCircle,
   ChevronLeft,
   Calendar,
+  ShieldCheck,
+  CreditCard,
+  Info
 } from 'lucide-react';
+import VenueImageMosaic from './VenueImageMosaic';
 
 const BaseVenueDetailPage = ({
   venue,
@@ -71,43 +75,13 @@ const BaseVenueDetailPage = ({
       </div>
 
       {/* Gallery Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-        <div className="md:col-span-3 aspect-video md:h-[440px] rounded-3xl overflow-hidden shadow-md relative group">
-          {venue.images && venue.images.length > 0 ? (
-            <img
-              src={venue.images[selectedImage]?.url || venue.images[selectedImage]}
-              alt="Venue view"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-          ) : (
-            <div className="w-full h-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-body-lg rounded-3xl border border-outline-variant">
-              No Images Available
-            </div>
-          )}
-        </div>
-
-        {venue.images && venue.images.length > 1 && (
-          <div className="flex overflow-x-auto md:flex-col gap-4 pb-2 md:pb-0 md:h-[440px] md:overflow-y-auto pr-1">
-            {venue.images.map((img, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedImage(idx)}
-                className={`flex-shrink-0 w-32 md:w-full aspect-video rounded-xl overflow-hidden border-2 transition-all ${
-                  selectedImage === idx
-                    ? 'border-primary ring-2 ring-primary/30'
-                    : 'border-transparent opacity-60 hover:opacity-100'
-                }`}
-              >
-                <img src={img?.url || img} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="mb-10">
+        <VenueImageMosaic images={venue.images || []} />
       </div>
 
       {/* Main Content + Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-10">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+        <div className="lg:col-span-3 space-y-10">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
               <Users className="w-6 h-6 text-primary mx-auto mb-2" />
@@ -150,9 +124,33 @@ const BaseVenueDetailPage = ({
               <p className="text-on-surface-variant font-body-md">No amenities listed.</p>
             )}
           </div>
+          <div>
+            <h2 className="font-headline-sm text-on-surface mb-5">Venue Rules & Policies</h2>
+            <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant space-y-4">
+              <div className="flex items-start gap-4">
+                <CreditCard className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-title-md text-on-surface">Advance Payment</h4>
+                  <p className="font-body-md text-on-surface-variant">
+                    {venue.advancePaymentPercentage ? `${venue.advancePaymentPercentage}% advance required to secure booking.` : 'Full payment required.'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <ShieldCheck className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-title-md text-on-surface">Cancellation Policy</h4>
+                  <p className="font-body-md text-on-surface-variant">
+                    {venue.cancellationPolicy || 'Standard cancellation policy applies.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-2">
           <div className="sticky top-24 space-y-5">
             {sidebarSlot}
           </div>
