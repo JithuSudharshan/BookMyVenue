@@ -398,7 +398,7 @@ const VendorVenueDetailPage = () => {
               </button>
               <button
                 onClick={confirmBlockUnblock}
-                className="px-5 py-2.5 text-sm font-semibold text-white bg-dark hover:bg-black rounded-xl transition-colors shadow-sm"
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-on-surface hover:bg-black rounded-xl transition-colors shadow-sm"
               >
                 {isActive ? 'Yes, Block Venue' : 'Yes, Unblock Venue'}
               </button>

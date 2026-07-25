@@ -11,7 +11,7 @@ import VenueCard from '../../components/vendor/VenueCard'
 // ─── Tab config ─────────────────────────────────────────────────────────────
 const TABS = [
   { key: 'approved', label: 'Approved', icon: FiCheckCircle, color: 'text-green-600', activeBorder: 'border-green-600', activeText: 'text-green-600' },
-  { key: 'under_review', label: 'Under Review', icon: FiClock, color: 'text-amber-500', activeBorder: 'border-amber-500', activeText: 'text-amber-500' },
+  { key: 'under review', label: 'Under Review', icon: FiClock, color: 'text-amber-500', activeBorder: 'border-amber-500', activeText: 'text-amber-500' },
   { key: 'submitted', label: 'Submitted', icon: FiSend, color: 'text-blue-500', activeBorder: 'border-blue-500', activeText: 'text-blue-500' },
   { key: 'draft', label: 'Drafts', icon: FiFileText, color: 'text-gray-500', activeBorder: 'border-gray-500', activeText: 'text-gray-600' },
   { key: 'rejected', label: 'Rejected', icon: FiXCircle, color: 'text-red-500', activeBorder: 'border-red-500', activeText: 'text-red-500' },
@@ -184,7 +184,7 @@ const VenueManagement = () => {
           const Icon = tab.icon
           
           // Map tab key to backend counts mapping
-          const countKey = tab.key
+          const countKey = tab.key === 'under review' ? 'under_review' : tab.key
           const count = counts[countKey] || 0
 
           return (

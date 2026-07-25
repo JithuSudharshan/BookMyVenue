@@ -52,7 +52,7 @@ const MonthlyCalendarGrid = ({
       
       let indicator = null;
       if (bookingModel === 'daily') {
-        let dotColor = 'bg-white border border-gray-200'; // free
+        let dotColor = 'bg-green-500 border border-green-500'; // free
         if (isPast) dotColor = 'bg-gray-300 border-none';
         else if (override?.isFullDayBlocked) {
           dotColor = override.fullDayReason === 'Customer Booking' ? 'bg-blue-500 border-blue-500' : 'bg-red-500 border-red-500';
@@ -108,7 +108,7 @@ const MonthlyCalendarGrid = ({
       </div>
       {bookingModel === 'daily' && (
         <div className="p-4 flex gap-4 text-xs text-gray-500 border-t border-gray-100 bg-gray-50/50">
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-white border border-gray-300"></div> Available</div>
+          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 border border-green-500"></div> Available</div>
           <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Customer Booking</div>
           <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500"></div> Blocked</div>
         </div>

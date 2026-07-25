@@ -117,7 +117,7 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
     let h = startH; let m = startM;
     while(h < endH || (h === endH && m <= endM)) {
       opts.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-      m += 30;
+      m += 60;
       if(m >= 60) { h++; m -= 60; }
     }
     return opts;
@@ -127,7 +127,7 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
   const selectedDateOverride = selectedDateStr ? overrides.find(o => o.date === selectedDateStr) : null;
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn max-w-[1120px] mx-auto px-6 lg:px-10 py-6">
       {!hasAcknowledgedSlots && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
@@ -160,11 +160,28 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
           {bookingModel === 'daily' && selectedDates.length > 0 && (
             <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
               <h3 className="font-semibold text-dark mb-2">Selected Dates ({selectedDates.length})</h3>
-              <p className="text-sm text-gray-500 mb-4 truncate">{selectedDates.join(', ')}</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {selectedDates.map(date => (
+                  <span key={date} className="px-2 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs font-medium text-gray-600">
+                    {date}
+                  </span>
+                ))}
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Reason</label>
+                <select 
+                  className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark"
+                  value={dailyReason} 
+                  onChange={e => setDailyReason(e.target.value)}
+                >
+                  {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
               
               <button 
-                onClick={() => setShowDailyModal(true)}
-                className="w-full py-2 bg-dark hover:bg-black text-white rounded-md font-medium transition-colors"
+                onClick={submitDailyBlocks}
+                className="w-full py-2 bg-on-surface hover:bg-black text-white rounded-md font-medium transition-colors text-sm"
               >
                 Mark Unavailable
               </button>
@@ -206,28 +223,28 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <label className="text-xs text-gray-500 mb-1 block">From</label>
-                    <select className="w-full text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={fromTime} onChange={e=>setFromTime(e.target.value)}>
+                    <select className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={fromTime} onChange={e=>setFromTime(e.target.value)}>
                       <option value="">Select</option>
                       {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                   <div className="flex-1">
                     <label className="text-xs text-gray-500 mb-1 block">To</label>
-                    <select className="w-full text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={toTime} onChange={e=>setToTime(e.target.value)}>
+                    <select className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={toTime} onChange={e=>setToTime(e.target.value)}>
                       <option value="">Select</option>
-                      {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                      {(fromTime ? timeOptions.slice(timeOptions.indexOf(fromTime) + 1) : timeOptions).map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Reason</label>
-                  <select className="w-full text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={hourlyReason} onChange={e=>setHourlyReason(e.target.value)}>
+                  <select className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={hourlyReason} onChange={e=>setHourlyReason(e.target.value)}>
                     {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
                 <button 
                   onClick={submitHourlyBlock}
-                  className="w-full py-2 bg-dark hover:bg-black text-white rounded-md font-medium transition-colors text-sm"
+                  className="w-full py-2 bg-on-surface hover:bg-black text-white rounded-md font-medium transition-colors text-sm"
                 >
                   Block This Time
                 </button>
@@ -265,39 +282,7 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
         </div>
       </div>
 
-      <BaseModal 
-        isOpen={showDailyModal} 
-        onClose={() => setShowDailyModal(false)}
-        title="Block Selected Dates"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">You are about to mark {selectedDates.length} date(s) as unavailable.</p>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-            <select 
-              className="w-full border-gray-300 rounded-md focus:ring-dark focus:border-dark"
-              value={dailyReason} 
-              onChange={e => setDailyReason(e.target.value)}
-            >
-              {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-          <div className="flex gap-3 justify-end mt-6">
-            <button 
-              onClick={() => setShowDailyModal(false)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={submitDailyBlocks}
-              className="px-4 py-2 bg-dark text-white rounded-md hover:bg-black"
-            >
-              Confirm Block
-            </button>
-          </div>
-        </div>
-      </BaseModal>
+
     </div>
   );
 };

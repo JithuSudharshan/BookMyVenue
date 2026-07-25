@@ -92,9 +92,7 @@ export const updateVenueStatusAdmin = async (venueId, status, rejectionReason, a
   if (status === 'rejected' && rejectionReason) {
     updateData['approval.rejectionReason'] = rejectionReason;
   }
-  if (status === 'approved') {
-    updateData.venueStatus = 'active';
-  } else if (status === 'rejected') {
+  if (status === 'approved' || status === 'rejected') {
     updateData.venueStatus = 'inactive';
   }
   return await Venue.findByIdAndUpdate(venueId, updateData, { new: true });
