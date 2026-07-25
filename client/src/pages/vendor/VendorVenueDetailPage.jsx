@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { getVendorVenueById, blockVenue, unblockVenue, submitVenue } from '../../api/vendor-api/vendorApi'
+import SlotManagementTab from '../../components/vendor/SlotManagementTab'
 
 // Helper to map amenity strings to icons
 const getAmenityIcon = (name) => {
@@ -137,6 +138,7 @@ const VendorVenueDetailPage = () => {
   const isUnderReview = venue.approval?.status === 'under_review'
   const rejectionReason = venue.approval?.rejectionReason || 'No reason provided.'
   const isActive = venue.isActive ?? (venue.venueStatus === 'active' && venue.approval?.status === 'approved')
+  const hasAcknowledgedSlots = venue.hasAcknowledgedSlots ?? false
 
   return (
     <div className="min-h-screen bg-white pb-24">
@@ -159,8 +161,11 @@ const VendorVenueDetailPage = () => {
               Venue Details
             </button>
             <button
-              onClick={() => setActiveTab('slots')}
-              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeTab === 'slots' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-dark'}`}
+              onClick={() => isApproved && setActiveTab('slots')}
+              title={!isApproved ? 'Venue must be approved to manage slots' : ''}
+              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                activeTab === 'slots' ? 'bg-white text-dark shadow-sm' : 'text-gray-500 hover:text-dark'
+              } ${!isApproved ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               Slot Management
             </button>
@@ -180,12 +185,13 @@ const VendorVenueDetailPage = () => {
           {activeTab === 'details' && isApproved && (
             <button 
               onClick={handleBlockUnblock}
-              disabled={updating}
+              disabled={updating || (!isActive && !hasAcknowledgedSlots)}
+              title={!isActive && !hasAcknowledgedSlots ? 'Confirm slot settings first in the Slot Management tab' : ''}
               className={`flex items-center gap-2 border font-semibold px-4 py-2 rounded-lg transition-colors text-sm disabled:opacity-50 ${
                 isActive 
                   ? 'bg-red-50 border-red-200 hover:bg-red-100 text-red-700' 
                   : 'bg-green-50 border-green-200 hover:bg-green-100 text-green-700'
-              }`}
+              } ${!isActive && !hasAcknowledgedSlots ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               <FiXCircle className="w-4 h-4" /> 
               {updating ? 'Processing...' : isActive ? 'Block Venue' : 'Unblock Venue'}
@@ -361,14 +367,14 @@ const VendorVenueDetailPage = () => {
         </>
       )}
 
-      {activeTab === 'slots' && (
-        <div className="max-w-[1120px] mx-auto px-6 lg:px-10 pt-16 flex flex-col items-center justify-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <FiCheck className="w-8 h-8 text-gray-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-dark mb-2">Slot Management</h2>
-          <p className="text-gray-500">Availability and slot configuration options will be implemented here soon.</p>
-        </div>
+      {activeTab === 'slots' && isApproved && (
+        <SlotManagementTab
+          venueId={id}
+          bookingModel={venue.bookingModel}
+          bookingConfig={venue.bookingConfig}
+          hasAcknowledgedSlots={venue.hasAcknowledgedSlots ?? false}
+          onAcknowledged={fetchVenue}
+        />
       )}
 
       {/* ── Block/Unblock Confirmation Modal ──────────────────────────── */}
