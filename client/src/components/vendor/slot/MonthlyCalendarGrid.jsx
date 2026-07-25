@@ -57,7 +57,7 @@ const MonthlyCalendarGrid = ({
         else if (override?.isFullDayBlocked) {
           dotColor = override.fullDayReason === 'Customer Booking' ? 'bg-blue-500 border-blue-500' : 'bg-red-500 border-red-500';
         }
-        indicator = <div className={`w-3 h-3 rounded-full mt-2 mx-auto ${dotColor}`}></div>;
+        indicator = <div className={`w-2 h-2 rounded-full mt-1.5 mx-auto ${dotColor}`}></div>;
       } else {
         // hourly
         const count = override?.blockedSlots?.length || 0;
@@ -66,16 +66,22 @@ const MonthlyCalendarGrid = ({
         }
       }
 
+      const isToday = cellDate.getTime() === today.getTime();
+
       cells.push(
         <div
           key={d}
           onClick={() => !isPast && onDateClick(dateStr)}
-          className={`h-24 p-2 border border-gray-100 flex flex-col items-center transition-colors
-            ${isPast ? 'opacity-40 cursor-not-allowed bg-gray-50' : 'cursor-pointer hover:bg-gray-50'}
-            ${isSelected ? 'ring-2 ring-dark ring-inset bg-gray-50' : ''}
+          className={`h-[72px] p-2 border border-gray-100 flex flex-col items-center transition-colors relative
+            ${isPast ? 'opacity-30 cursor-not-allowed bg-gray-50/50' : 'cursor-pointer hover:bg-gray-50'}
+            ${isSelected ? 'bg-dark/5 border-dark' : ''}
           `}
         >
-          <span className={`text-sm font-medium ${isSelected ? 'text-dark font-bold' : 'text-gray-700'}`}>{d}</span>
+          <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+            ${isToday ? 'bg-gray-900 text-white' : isSelected ? 'text-dark font-bold' : 'text-gray-700'}
+          `}>
+            {d}
+          </span>
           {indicator}
         </div>
       );
@@ -108,9 +114,9 @@ const MonthlyCalendarGrid = ({
       </div>
       {bookingModel === 'daily' && (
         <div className="p-4 flex gap-4 text-xs text-gray-500 border-t border-gray-100 bg-gray-50/50">
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 border border-green-500"></div> Available</div>
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Customer Booking</div>
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500"></div> Blocked</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-green-500 border border-green-500"></div> Available</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Customer Booking</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500"></div> Blocked</div>
         </div>
       )}
     </div>

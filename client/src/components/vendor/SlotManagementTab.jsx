@@ -10,6 +10,7 @@ import {
   removeSlotOverride 
 } from '../../api/vendor-api/vendorApi';
 import { generateTimeOptions } from '../../utils/timeUtils';
+import { Calendar as CalendarIcon, Info } from 'lucide-react';
 
 const REASONS = ['Maintenance', 'Offline Booking', 'Other'];
 
@@ -131,8 +132,8 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
         </div>
       )}
 
-      <div className="flex flex-col xl:flex-row gap-6">
-        <div className="xl:w-2/3">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+        <div className="w-full">
           <MonthlyCalendarGrid 
             year={year} 
             month={month} 
@@ -144,9 +145,47 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
           />
         </div>
         
-        <div className="xl:w-1/3 space-y-4">
+        <div className="sticky top-6 space-y-4">
+          {/* Idle Hint State */}
+          {bookingModel === 'daily' && selectedDates.length === 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm text-center">
+              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                <CalendarIcon className="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Manage Availability</h3>
+              <p className="text-sm text-gray-500 mb-6">Click on any dates on the calendar to mark them as unavailable or view existing blocks.</p>
+              
+              <div className="bg-gray-50 rounded-lg p-4 text-left space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Calendar Legend</p>
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <div className="w-2 h-2 rounded-full bg-green-500 border border-green-500"></div> 
+                  Available
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div> 
+                  Customer Booking
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div> 
+                  Blocked by you
+                </div>
+              </div>
+            </div>
+          )}
+
+          {bookingModel === 'hourly' && !selectedDateStr && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm text-center">
+              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                <CalendarIcon className="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Manage Time Slots</h3>
+              <p className="text-sm text-gray-500">Click on any date to manage hourly blocks or view existing customer bookings for that day.</p>
+            </div>
+          )}
+
+          {/* Daily Mode Action Panel */}
           {bookingModel === 'daily' && selectedDates.length > 0 && (
-            <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm animate-fadeIn">
               <h3 className="font-semibold text-dark mb-2">Selected Dates ({selectedDates.length})</h3>
               <div className="flex flex-wrap gap-2 mb-4">
                 {selectedDates.map(date => (
@@ -177,12 +216,12 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
           )}
 
           {bookingModel === 'hourly' && selectedDateStr && (
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col animate-fadeIn">
               <div className="p-4 border-b border-gray-200 bg-gray-50">
                 <h3 className="font-semibold text-dark">Manage Slots: {selectedDateStr}</h3>
               </div>
               
-              <div className="p-4 overflow-y-auto flex-1 space-y-3">
+              <div className="p-4 overflow-y-auto max-h-[250px] flex-1 space-y-3">
                 <h4 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Current Blocks</h4>
                 {(!selectedDateOverride?.blockedSlots || selectedDateOverride.blockedSlots.length === 0) && (
                   <p className="text-sm text-gray-400 italic">No slots blocked for this date.</p>
@@ -240,8 +279,9 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
             </div>
           )}
 
+          {/* Blocked Dates Overview (Daily) */}
           {bookingModel === 'daily' && (
-            <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm mt-4">
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mt-4">
               <h3 className="font-semibold text-dark mb-3">Blocked Dates Overview</h3>
               <div className="max-h-60 overflow-y-auto space-y-2">
                 {overrides.filter(o => o.isFullDayBlocked).length === 0 && (
