@@ -159,6 +159,12 @@ const venueSchema = new mongoose.Schema(
       },
     },
 
+    // ─── Slot Management ─────────────────────────────────────
+    hasAcknowledgedSlots: {
+      type: Boolean,
+      default: false,
+    },
+
     // ─── Visibility ──────────────────────────────────────────
     venueStatus: {
       type: String,
