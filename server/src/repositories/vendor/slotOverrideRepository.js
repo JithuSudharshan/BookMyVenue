@@ -1,0 +1,80 @@
+import SlotOverride from '../../models/slotOverrideModel.js';
+
+export const findOverridesByVenueAndMonth = async (venueId, year, month) => {
+  // Pad month to 2 digits if necessary
+  const formattedMonth = month.toString().padStart(2, '0');
+  const datePrefix = `${year}-${formattedMonth}`;
+  
+  // Find all dates that start with YYYY-MM
+  return await SlotOverride.find({
+    venueId,
+    date: { $regex: `^${datePrefix}` }
+  }).lean();
+};
+
+export const findOverrideByVenueAndDate = async (venueId, date) => {
+  return await SlotOverride.findOne({ venueId, date }).lean();
+};
+
+export const upsertFullDayOverride = async (venueId, date, updateData) => {
+  return await SlotOverride.findOneAndUpdate(
+    { venueId, date },
+    { $set: updateData },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+};
+
+export const upsertManyFullDayOverrides = async (venueId, dates, updateData) => {
+  // Use bulkWrite for efficient multiple upserts
+  const bulkOps = dates.map((date) => ({
+    updateOne: {
+      filter: { venueId, date },
+      update: { $set: updateData },
+      upsert: true
+    }
+  }));
+
+  if (bulkOps.length > 0) {
+    await SlotOverride.bulkWrite(bulkOps);
+  }
+  
+  // Return the updated documents
+  return await SlotOverride.find({ venueId, date: { $in: dates } }).lean();
+};
+
+export const pushHourlySlot = async (venueId, date, slotData) => {
+  return await SlotOverride.findOneAndUpdate(
+    { venueId, date },
+    { $push: { blockedSlots: slotData } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+};
+
+export const pullHourlySlotByBookingId = async (venueId, date, bookingId) => {
+  return await SlotOverride.updateOne(
+    { venueId, date },
+    { $pull: { blockedSlots: { bookingId } } }
+  );
+};
+
+export const pullHourlySlotByIndex = async (venueId, date, slotIndex) => {
+  // This wasn't explicitly requested as index based pull in the prompt's main bullet points for Phase 2, 
+  // but it's mentioned in the Phase 8 section "pullHourlySlot(venueId, date, slotIndex)".
+  // MongoDB doesn't support $pull by index natively easily, usually we pull by an identifier.
+  // Actually, wait, Phase 3 mentions: "If removing a specific hourly slot (by bookingId)".
+  // I will only implement what Phase 2 explicitly lists.
+  // Phase 2 explicitly says: pullHourlySlotByBookingId(venueId, date, bookingId)
+  throw new Error('Not implemented: Use pullHourlySlotByBookingId instead or pull by exact match.');
+};
+
+// If we need to pull by something other than bookingId (e.g. fromTime and toTime), we can add it here.
+export const pullHourlySlotByTime = async (venueId, date, fromTime, toTime) => {
+  return await SlotOverride.updateOne(
+    { venueId, date },
+    { $pull: { blockedSlots: { fromTime, toTime } } }
+  );
+};
+
+export const deleteOverride = async (venueId, date) => {
+  return await SlotOverride.deleteOne({ venueId, date });
+};
