@@ -282,6 +282,10 @@ export const unblockVenueService = async (vendorId, venueId) => {
     if (venue.venueStatus === 'active') throw new AppError("Venue already active", 409);
     if (venue.approval.status !== 'approved') throw new AppError("Cannot activate unapproved venue", 400);
 
+    if (!venue.hasAcknowledgedSlots) {
+        throw new AppError('Please confirm your slot management settings before going live.', 403);
+    }
+
     return await venueRepository.updateVenueStatus(venueId, 'venueStatus', 'active');
 };
 
