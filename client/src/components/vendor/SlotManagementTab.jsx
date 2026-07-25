@@ -9,6 +9,7 @@ import {
   blockHourlySlot, 
   removeSlotOverride 
 } from '../../api/vendor-api/vendorApi';
+import { generateTimeOptions } from '../../utils/timeUtils';
 
 const REASONS = ['Maintenance', 'Offline Booking', 'Other'];
 
@@ -109,20 +110,7 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
     }
   };
 
-  const generateTimeOptions = () => {
-    const opts = [];
-    const parse = (t) => t ? t.split(':').map(Number) : [0,0];
-    const [startH, startM] = parse(bookingConfig?.openingTime || '09:00');
-    const [endH, endM] = parse(bookingConfig?.closingTime || '21:00');
-    let h = startH; let m = startM;
-    while(h < endH || (h === endH && m <= endM)) {
-      opts.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-      m += 60;
-      if(m >= 60) { h++; m -= 60; }
-    }
-    return opts;
-  };
-  const timeOptions = generateTimeOptions();
+  const timeOptions = generateTimeOptions(bookingConfig?.openingTime, bookingConfig?.closingTime);
 
   const selectedDateOverride = selectedDateStr ? overrides.find(o => o.date === selectedDateStr) : null;
 
