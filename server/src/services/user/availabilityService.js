@@ -9,17 +9,19 @@ export const getVenueAvailabilityForDate = async (venueId, requestDate) => {
 
     const override = await findOverrideByVenueAndDate(venueId, requestDate);
 
-    if (venue.bookingConfig?.bookingMode === 'hourly') {
-        const availableStartTimes = generateHourlyStartTimes(venue.bookingConfig, override, requestDate);
+    const bookingConfig = venue.bookingConfig || {};
+    
+    if (venue.bookingModel === 'hourly') {
+        const availableStartTimes = generateHourlyStartTimes(bookingConfig, override, requestDate);
         return {
             mode: 'hourly',
             availableStartTimes,
-            interval: venue.bookingConfig.bookingInterval || 60,
-            minDuration: venue.bookingConfig.minBookingDuration || 60,
-            maxDuration: venue.bookingConfig.maxBookingDuration || 1440
+            interval: bookingConfig.bookingInterval || 60,
+            minDuration: bookingConfig.minBookingDuration || 60,
+            maxDuration: bookingConfig.maxBookingDuration || 1440
         };
     } else {
-        const isAvailable = checkDailyAvailability(venue.bookingConfig, override, requestDate);
+        const isAvailable = checkDailyAvailability(bookingConfig, override, requestDate);
         return {
             mode: 'daily',
             isAvailable

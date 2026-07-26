@@ -29,7 +29,7 @@ export const checkDailyAvailability = (bookingConfig, override, requestDate) => 
   const dateObj = new Date(requestDate);
   const dayName = DAYS_OF_WEEK[dateObj.getDay()];
   
-  const dailyHours = bookingConfig.operatingHours?.[dayName];
+  const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
   if (!dailyHours || !dailyHours.isOpen) {
     return false; // Closed on this day
   }
@@ -50,7 +50,7 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
   const dateObj = new Date(requestDate);
   const dayName = DAYS_OF_WEEK[dateObj.getDay()];
   
-  const dailyHours = bookingConfig.operatingHours?.[dayName];
+  const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
   if (!dailyHours || !dailyHours.isOpen) {
     return []; // Closed on this day
   }
@@ -105,7 +105,7 @@ export const generateValidEndTimes = (bookingConfig, override, requestDate, star
   const dateObj = new Date(requestDate);
   const dayName = DAYS_OF_WEEK[dateObj.getDay()];
   
-  const dailyHours = bookingConfig.operatingHours?.[dayName];
+  const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
   if (!dailyHours || !dailyHours.isOpen) return [];
 
   const closeMin = timeToMinutes(dailyHours.closeTime);

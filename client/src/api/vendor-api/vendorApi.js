@@ -185,6 +185,11 @@ export const getSlotMonthOverview = async (venueId, year, month) => {
   return response.data?.data;
 };
 
+export const getVendorDateAvailability = async (venueId, date) => {
+  const response = await axiosInstance.get(`/vendor/venues/${venueId}/availability/date`, { params: { date } });
+  return response.data?.data;
+};
+
 export const blockDailySlots = async (venueId, payload) => {
   const response = await axiosInstance.post(`/vendor/venues/${venueId}/availability/block/daily`, payload);
   return response.data?.data;

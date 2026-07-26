@@ -3,6 +3,7 @@ import * as slotController from '../../controllers/vendor/slotManagementControll
 
 const router = express.Router({ mergeParams: true });
 router.get('/',              slotController.getMonthOverview);
+router.get('/date',          slotController.getDateAvailability);
 router.post('/block/daily',  slotController.blockDailySlots);
 router.post('/block/hourly', slotController.blockHourlySlot);
 router.delete('/override',   slotController.removeOverride);

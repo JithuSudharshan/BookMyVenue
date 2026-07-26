@@ -10,7 +10,7 @@ import {
   removeSlotOverride 
 } from '../../api/vendor-api/vendorApi';
 import { generateTimeOptions } from '../../utils/timeUtils';
-import { Calendar as CalendarIcon, Info } from 'lucide-react';
+import { Calendar as CalendarIcon, Info, CheckCircle2, Clock } from 'lucide-react';
 
 import { VENDOR_SLOT_REASONS as REASONS } from '../../utils/venueConstants';
 
@@ -26,8 +26,10 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
   const [dailyReason, setDailyReason] = useState('Maintenance');
   
   const [hourlyReason, setHourlyReason] = useState('Maintenance');
-  const [fromTime, setFromTime] = useState('');
-  const [toTime, setToTime] = useState('');
+  
+  // For time pill grid
+  const [dayOperatingHours, setDayOperatingHours] = useState({ openTime: '00:00', closeTime: '23:59' });
+  const [dayTimeSlots, setDayTimeSlots] = useState([]);
 
   const fetchOverview = async (y, m) => {
     setLoading(true);
@@ -88,16 +90,28 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
     setSelectedDates([dateStr]);
   };
 
-  const submitHourlyBlock = async () => {
-    if (!fromTime || !toTime) return toast.error('Please select both from and to times');
+  const toggleTimeSlot = async (slotTime, isBlocked, blockInfo) => {
     try {
-      await blockHourlySlot(venueId, { date: selectedDateStr, fromTime, toTime, reason: hourlyReason });
-      toast.success('Time slot blocked successfully');
-      setFromTime('');
-      setToTime('');
+      if (isBlocked) {
+        if (blockInfo.reason === 'Customer Booking') {
+          return toast.error("You cannot manually unblock a customer's booking here.");
+        }
+        await removeSlotOverride(venueId, { date: selectedDateStr, slotIndex: blockInfo.index });
+        toast.success('Time slot unblocked');
+      } else {
+        const interval = bookingConfig?.bookingInterval || 60;
+        const [h, m] = slotTime.split(':').map(Number);
+        const endM = h * 60 + m + interval;
+        const endH = Math.floor(endM / 60).toString().padStart(2, '0');
+        const endMin = (endM % 60).toString().padStart(2, '0');
+        const toTimeStr = `${endH}:${endMin}`;
+
+        await blockHourlySlot(venueId, { date: selectedDateStr, fromTime: slotTime, toTime: toTimeStr, reason: hourlyReason });
+        toast.success('Time slot blocked');
+      }
       fetchOverview(year, month);
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to block time slot');
+      toast.error(err?.response?.data?.message || 'Failed to update time slot');
     }
   };
 
@@ -111,9 +125,39 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
     }
   };
 
-  const timeOptions = generateTimeOptions(bookingConfig?.openingTime, bookingConfig?.closingTime);
-
   const selectedDateOverride = selectedDateStr ? overrides.find(o => o.date === selectedDateStr) : null;
+  const timeToMinutes = (t) => {
+    if (!t) return 0;
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  useEffect(() => {
+    if (bookingModel === 'hourly' && selectedDateStr) {
+      const d = new Date(selectedDateStr);
+      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = days[d.getDay()];
+      
+      const opHours = bookingConfig?.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:30' };
+      setDayOperatingHours(opHours);
+      
+      if (opHours.isOpen) {
+        const interval = bookingConfig?.bookingInterval || 60;
+        const startMin = timeToMinutes(opHours.openTime);
+        const endMin = timeToMinutes(opHours.closeTime);
+        
+        let slots = [];
+        for (let current = startMin; current < endMin; current += interval) {
+          const h = Math.floor(current / 60).toString().padStart(2, '0');
+          const m = (current % 60).toString().padStart(2, '0');
+          slots.push(`${h}:${m}`);
+        }
+        setDayTimeSlots(slots);
+      } else {
+        setDayTimeSlots([]);
+      }
+    }
+  }, [selectedDateStr, bookingConfig, bookingModel]);
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-[1120px] mx-auto px-6 lg:px-10 py-6">
@@ -217,64 +261,81 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
 
           {bookingModel === 'hourly' && selectedDateStr && (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col animate-fadeIn">
-              <div className="p-4 border-b border-gray-200 bg-gray-50">
-                <h3 className="font-semibold text-dark">Manage Slots: {selectedDateStr}</h3>
+              <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                <h3 className="font-semibold text-dark">Slots for {new Date(selectedDateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</h3>
               </div>
               
-              <div className="p-4 overflow-y-auto max-h-[250px] flex-1 space-y-3">
-                <h4 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Current Blocks</h4>
-                {(!selectedDateOverride?.blockedSlots || selectedDateOverride.blockedSlots.length === 0) && (
-                  <p className="text-sm text-gray-400 italic">No slots blocked for this date.</p>
-                )}
-                {selectedDateOverride?.blockedSlots?.map((slot, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-100">
-                    <div>
-                      <div className="font-medium text-sm text-dark">{slot.fromTime} - {slot.toTime}</div>
-                      <div className="text-xs text-gray-500">{slot.reason}</div>
-                    </div>
-                    {slot.reason !== 'Customer Booking' && (
-                      <button 
-                        onClick={() => handleRemoveOverride(selectedDateStr, { slotIndex: idx })}
-                        className="text-red-500 hover:text-red-700 p-1 bg-red-50 hover:bg-red-100 rounded"
-                        title="Remove block"
+              <div className="p-5 flex-1">
+                {!dayOperatingHours.isOpen ? (
+                  <div className="text-center p-6 bg-red-50 rounded-xl border border-red-100">
+                    <p className="text-red-700 font-medium">Venue is closed on this day.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Block Reason (For new blocks)</label>
+                      <select 
+                        className="w-full py-2 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark focus:border-dark" 
+                        value={hourlyReason} 
+                        onChange={e=>setHourlyReason(e.target.value)}
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                        {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Time Grid (Click to toggle)</label>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                      {dayTimeSlots.map(time => {
+                        const slotMin = timeToMinutes(time);
+                        let isBlocked = false;
+                        let blockInfo = null;
 
-              <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-4">
-                <h4 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Add Block</h4>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-500 mb-1 block">From</label>
-                    <select className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={fromTime} onChange={e=>setFromTime(e.target.value)}>
-                      <option value="">Select</option>
-                      {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-500 mb-1 block">To</label>
-                    <select className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={toTime} onChange={e=>setToTime(e.target.value)}>
-                      <option value="">Select</option>
-                      {(fromTime ? timeOptions.slice(timeOptions.indexOf(fromTime) + 1) : timeOptions).map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Reason</label>
-                  <select className="w-full py-2.5 text-sm border-gray-300 rounded-md focus:ring-dark focus:border-dark" value={hourlyReason} onChange={e=>setHourlyReason(e.target.value)}>
-                    {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-                <button 
-                  onClick={submitHourlyBlock}
-                  className="w-full py-2 bg-on-surface hover:bg-black text-white rounded-md font-medium transition-colors text-sm"
-                >
-                  Block This Time
-                </button>
+                        if (selectedDateOverride?.isFullDayBlocked) {
+                          isBlocked = true;
+                          blockInfo = { reason: selectedDateOverride.fullDayReason };
+                        } else if (selectedDateOverride?.blocks) {
+                          const blockIndex = selectedDateOverride.blocks.findIndex(b => {
+                            const bStart = timeToMinutes(b.fromTime);
+                            const bEnd = timeToMinutes(b.toTime);
+                            return slotMin >= bStart && slotMin < bEnd;
+                          });
+                          if (blockIndex !== -1) {
+                            isBlocked = true;
+                            blockInfo = { ...selectedDateOverride.blocks[blockIndex], index: blockIndex };
+                          }
+                        }
+
+                        let buttonClass = "py-2 px-2 text-sm font-medium rounded-lg border transition-all flex flex-col items-center justify-center gap-1";
+                        let title = "Available (Click to block)";
+                        
+                        if (isBlocked) {
+                          if (blockInfo.reason === 'Customer Booking') {
+                            buttonClass += " bg-blue-50 text-blue-700 border-blue-200 cursor-not-allowed opacity-90";
+                            title = "Customer Booking";
+                          } else {
+                            buttonClass += " bg-red-50 text-red-700 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer";
+                            title = `${blockInfo.reason || 'Blocked'} (Click to unblock)`;
+                          }
+                        } else {
+                          buttonClass += " bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50 cursor-pointer";
+                        }
+
+                        return (
+                          <button
+                            key={time}
+                            title={title}
+                            onClick={() => toggleTimeSlot(time, isBlocked, blockInfo)}
+                            className={buttonClass}
+                          >
+                            <span>{time}</span>
+                            {isBlocked && blockInfo.reason !== 'Customer Booking' && <span className="text-[9px] leading-none text-red-500 uppercase font-bold truncate w-full text-center">{blockInfo.reason === 'Maintenance' ? 'Maint' : 'Block'}</span>}
+                            {isBlocked && blockInfo.reason === 'Customer Booking' && <span className="text-[9px] leading-none text-blue-600 uppercase font-bold truncate w-full text-center">Booked</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}

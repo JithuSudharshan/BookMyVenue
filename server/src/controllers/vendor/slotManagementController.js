@@ -1,4 +1,5 @@
 import * as slotManagementService from '../../services/vendor/slotManagementService.js';
+import { getVenueAvailabilityForDate } from '../../services/user/availabilityService.js';
 
 export const getMonthOverview = async (req, res, next) => {
   try {
@@ -6,6 +7,16 @@ export const getMonthOverview = async (req, res, next) => {
     const { year, month } = req.query;
     const vendorId = req.user._id;
     const data = await slotManagementService.getMonthOverview(vendorId, venueId, year, month);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
+
+export const getDateAvailability = async (req, res, next) => {
+  try {
+    const { id: venueId } = req.params;
+    const { date } = req.query;
+    // We can reuse the user service since it just returns the computed availability
+    const data = await getVenueAvailabilityForDate(venueId, date);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
