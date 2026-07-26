@@ -10,7 +10,6 @@ import {
   removeSlotOverride 
 } from '../../api/vendor-api/vendorApi';
 import { generateTimeOptions } from '../../utils/timeUtils';
-import { generateTimeOptions } from '../../utils/timeUtils';
 import { Calendar as CalendarIcon, Info, CheckCircle2, Clock, Settings, LayoutGrid } from 'lucide-react';
 import BookingConfigForm from './form/BookingConfigForm';
 import TimeSlotPill from '../common/Slot/TimeSlotPill';

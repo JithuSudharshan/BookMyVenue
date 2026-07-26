@@ -161,8 +161,12 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
 
     venue.set(updateData);
 
-    // Revert status to submitted if it's not a draft
-    if (venue.approval?.status !== 'draft') {
+    // Check if the update contains core fields that require re-approval
+    const coreFields = ['name', 'description', 'category', 'subcategory', 'capacity', 'address', 'city', 'state', 'pincode', 'googleMapLink', 'images', 'bookingModel', 'price'];
+    const needsReapproval = Object.keys(updateData).some(key => coreFields.includes(key) && updateData[key] !== undefined);
+
+    // Revert status to submitted if it's not a draft and core fields were changed
+    if (needsReapproval && venue.approval?.status !== 'draft') {
         venue.approval.status = 'submitted';
         venue.approval.submittedAt = new Date();
         venue.approval.rejectionReason = null;
