@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Venue from "../../models/venueModel.js";
 import Vendor from "../../models/vendorModel.js";
-import Slot from "../../models/slotModel.js";
+import AvailabilityOverride from "../../models/availabilityOverrideModel.js";
 import "../../models/categoryModel.js";
 import "../../models/subcategoryModel.js";
 export const getAllVenuesAdmin = async ({ search, status, visibility, sort, page = 1, limit = 10 } = {}) => {
@@ -60,7 +60,7 @@ export const getVenueByIdAdmin = async (venueId) => {
     .lean();
     
   if (venue) {
-    const slots = await Slot.find({ venueId }).lean();
+    const slots = await AvailabilityOverride.find({ venueId }).lean();
     venue.slots = slots;
     
     // Fetch owner/vendor details
@@ -92,9 +92,7 @@ export const updateVenueStatusAdmin = async (venueId, status, rejectionReason, a
   if (status === 'rejected' && rejectionReason) {
     updateData['approval.rejectionReason'] = rejectionReason;
   }
-  if (status === 'approved') {
-    updateData.venueStatus = 'active';
-  } else if (status === 'rejected') {
+  if (status === 'approved' || status === 'rejected') {
     updateData.venueStatus = 'inactive';
   }
   return await Venue.findByIdAndUpdate(venueId, updateData, { new: true });

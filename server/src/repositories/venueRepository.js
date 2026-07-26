@@ -6,7 +6,7 @@ class VenueRepository {
   }
 
   async getVenueById(venueId) {
-    return await Venue.findById(venueId);
+    return await Venue.findById(venueId).populate('vendorId', 'name profileImage createdAt');
   }
 }
 

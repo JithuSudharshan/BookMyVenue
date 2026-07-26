@@ -2,7 +2,7 @@ import Booking from "../../models/bookingModel.js";
 import User from "../../models/userModel.js";
 import Customer from "../../models/customerModel.js";
 import Venue from "../../models/venueModel.js";
-import Slot from "../../models/slotModel.js";
+import AvailabilityOverride from "../../models/availabilityOverrideModel.js";
 
 export const getAllBookings = async ({
   search,
@@ -168,9 +168,8 @@ export const cancelBookingById = async (id, { cancellationReason, cancellationDe
       id && typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id)
     );
     if (validSlotObjectIds.length > 0) {
-      await Slot.updateMany(
-        { _id: { $in: validSlotObjectIds } },
-        { $set: { isBooked: false } }
+      await AvailabilityOverride.deleteMany(
+        { _id: { $in: validSlotObjectIds } }
       );
     }
   }

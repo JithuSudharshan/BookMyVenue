@@ -29,10 +29,14 @@ export const validateVenueBusinessRules = async (venueData) => {
     }
 
     if (bookingModel === 'hourly') {
-        if (bookingConfig && bookingConfig.openingTime && bookingConfig.closingTime) {
-            if (!validateTimeRange(bookingConfig.openingTime, bookingConfig.closingTime)) {
-                throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
-            }
+        if (bookingConfig && bookingConfig.operatingHours) {
+            Object.values(bookingConfig.operatingHours).forEach(day => {
+                if (day.isOpen && day.openTime && day.closeTime) {
+                    if (!validateTimeRange(day.openTime, day.closeTime)) {
+                        throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
+                    }
+                }
+            });
         }
     }
 };
@@ -157,8 +161,12 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
 
     venue.set(updateData);
 
-    // Revert status to submitted if it's not a draft
-    if (venue.approval?.status !== 'draft') {
+    // Check if the update contains core fields that require re-approval
+    const coreFields = ['name', 'description', 'category', 'subcategory', 'capacity', 'address', 'city', 'state', 'pincode', 'googleMapLink', 'images', 'bookingModel', 'price'];
+    const needsReapproval = Object.keys(updateData).some(key => coreFields.includes(key) && updateData[key] !== undefined);
+
+    // Revert status to submitted if it's not a draft and core fields were changed
+    if (needsReapproval && venue.approval?.status !== 'draft') {
         venue.approval.status = 'submitted';
         venue.approval.submittedAt = new Date();
         venue.approval.rejectionReason = null;
@@ -281,6 +289,10 @@ export const unblockVenueService = async (vendorId, venueId) => {
 
     if (venue.venueStatus === 'active') throw new AppError("Venue already active", 409);
     if (venue.approval.status !== 'approved') throw new AppError("Cannot activate unapproved venue", 400);
+
+    if (!venue.hasAcknowledgedSlots) {
+        throw new AppError('Please confirm your slot management settings before going live.', 403);
+    }
 
     return await venueRepository.updateVenueStatus(venueId, 'venueStatus', 'active');
 };

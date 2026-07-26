@@ -179,5 +179,33 @@ export const vendorApi = {
     return response.data?.data ?? response.data;
   },
 };
+// ─── Slot Management API ─────────────────────────────────────────────────────
+export const getSlotMonthOverview = async (venueId, year, month) => {
+  const response = await axiosInstance.get(`/vendor/venues/${venueId}/availability`, { params: { year, month } });
+  return response.data?.data;
+};
 
+export const getVendorDateAvailability = async (venueId, date) => {
+  const response = await axiosInstance.get(`/vendor/venues/${venueId}/availability/date`, { params: { date } });
+  return response.data?.data;
+};
 
+export const blockDailySlots = async (venueId, payload) => {
+  const response = await axiosInstance.post(`/vendor/venues/${venueId}/availability/block/daily`, payload);
+  return response.data?.data;
+};
+
+export const blockHourlySlot = async (venueId, payload) => {
+  const response = await axiosInstance.post(`/vendor/venues/${venueId}/availability/block/hourly`, payload);
+  return response.data?.data;
+};
+
+export const removeSlotOverride = async (venueId, payload) => {
+  const response = await axiosInstance.delete(`/vendor/venues/${venueId}/availability/override`, { data: payload });
+  return response.data?.data;
+};
+
+export const acknowledgeSlots = async (venueId) => {
+  const response = await axiosInstance.patch(`/vendor/venues/${venueId}/availability/acknowledge`);
+  return response.data?.data;
+};
