@@ -168,9 +168,8 @@ export const cancelBookingById = async (id, { cancellationReason, cancellationDe
       id && typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id)
     );
     if (validSlotObjectIds.length > 0) {
-      await Slot.updateMany(
-        { _id: { $in: validSlotObjectIds } },
-        { $set: { isBooked: false } }
+      await AvailabilityOverride.deleteMany(
+        { _id: { $in: validSlotObjectIds } }
       );
     }
   }

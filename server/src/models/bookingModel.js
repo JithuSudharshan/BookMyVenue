@@ -15,8 +15,8 @@ const bookingSchema = new mongoose.Schema(
     slotIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Slot',
-      },
+        ref: 'AvailabilityOverride',
+      }
     ],
     bookingDate: {
       type: Date,

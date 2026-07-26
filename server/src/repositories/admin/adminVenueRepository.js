@@ -60,7 +60,7 @@ export const getVenueByIdAdmin = async (venueId) => {
     .lean();
     
   if (venue) {
-    const slots = await Slot.find({ venueId }).lean();
+    const slots = await AvailabilityOverride.find({ venueId }).lean();
     venue.slots = slots;
     
     // Fetch owner/vendor details
