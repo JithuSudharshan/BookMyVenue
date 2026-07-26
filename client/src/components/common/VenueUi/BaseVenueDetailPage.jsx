@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import VenueImageMosaic from './VenueImageMosaic';
 import VenueHostCard from '../../user/VenueHostCard';
+import { getAmenityIcon } from '../../../utils/amenityUtils';
 
 const BaseVenueDetailPage = ({
   venue,
@@ -103,12 +104,17 @@ const BaseVenueDetailPage = ({
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-5">What this place offers</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
-                  {venue.amenities.map((amenity, idx) => (
-                    <div key={idx} className="flex items-center text-gray-900 font-body-md">
-                      <CheckCircle className="w-5 h-5 text-gray-900 mr-3 flex-shrink-0" />
-                      <span>{amenity}</span>
-                    </div>
-                  ))}
+                  {venue.amenities.map((amenity, idx) => {
+                    const Icon = getAmenityIcon(amenity);
+                    return (
+                      <div key={idx} className="flex items-center text-gray-900 font-body-md">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0 text-gray-700">
+                          <Icon className="w-5 h-5" strokeWidth={1.5} />
+                        </div>
+                        <span className="font-medium text-gray-800">{amenity}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </>

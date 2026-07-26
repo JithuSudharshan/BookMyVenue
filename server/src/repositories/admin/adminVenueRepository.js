@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Venue from "../../models/venueModel.js";
 import Vendor from "../../models/vendorModel.js";
-import Slot from "../../models/slotModel.js";
+import AvailabilityOverride from "../../models/availabilityOverrideModel.js";
 import "../../models/categoryModel.js";
 import "../../models/subcategoryModel.js";
 export const getAllVenuesAdmin = async ({ search, status, visibility, sort, page = 1, limit = 10 } = {}) => {

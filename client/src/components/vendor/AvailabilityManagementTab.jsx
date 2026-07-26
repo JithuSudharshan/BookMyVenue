@@ -14,7 +14,7 @@ import { Calendar as CalendarIcon, Info } from 'lucide-react';
 
 import { VENDOR_SLOT_REASONS as REASONS } from '../../utils/venueConstants';
 
-const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledgedSlots, onAcknowledged }) => {
+const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledgedSlots, onAcknowledged }) => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [overrides, setOverrides] = useState([]);
@@ -315,4 +315,4 @@ const SlotManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledg
   );
 };
 
-export default SlotManagementTab;
+export default AvailabilityManagementTab;

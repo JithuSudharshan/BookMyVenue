@@ -29,10 +29,14 @@ export const validateVenueBusinessRules = async (venueData) => {
     }
 
     if (bookingModel === 'hourly') {
-        if (bookingConfig && bookingConfig.openingTime && bookingConfig.closingTime) {
-            if (!validateTimeRange(bookingConfig.openingTime, bookingConfig.closingTime)) {
-                throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
-            }
+        if (bookingConfig && bookingConfig.operatingHours) {
+            Object.values(bookingConfig.operatingHours).forEach(day => {
+                if (day.isOpen && day.openTime && day.closeTime) {
+                    if (!validateTimeRange(day.openTime, day.closeTime)) {
+                        throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
+                    }
+                }
+            });
         }
     }
 };

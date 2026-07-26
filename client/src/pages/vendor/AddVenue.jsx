@@ -51,9 +51,25 @@ const INITIAL_FORM = {
   googleMapLink: '',
   images: [],
   // Step 3
+  // Step 3
   bookingModel: 'daily',
-  openingTime: '09:00',
-  closingTime: '21:00',
+  bookingConfig: {
+    operatingHours: {
+      monday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      tuesday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      wednesday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      thursday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      friday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      saturday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      sunday: { isOpen: true, openTime: '09:00', closeTime: '21:00' }
+    },
+    bookingInterval: 60,
+    minBookingDuration: 60,
+    maxBookingDuration: 1440,
+    preparationTime: 0,
+    advanceBookingLimit: false,
+    maxAdvanceBookingDays: 90
+  },
   // Step 4
   price: '',
   rules: '',
@@ -342,31 +358,112 @@ const Step3 = ({ form, setForm }) => (
       </p>
     </div>
 
-    {/* Hourly: show time pickers */}
+    {/* Hourly: show config */}
     {form.bookingModel === 'hourly' && (
-      <div className="grid grid-cols-2 gap-5 animate-fade-in">
-        <Field label="Opening Time">
-          <div className="relative">
-            <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="time"
-              value={form.openingTime}
-              onChange={e => setForm(f => ({ ...f, openingTime: e.target.value }))}
-              className={`${inputCls(false)} pl-10`}
-            />
+      <div className="space-y-6 animate-fade-in">
+        {/* Weekly Operating Hours */}
+        <div>
+          <label className="block text-sm font-bold text-dark mb-1.5">Weekly Operating Hours</label>
+          <p className="text-xs text-gray-400 mb-3">Set your regular open and close times for each day of the week.</p>
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            {Object.keys(form.bookingConfig.operatingHours).map((day) => {
+              const dayData = form.bookingConfig.operatingHours[day];
+              return (
+                <div key={day} className="flex items-center justify-between p-3 border-b border-gray-100 last:border-0 bg-white">
+                  <div className="flex items-center gap-3 w-1/3">
+                    <input
+                      type="checkbox"
+                      checked={dayData.isOpen}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        bookingConfig: {
+                          ...f.bookingConfig,
+                          operatingHours: {
+                            ...f.bookingConfig.operatingHours,
+                            [day]: { ...dayData, isOpen: e.target.checked }
+                          }
+                        }
+                      }))}
+                      className="w-4 h-4 text-primary rounded focus:ring-primary"
+                    />
+                    <span className="text-sm font-medium capitalize">{day}</span>
+                  </div>
+                  {dayData.isOpen ? (
+                    <div className="flex items-center gap-2 w-2/3">
+                      <input
+                        type="time"
+                        value={dayData.openTime}
+                        onChange={(e) => setForm(f => ({
+                          ...f,
+                          bookingConfig: {
+                            ...f.bookingConfig,
+                            operatingHours: { ...f.bookingConfig.operatingHours, [day]: { ...dayData, openTime: e.target.value } }
+                          }
+                        }))}
+                        className={`${inputCls(false)} !py-1.5`}
+                      />
+                      <span className="text-gray-400 text-sm">to</span>
+                      <input
+                        type="time"
+                        value={dayData.closeTime}
+                        onChange={(e) => setForm(f => ({
+                          ...f,
+                          bookingConfig: {
+                            ...f.bookingConfig,
+                            operatingHours: { ...f.bookingConfig.operatingHours, [day]: { ...dayData, closeTime: e.target.value } }
+                          }
+                        }))}
+                        className={`${inputCls(false)} !py-1.5`}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-2/3 text-sm text-gray-400 italic px-2">Closed</div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        </Field>
-        <Field label="Closing Time">
-          <div className="relative">
-            <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="time"
-              value={form.closingTime}
-              onChange={e => setForm(f => ({ ...f, closingTime: e.target.value }))}
-              className={`${inputCls(false)} pl-10`}
-            />
-          </div>
-        </Field>
+        </div>
+
+        {/* Booking Rules */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Field label="Booking Interval" hint="Granularity of start times (e.g., every 30 mins or 1 hour).">
+            <select
+              value={form.bookingConfig.bookingInterval}
+              onChange={(e) => setForm(f => ({ ...f, bookingConfig: { ...f.bookingConfig, bookingInterval: Number(e.target.value) } }))}
+              className={inputCls(false)}
+            >
+              <option value={30}>30 Minutes</option>
+              <option value={60}>1 Hour</option>
+              <option value={120}>2 Hours</option>
+            </select>
+          </Field>
+          <Field label="Preparation Time" hint="Time blocked automatically after each booking.">
+            <select
+              value={form.bookingConfig.preparationTime}
+              onChange={(e) => setForm(f => ({ ...f, bookingConfig: { ...f.bookingConfig, preparationTime: Number(e.target.value) } }))}
+              className={inputCls(false)}
+            >
+              <option value={0}>None</option>
+              <option value={15}>15 Minutes</option>
+              <option value={30}>30 Minutes</option>
+              <option value={45}>45 Minutes</option>
+              <option value={60}>1 Hour</option>
+            </select>
+          </Field>
+          <Field label="Min Booking Duration" hint="Minimum time a customer must book.">
+            <select
+              value={form.bookingConfig.minBookingDuration}
+              onChange={(e) => setForm(f => ({ ...f, bookingConfig: { ...f.bookingConfig, minBookingDuration: Number(e.target.value) } }))}
+              className={inputCls(false)}
+            >
+              <option value={30}>30 Minutes</option>
+              <option value={60}>1 Hour</option>
+              <option value={120}>2 Hours</option>
+              <option value={180}>3 Hours</option>
+            </select>
+          </Field>
+        </div>
       </div>
     )}
   </div>
@@ -453,8 +550,8 @@ const Step4 = ({ form, setForm, errors, categoriesData }) => {
             <ReviewRow label="Booking Model" value={form.bookingModel === 'daily' ? '📅 Daily' : '⏱ Hourly'} />
             {form.bookingModel === 'hourly' && (
               <>
-                <ReviewRow label="Opening Time" value={form.openingTime} />
-                <ReviewRow label="Closing Time" value={form.closingTime} />
+                <ReviewRow label="Interval" value={`${form.bookingConfig.bookingInterval} mins`} />
+                <ReviewRow label="Prep Time" value={form.bookingConfig.preparationTime ? `${form.bookingConfig.preparationTime} mins` : 'None'} />
               </>
             )}
           </div>
@@ -582,8 +679,7 @@ const AddVenue = () => {
         googleMapLink: data.location?.googleMapLink || '',
         images: mappedImages,
         bookingModel: data.bookingModel || 'daily',
-        openingTime: data.bookingConfig?.openingTime || data.operatingHours?.start || '09:00',
-        closingTime: data.bookingConfig?.closingTime || data.operatingHours?.end || '21:00',
+        bookingConfig: data.bookingConfig || INITIAL_FORM.bookingConfig,
         price: data.price || '',
         rules: (Array.isArray(data.rules) ? data.rules.join('\n') : data.rules) || '',
       })
@@ -635,10 +731,7 @@ const AddVenue = () => {
     }))
 
     if (form.bookingModel === 'hourly') {
-      formData.append('operatingHours', JSON.stringify({
-        start: form.openingTime,
-        end: form.closingTime
-      }))
+      formData.append('bookingConfig', JSON.stringify(form.bookingConfig))
     }
 
     const existingImages = []

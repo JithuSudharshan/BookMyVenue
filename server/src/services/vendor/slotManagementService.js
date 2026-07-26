@@ -31,7 +31,7 @@ export const blockDailySlots = async (vendorId, venueId, dates, reason) => {
     if (slot.fullDayReason === 'Customer Booking') {
       throw new AppError(`Date ${slot.date} already has a full-day customer booking and cannot be blocked`, 400);
     }
-    if (slot.blockedSlots && slot.blockedSlots.some(s => s.reason === 'Customer Booking')) {
+    if (slot.blocks && slot.blocks.some(s => s.reason === 'Customer Booking')) {
       throw new AppError(`Date ${slot.date} already has hourly customer bookings and cannot be fully blocked`, 400);
     }
   }
@@ -77,8 +77,8 @@ export const blockHourlySlot = async (vendorId, venueId, date, fromTime, toTime,
     if (existingOverride.fullDayReason === 'Customer Booking') {
       throw new AppError('Date already has a full-day customer booking and cannot be blocked', 400);
     }
-    if (existingOverride.blockedSlots && existingOverride.blockedSlots.length > 0) {
-      const hasOverlap = checkTimeOverlap(fromTime, toTime, existingOverride.blockedSlots);
+    if (existingOverride.blocks && existingOverride.blocks.length > 0) {
+      const hasOverlap = checkTimeOverlap(fromTime, toTime, existingOverride.blocks);
       if (hasOverlap) throw new AppError('Selected time overlaps with existing blocks or requires a 1-hour buffer', 400);
     }
   }
@@ -94,11 +94,11 @@ export const removeOverride = async (vendorId, venueId, date, bookingId = null, 
   if (!existingOverride) throw new AppError('Override not found', 404);
 
   if (bookingId) {
-    const slot = existingOverride.blockedSlots.find(s => s.bookingId && s.bookingId.toString() === bookingId.toString());
+    const slot = existingOverride.blocks.find(s => s.bookingId && s.bookingId.toString() === bookingId.toString());
     if (slot && slot.reason === 'Customer Booking') throw new AppError('Vendors cannot remove customer bookings', 400);
     await slotOverrideRepository.pullHourlySlotByBookingId(venueId, date, bookingId);
   } else if (slotIndex !== null && slotIndex !== undefined) {
-    const slot = existingOverride.blockedSlots[slotIndex];
+    const slot = existingOverride.blocks[slotIndex];
     if (slot && slot.reason === 'Customer Booking') throw new AppError('Vendors cannot remove customer bookings', 400);
     if (slot) {
       // Need to use pullHourlySlotByTime since we can't easily pull by index in Mongo natively without knowing the object

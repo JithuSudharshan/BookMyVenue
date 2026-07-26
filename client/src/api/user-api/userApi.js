@@ -28,9 +28,9 @@ export const getVenueById = async (id) => {
     throw error;
   }
 };
-export const getPublicSlotOverview = async (id, year, month) => {
+export const getPublicAvailability = async (id, params) => {
   try {
-    const response = await axiosInstance.get(`/venues/public/${id}/slots`, { params: { year, month } });
+    const response = await axiosInstance.get(`/venues/public/${id}/availability`, { params });
     return response.data?.data;
   } catch (error) {
     throw error;

@@ -2,7 +2,7 @@ import Booking from "../../models/bookingModel.js";
 import User from "../../models/userModel.js";
 import Customer from "../../models/customerModel.js";
 import Venue from "../../models/venueModel.js";
-import Slot from "../../models/slotModel.js";
+import AvailabilityOverride from "../../models/availabilityOverrideModel.js";
 
 export const getAllBookings = async ({
   search,

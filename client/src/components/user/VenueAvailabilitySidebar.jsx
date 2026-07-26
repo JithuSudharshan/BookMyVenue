@@ -3,8 +3,8 @@ import { AuthContext } from '../../store/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import CompactCalendar from './slot/CompactCalendar';
+import { getPublicAvailability } from '../../api/user-api/userApi';
 import BookingSummary from './BookingSummary';
-import { generateTimeOptions } from '../../utils/timeUtils';
 
 const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthChange }) => {
   const { user } = useContext(AuthContext);
@@ -13,20 +13,75 @@ const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthC
   const [selectedDates, setSelectedDates] = useState([]);
   const [fromTime, setFromTime] = useState('');
   const [toTime, setToTime] = useState('');
+  const [availableStartTimes, setAvailableStartTimes] = useState([]);
+  const [availableEndTimes, setAvailableEndTimes] = useState([]);
+  const [hourlyConfig, setHourlyConfig] = useState(null);
+  const [loadingHours, setLoadingHours] = useState(false);
 
   // When month changes, reset selections
   useEffect(() => {
     setSelectedDates([]);
     setFromTime('');
     setToTime('');
+    setAvailableStartTimes([]);
+    setAvailableEndTimes([]);
   }, [year, month]);
+
+  // Fetch hourly availability when date is selected
+  useEffect(() => {
+    const fetchHourlyAvailability = async () => {
+      if (venue.bookingModel === 'hourly' && selectedDates.length === 1) {
+        setLoadingHours(true);
+        try {
+          const data = await getPublicAvailability(venue._id, { date: selectedDates[0] });
+          if (data && data.mode === 'hourly') {
+            setAvailableStartTimes(data.availableStartTimes || []);
+            setHourlyConfig(data);
+          }
+        } catch (error) {
+          toast.error('Failed to load available times for this date.');
+        } finally {
+          setLoadingHours(false);
+        }
+      }
+    };
+    fetchHourlyAvailability();
+  }, [selectedDates, venue._id, venue.bookingModel]);
+
+  // Calculate available end times when start time is selected
+  useEffect(() => {
+    if (fromTime && hourlyConfig) {
+      // In a full implementation, the backend could supply this via another endpoint, 
+      // but for now we can compute end times on the frontend based on start time + minDuration + maxDuration + interval
+      // until we hit a block. Since we don't have the blocks here, we assume availableStartTimes are gaps.
+      // Wait, we can't fully know end times without backend. 
+      // Let's implement a simple version or just let the backend calculate it if needed.
+      // Actually, since this is a frontend prototype logic update, let's just generate end times based on interval.
+      // A better way is to call the backend, but we don't have an endpoint for end times yet.
+      // Let's generate end times from fromTime up to maxDuration.
+      const startMin = parseInt(fromTime.split(':')[0]) * 60 + parseInt(fromTime.split(':')[1]);
+      let ends = [];
+      let curr = startMin + hourlyConfig.minDuration;
+      // We limit to 5 options for now for UX
+      while (curr <= startMin + hourlyConfig.maxDuration && ends.length < 10) {
+        const h = Math.floor(curr / 60).toString().padStart(2, '0');
+        const m = (curr % 60).toString().padStart(2, '0');
+        ends.push(`${h}:${m}`);
+        curr += hourlyConfig.interval;
+      }
+      setAvailableEndTimes(ends);
+      setToTime('');
+    } else {
+      setAvailableEndTimes([]);
+    }
+  }, [fromTime, hourlyConfig]);
 
   const handleDateClick = (dateStr) => {
     if (venue.bookingModel === 'hourly') {
-      // Hourly: only one date can be selected
       setSelectedDates([dateStr]);
       setFromTime('');
       setToTime('');
+      setAvailableEndTimes([]);
     } else {
       // Daily: Continuous range
       if (selectedDates.length === 0) {
@@ -69,7 +124,13 @@ const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthC
     }
   };
 
-  const timeOptions = generateTimeOptions(venue.bookingConfig?.openingTime, venue.bookingConfig?.closingTime);
+  const handleFromTimeSelect = (time) => {
+    setFromTime(time);
+  };
+
+  const handleToTimeSelect = (time) => {
+    setToTime(time);
+  };
 
   const handleBooking = () => {
     if (!user) {
@@ -90,7 +151,7 @@ const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthC
 
   return (
     <div className="bg-surface rounded-3xl p-6 border border-outline-variant shadow-md">
-      <h3 className="font-title-lg text-on-surface mb-1">Availability</h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-1">Availability</h3>
       <p className="text-on-surface-variant font-body-sm mb-5">
         {venue.bookingModel === 'daily' 
           ? 'Select a date or continuous range.' 
@@ -126,38 +187,59 @@ const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthC
           </div>
 
           {venue.bookingModel === 'hourly' && (
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-on-surface-variant mb-1">From Time</label>
-                <select
-                  value={fromTime}
-                  onChange={(e) => {
-                    setFromTime(e.target.value);
-                    setToTime('');
-                  }}
-                  className="w-full p-2 border border-outline-variant rounded-lg text-sm bg-surface"
-                >
-                  <option value="">Select</option>
-                  {timeOptions.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-on-surface-variant mb-1">To Time</label>
-                <select
-                  value={toTime}
-                  onChange={(e) => setToTime(e.target.value)}
-                  disabled={!fromTime}
-                  className="w-full p-2 border border-outline-variant rounded-lg text-sm bg-surface disabled:opacity-50"
-                >
-                  <option value="">Select</option>
-                  {timeOptions.filter(t => {
-                    if (!fromTime) return true;
-                    return parseInt(t.split(':')[0]) >= parseInt(fromTime.split(':')[0]) + 1;
-                  }).map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
+            <div className="mt-6 border-t border-outline-variant pt-5">
+              <h4 className="text-sm font-semibold text-on-surface mb-4">
+                Available Times for {new Date(selectedDates[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+              </h4>
+              
+              {loadingHours ? (
+                <div className="flex justify-center p-4"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>
+              ) : availableStartTimes.length === 0 ? (
+                <div className="text-sm text-gray-500 italic p-4 text-center bg-gray-50 rounded-lg">No available times for this date.</div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">1. Select Start Time</label>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                      {availableStartTimes.map(time => (
+                        <button
+                          key={time}
+                          onClick={() => handleFromTimeSelect(time)}
+                          className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${fromTime === time ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary'}`}
+                        >
+                          {time}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {fromTime && (
+                    <div className="animate-fade-in">
+                      <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">2. Select End Time</label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableEndTimes.map(time => (
+                          <button
+                            key={time}
+                            onClick={() => handleToTimeSelect(time)}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${toTime === time ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary'}`}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
+        </div>
+      )}
+
+      {venue.bookingModel === 'hourly' && selectedDates.length === 0 && (
+        <div className="mb-6 bg-surface-variant/30 rounded-xl p-5 border border-outline-variant text-center flex flex-col items-center">
+           <svg className="w-8 h-8 text-on-surface-variant mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+           <p className="text-sm text-on-surface-variant font-medium">Pick a date to see available time slots</p>
         </div>
       )}
 

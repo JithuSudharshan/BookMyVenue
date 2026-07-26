@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { Lock } from 'lucide-react';
 
 const CompactCalendar = ({
   year,
@@ -43,40 +44,72 @@ const CompactCalendar = ({
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
       const cellDate = new Date(year, month - 1, d);
+      const isToday = cellDate.getTime() === today.getTime();
       const isPast = cellDate < today;
       const isSelected = selectedDates.includes(dateStr);
+      const isStartSelection = selectedDates.length > 0 && selectedDates[0] === dateStr;
+      const isEndSelection = selectedDates.length > 1 && selectedDates[selectedDates.length - 1] === dateStr;
+      const isMiddleSelection = isSelected && !isStartSelection && !isEndSelection;
       
       const override = overrides.find(o => o.date === dateStr);
       
+      let cellClass = "relative h-12 flex flex-col justify-center items-center transition-colors text-sm font-medium ";
+      let contentClass = "w-9 h-9 flex items-center justify-center rounded-full relative z-10 ";
+      let wrapperClass = "w-full h-full flex justify-center items-center relative ";
+      
       let indicator = null;
-      let dotColor = 'bg-green-500'; // free
       
-      if (isPast) {
-        dotColor = 'bg-gray-300';
-      } else if (override?.isFullDayBlocked) {
-        dotColor = override.fullDayReason === 'Customer Booking' ? 'bg-blue-500' : 'bg-red-500';
-      }
+      const isBooked = !isPast && override?.isFullDayBlocked && override?.fullDayReason === 'Customer Booking';
+      const isBlocked = !isPast && override?.isFullDayBlocked && override?.fullDayReason !== 'Customer Booking';
+      const hasPartialBlock = !isPast && !override?.isFullDayBlocked && override?.blockedSlots?.length > 0;
       
-      if (bookingModel === 'daily') {
-        indicator = <div className={`w-1.5 h-1.5 rounded-full mx-auto ${dotColor}`}></div>;
-      }
+      const disabled = isPast || isBlocked || isBooked;
 
-      // If hourly, we don't show dots, just plain dates
-      // BUT we still want to grey out past dates
-      const isBlocked = !isPast && override?.isFullDayBlocked;
-      const disabled = isPast || isBlocked;
+      if (isPast) {
+        cellClass += "opacity-30 cursor-not-allowed ";
+      } else if (isBlocked) {
+        cellClass += "cursor-not-allowed bg-red-50/30 ";
+        contentClass += "text-red-400 line-through ";
+      } else if (isBooked) {
+        cellClass += "cursor-not-allowed bg-blue-50/40 ";
+        contentClass += "text-blue-500 ";
+        indicator = <Lock size={12} className="text-blue-400 absolute bottom-1" />;
+      } else {
+        cellClass += "cursor-pointer hover:bg-gray-50 ";
+      }
+      
+      if (isToday && !isSelected) {
+        contentClass += "ring-1 ring-gray-400 ";
+      }
+      
+      if (isSelected) {
+        contentClass += "bg-primary text-white font-bold ";
+        
+        if (bookingModel === 'daily' && selectedDates.length > 1) {
+          if (isStartSelection) {
+            wrapperClass += "bg-gradient-to-r from-transparent 50% to-primary/10 ";
+          } else if (isEndSelection) {
+            wrapperClass += "bg-gradient-to-l from-transparent 50% to-primary/10 ";
+          } else if (isMiddleSelection) {
+            wrapperClass += "bg-primary/10 ";
+            contentClass = contentClass.replace("bg-primary text-white ", "text-primary ");
+          }
+        }
+      } else if (!disabled) {
+        contentClass += "text-gray-700 ";
+      }
+      
+      // Partial blocks for hourly
+      if (bookingModel === 'hourly' && hasPartialBlock && !isSelected) {
+        indicator = <div className="absolute bottom-1 w-1 h-1 rounded-full bg-yellow-400"></div>;
+      }
 
       cells.push(
-        <div
-          key={d}
-          onClick={() => !disabled && onDateClick(dateStr)}
-          className={`h-12 p-1 border border-gray-100 flex flex-col justify-center items-center transition-colors
-            ${disabled ? 'opacity-40 cursor-not-allowed bg-gray-50' : 'cursor-pointer hover:bg-gray-50'}
-            ${isSelected ? 'ring-2 ring-primary ring-inset bg-primary/5' : ''}
-          `}
-        >
-          <span className={`text-sm mb-1 ${isSelected ? 'text-primary font-bold' : 'text-gray-700'}`}>{d}</span>
-          {indicator}
+        <div key={d} onClick={() => !disabled && onDateClick(dateStr)} className={cellClass}>
+           <div className={wrapperClass}>
+             <span className={contentClass}>{d}</span>
+             {indicator}
+           </div>
         </div>
       );
     }
@@ -106,11 +139,17 @@ const CompactCalendar = ({
       <div className="grid grid-cols-7">
         {renderCells()}
       </div>
-      {bookingModel === 'daily' && (
+      {bookingModel === 'daily' ? (
         <div className="p-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-on-surface-variant border-t border-outline-variant bg-surface-container-lowest">
-          <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Available</div>
-          <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> Booked</div>
-          <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> Blocked</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full ring-1 ring-gray-400 bg-white"></div> Today</div>
+          <div className="flex items-center gap-1.5"><Lock size={10} className="text-blue-500" /> Booked</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-50/50 border border-red-200"></div> Blocked</div>
+        </div>
+      ) : (
+        <div className="p-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-on-surface-variant border-t border-outline-variant bg-surface-container-lowest">
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full ring-1 ring-gray-400 bg-white"></div> Today</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-yellow-400"></div> Partially Blocked</div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-50/50 border border-red-200"></div> Fully Blocked</div>
         </div>
       )}
     </div>

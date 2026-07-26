@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { getVendorVenueById, blockVenue, unblockVenue, submitVenue } from '../../api/vendor-api/vendorApi'
-import SlotManagementTab from '../../components/vendor/SlotManagementTab'
+import AvailabilityManagementTab from '../../components/vendor/AvailabilityManagementTab'
 
 // Helper to map amenity strings to icons
 const getAmenityIcon = (name) => {
@@ -368,7 +368,7 @@ const VendorVenueDetailPage = () => {
       )}
 
       {activeTab === 'slots' && isApproved && (
-        <SlotManagementTab
+        <AvailabilityManagementTab
           venueId={id}
           bookingModel={venue.bookingModel}
           bookingConfig={venue.bookingConfig}

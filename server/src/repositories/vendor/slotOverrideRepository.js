@@ -1,26 +1,26 @@
-import Slot from '../../models/slotModel.js';
+import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
 
 export const findOverridesByVenueAndMonth = async (venueId, year, month) => {
   // Pad month to 2 digits if necessary
   const formattedMonth = month.toString().padStart(2, '0');
   const datePrefix = `${year}-${formattedMonth}`;
   
-  return await Slot.find({
+  return await AvailabilityOverride.find({
     venueId,
     date: { $regex: `^${datePrefix}` }
   }).lean();
 };
 
 export const findOverrideByVenueAndDate = async (venueId, date) => {
-  return await Slot.findOne({ venueId, date }).lean();
+  return await AvailabilityOverride.findOne({ venueId, date }).lean();
 };
 
 export const findOverridesByVenueAndDates = async (venueId, dates) => {
-  return await Slot.find({ venueId, date: { $in: dates } }).lean();
+  return await AvailabilityOverride.find({ venueId, date: { $in: dates } }).lean();
 };
 
 export const upsertFullDayOverride = async (venueId, date, updateData) => {
-  return await Slot.findOneAndUpdate(
+  return await AvailabilityOverride.findOneAndUpdate(
     { venueId, date },
     { $set: updateData },
     { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -38,37 +38,37 @@ export const upsertManyFullDayOverrides = async (venueId, dates, updateData) => 
   }));
 
   if (bulkOps.length > 0) {
-    await Slot.bulkWrite(bulkOps);
+    await AvailabilityOverride.bulkWrite(bulkOps);
   }
   
   // Return the updated documents
-  return await Slot.find({ venueId, date: { $in: dates } }).lean();
+  return await AvailabilityOverride.find({ venueId, date: { $in: dates } }).lean();
 };
 
 export const pushHourlySlot = async (venueId, date, slotData) => {
-  return await Slot.findOneAndUpdate(
+  return await AvailabilityOverride.findOneAndUpdate(
     { venueId, date },
-    { $push: { blockedSlots: slotData } },
+    { $push: { blocks: slotData } },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 };
 
 export const pullHourlySlotByBookingId = async (venueId, date, bookingId) => {
-  return await Slot.updateOne(
+  return await AvailabilityOverride.updateOne(
     { venueId, date },
-    { $pull: { blockedSlots: { bookingId } } }
+    { $pull: { blocks: { bookingId } } }
   );
 };
 
 
 // If we need to pull by something other than bookingId (e.g. fromTime and toTime), we can add it here.
 export const pullHourlySlotByTime = async (venueId, date, fromTime, toTime) => {
-  return await Slot.updateOne(
+  return await AvailabilityOverride.updateOne(
     { venueId, date },
-    { $pull: { blockedSlots: { fromTime, toTime } } }
+    { $pull: { blocks: { fromTime, toTime } } }
   );
 };
 
 export const deleteOverride = async (venueId, date) => {
-  return await Slot.deleteOne({ venueId, date });
+  return await AvailabilityOverride.deleteOne({ venueId, date });
 };

@@ -7,7 +7,7 @@ const parseVenueData = (req, res, next) => {
     try {
         if (req.body.location && typeof req.body.location === 'string') req.body.location = JSON.parse(req.body.location);
         if (req.body.amenities && typeof req.body.amenities === 'string') req.body.amenities = JSON.parse(req.body.amenities);
-        if (req.body.operatingHours && typeof req.body.operatingHours === 'string') req.body.operatingHours = JSON.parse(req.body.operatingHours);
+        if (req.body.bookingConfig && typeof req.body.bookingConfig === 'string') req.body.bookingConfig = JSON.parse(req.body.bookingConfig);
         
         let existingImages = [];
         if (req.body.images && typeof req.body.images === 'string') {
