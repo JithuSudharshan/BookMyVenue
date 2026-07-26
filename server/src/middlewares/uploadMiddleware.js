@@ -46,7 +46,7 @@ export const handleUploadError = (err, req, res, next) => {
   next();
 };
 
-import { profileImageStorage, identityDocStorage, categoryImageStorage, venueImageStorage } from '../utils/cloudinaryUpload.js';
+import { profileImageStorage, identityDocStorage, categoryImageStorage, venueImageStorage, reviewImageStorage } from '../utils/cloudinaryUpload.js';
 
 export const uploadProfileImage = multer({
   storage: profileImageStorage,
@@ -99,3 +99,20 @@ export const uploadVenueImage = multer({
     }
   },
 });
+
+
+
+export const uploadReviewImages = multer({
+  storage: reviewImageStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB per review image
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, and WebP images are allowed.'));
+    }
+  },
+}).array('images', 3);

@@ -68,8 +68,9 @@ export const findPublicVenuesAggregation = async ({ matchStage = {}, sortStage =
                             capacity: 1,
                             bookingModel: 1,
                             category: '$category.name',
-                            image: '$displayImage.url'
-                            // rating is skipped for now as per requirements
+                            image: '$displayImage.url',
+                            rating: { $ifNull: ['$rating', 0] },
+                            reviews: { $ifNull: ['$reviews', 0] }
                         }
                     }
                 ]

@@ -5,6 +5,7 @@ import { AuthContext } from '../../store/AuthContext';
 import { Clock3 } from 'lucide-react';
 import { toast } from 'sonner';
 import BaseVenueDetailPage from '../../components/common/VenueUi/BaseVenueDetailPage';
+import VenueReviewsSection from '../../components/common/VenueReviewsSection';
 
 const VenueDetailPage = () => {
   const { id } = useParams();
@@ -71,6 +72,7 @@ const VenueDetailPage = () => {
       backLabel="Venues" 
       onBack={() => navigate('/venues')}
       sidebarSlot={bookingSidebar}
+      reviewsSlot={id ? <VenueReviewsSection venueId={id} /> : null}
     />
   );
 };

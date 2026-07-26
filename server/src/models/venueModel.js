@@ -113,6 +113,19 @@ const venueSchema = new mongoose.Schema(
       min: 0,
     },
 
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    reviews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     // ─── Booking Configuration ───────────────────────────────
     bookingModel: {
       type: String,
@@ -183,3 +196,5 @@ venueSchema.pre('validate', function(next) {
 const Venue = mongoose.model('Venue', venueSchema);
 
 export default Venue;
+
+

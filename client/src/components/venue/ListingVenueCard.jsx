@@ -125,12 +125,11 @@ const ListingVenueCard = ({ venue }) => {
           <h3 className="font-semibold text-gray-900 text-[15px] leading-snug truncate flex-1">
             {venue.name}
           </h3>
-          {venue.rating !== undefined && (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <FiStar className="w-3.5 h-3.5 fill-current text-gray-900" />
-              <span className="text-sm font-medium text-gray-900">{venue.rating != null ? Number(venue.rating).toFixed(1) : '0.0'}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <FiStar className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-sm font-medium text-gray-900">{venue.rating != null ? Number(venue.rating).toFixed(1) : '0.0'}</span>
+            <span className="text-xs text-gray-500">({venue.reviews || 0})</span>
+          </div>
         </div>
 
         {/* Location */}

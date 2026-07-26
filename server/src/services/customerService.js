@@ -2,6 +2,7 @@ import cloudinary from '../config/cloudinary.js';
 import userRepository from '../repositories/userRepository.js';
 import * as customerRepository from '../repositories/customerRepository.js';
 import Booking from '../models/bookingModel.js';
+import Review from '../models/reviewModel.js';
 import '../models/venueModel.js'; // Register Venue schema for populate
 import * as wishlistRepository from '../repositories/wishlistRepository.js';
 import AppError from '../utils/appError.js';
@@ -296,13 +297,26 @@ export const getBookings = async (userId, page = 1, limit = 10, filter = 'All') 
     .populate('venueId', 'name location images pricing capacity description')
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
+
+  const bookingIds = bookings.map((b) => b._id);
+  const reviews = await Review.find({ bookingId: { $in: bookingIds } }).lean();
+  const reviewMap = {};
+  reviews.forEach((r) => {
+    reviewMap[r.bookingId.toString()] = r;
+  });
+
+  const bookingsWithReview = bookings.map((b) => ({
+    ...b,
+    review: reviewMap[b._id.toString()] || null,
+  }));
 
   const total = await Booking.countDocuments(query);
   const totalPages = Math.ceil(total / limit);
 
   return {
-    bookings,
+    bookings: bookingsWithReview,
     pagination: {
       total,
       page,

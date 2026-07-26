@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { getVendorVenueById, blockVenue, unblockVenue, submitVenue } from '../../api/vendor-api/vendorApi'
+import VenueReviewsSection from '../../components/common/VenueReviewsSection'
 
 // Helper to map amenity strings to icons
 const getAmenityIcon = (name) => {
@@ -324,6 +325,11 @@ const VendorVenueDetailPage = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Reviews — read-only for vendor */}
+            <div className="py-8">
+              <VenueReviewsSection venueId={id} readOnly />
             </div>
 
           </div>

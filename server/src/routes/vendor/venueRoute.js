@@ -2,6 +2,8 @@ import express from 'express';
 import * as venueController from '../../controllers/vendor/venueController.js';
 import { validateVenueSubmit } from '../../validators/venueValidator.js';
 import { uploadVenueImage } from '../../middlewares/uploadMiddleware.js';
+import { getVendorReviews } from '../../controllers/reviewController.js';
+import { protect, authorize } from '../../middlewares/authMiddleware.js';
 
 const parseVenueData = (req, res, next) => {
     try {
@@ -56,6 +58,9 @@ const router = express.Router();
 
 // Categories Route
 router.get('/categories', venueController.getActiveCategories);
+
+// Reviews Route (vendor reads reviews for their venues)
+router.get('/reviews', protect, authorize('vendor'), getVendorReviews);
 
 // Draft Routes
 router.post('/draft', uploadVenueImage.array('images', 10), parseVenueData, venueController.saveDraft); // For initial creation

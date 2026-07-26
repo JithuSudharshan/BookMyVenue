@@ -136,7 +136,9 @@ export const findVendorVenuesSSFP = async ({
                             updatedAt: 1,
                             categoryName: '$category.name',
                             subcategoryName: '$subcategory.name',
-                            image: '$displayImage.url'
+                            image: '$displayImage.url',
+                            rating: { $ifNull: ['$rating', 0] },
+                            reviews: { $ifNull: ['$reviews', 0] }
                         }
                     }
                 ]

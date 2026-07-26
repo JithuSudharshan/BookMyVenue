@@ -56,6 +56,15 @@ export const venueImageStorage = new CloudinaryStorage({
     transformation: [{ width: 1080, crop: 'scale' }], // Responsive scale for venues
   },
 });
+
+export const reviewImageStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'BookMyVenue/review_images',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 1080, crop: 'scale' }],
+  },
+});
 /**
  * Delete an identity document from Cloudinary.
  * Handles both image and raw (PDF) resource types.
