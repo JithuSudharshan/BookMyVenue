@@ -76,9 +76,27 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
   }
   occupiedRanges.sort((a, b) => a.start - b.start);
 
+  let effectiveOpenMin = openMin;
+  
+  // Real-time cutoff for today's date
+  const today = new Date();
+  // Format today as YYYY-MM-DD in local time
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
+  if (requestDate === todayStr) {
+    const TODAY_BUFFER_MINUTES = 30; // Cannot book a slot starting in < 30 minutes
+    const currentMin = today.getHours() * 60 + today.getMinutes();
+    const cutoff = currentMin + TODAY_BUFFER_MINUTES;
+    
+    // Snap to the next available interval
+    const nextSlotMin = Math.ceil(cutoff / interval) * interval;
+    
+    effectiveOpenMin = Math.max(openMin, nextSlotMin);
+  }
+
   const availableStartTimes = [];
   
-  for (let current = openMin; current + minDuration <= closeMin; current += interval) {
+  for (let current = effectiveOpenMin; current + minDuration <= closeMin; current += interval) {
     const requiredEnd = current + minDuration;
     
     let collision = false;

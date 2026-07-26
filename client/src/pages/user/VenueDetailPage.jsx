@@ -5,7 +5,8 @@ import { AuthContext } from '../../store/AuthContext';
 import { toast } from 'sonner';
 import { Heart } from 'lucide-react';
 import BaseVenueDetailPage from '../../components/common/VenueUi/BaseVenueDetailPage';
-import VenueAvailabilitySidebar from '../../components/user/VenueAvailabilitySidebar';
+import BookingWidget from '../../components/user/booking/BookingWidget';
+import { BookingProvider } from '../../store/BookingContext';
 import { addToWishlist, removeFromWishlist, getWishlist } from '../../api/user-api/wishlistApi';
 
 const VenueDetailPage = () => {
@@ -95,16 +96,18 @@ const VenueDetailPage = () => {
   };
 
   const bookingSidebar = venue ? (
-    <VenueAvailabilitySidebar
-      venue={venue}
-      overrides={overrides}
-      year={year}
-      month={month}
-      onMonthChange={(y, m) => {
-        setYear(y);
-        setMonth(m);
-      }}
-    />
+    <BookingProvider>
+      <BookingWidget
+        venue={venue}
+        overrides={overrides}
+        year={year}
+        month={month}
+        onMonthChange={(y, m) => {
+          setYear(y);
+          setMonth(m);
+        }}
+      />
+    </BookingProvider>
   ) : null;
 
   const wishlistButton = (

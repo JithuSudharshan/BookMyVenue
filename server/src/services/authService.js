@@ -34,7 +34,7 @@ class AuthService {
 
   async registerUser(data) {
     const validation = validateSignupData(data);
-    
+
     if (!validation.isValid) {
       throw new AppError(validation.errors[0], 400);
     }
@@ -68,8 +68,8 @@ class AuthService {
         });
 
         const verifyToken = jwt.sign(
-          { id: user._id, type: 'email_verification' }, 
-          process.env.JWT_SECRET || 'secret123', 
+          { id: user._id, type: 'email_verification' },
+          process.env.JWT_SECRET || 'secret123',
           { expiresIn: '15m' }
         );
 
@@ -97,7 +97,7 @@ class AuthService {
 
   async registerVendor(data) {
     const validation = validateVendorSignupData(data);
-    
+
     if (!validation.isValid) {
       throw new AppError(validation.errors[0], 400);
     }
@@ -132,8 +132,8 @@ class AuthService {
         });
 
         const verifyToken = jwt.sign(
-          { id: user._id, type: 'email_verification' }, 
-          process.env.JWT_SECRET || 'secret123', 
+          { id: user._id, type: 'email_verification' },
+          process.env.JWT_SECRET || 'secret123',
           { expiresIn: '15m' }
         );
 
@@ -234,7 +234,7 @@ class AuthService {
     } catch (err) {
       throw new AppError('Debug Error: ' + err.message, 400);
     }
-    
+
     if (decoded.type !== 'email_verification') {
       throw new AppError('Invalid token type', 400);
     }
@@ -247,14 +247,14 @@ class AuthService {
     if (!storedUserId) {
       throw new AppError('Verification link has expired or has already been used.', 400);
     }
-    
+
     if (storedUserId !== userId) {
       throw new AppError(`Redis: User mismatch. Expected ${userId}, got ${storedUserId}.`, 400);
     }
 
     const user = await userRepository.findUserById(userId);
     if (!user) {
-       throw new AppError('User not found', 400);
+      throw new AppError('User not found', 400);
     }
 
     user.isEmailVerified = true;
@@ -265,8 +265,8 @@ class AuthService {
     const accessToken = this.generateAccessToken(user._id);
     const refreshToken = this.generateRefreshToken(user._id);
     await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
-    
-    return { 
+
+    return {
       accessToken,
       refreshToken,
 
@@ -275,7 +275,7 @@ class AuthService {
         email: user.email,
         role: user.role
       },
-      message: 'Email verified successfully.' 
+      message: 'Email verified successfully.'
     };
   }
 
@@ -287,15 +287,15 @@ class AuthService {
     if (user.isEmailVerified) throw new AppError('Email is already verified', 400);
 
     const verifyToken = jwt.sign(
-      { id: user._id, type: 'email_verification' }, 
-      process.env.JWT_SECRET || 'secret123', 
+      { id: user._id, type: 'email_verification' },
+      process.env.JWT_SECRET || 'secret123',
       { expiresIn: '15m' }
     );
-    
+
     await this.deleteOldTokens('verify', user._id);
     await redisClient.setEx(`verify:${verifyToken}`, 900, user._id.toString());
     await sendVerificationEmail(user.email, verifyToken);
-    
+
     return { message: 'Verification email sent' };
   }
 
@@ -303,7 +303,7 @@ class AuthService {
     if (!email) throw new AppError('Email is required', 400);
 
     const user = await userRepository.findUserByEmail(email.toLowerCase());
-    
+
     if (!user) {
       throw new AppError('No account found with that email address.', 404);
     }
@@ -313,16 +313,16 @@ class AuthService {
     }
 
     const resetToken = jwt.sign(
-      { id: user._id, type: 'password_reset' }, 
-      process.env.JWT_SECRET || 'secret123', 
+      { id: user._id, type: 'password_reset' },
+      process.env.JWT_SECRET || 'secret123',
       { expiresIn: '15m' }
     );
-    
+
     await this.deleteOldTokens('reset', user._id);
     await redisClient.setEx(`reset:${resetToken}`, 900, user._id.toString());
-    
+
     const emailSent = await sendPasswordResetEmail(user.email, resetToken);
-    
+
     if (!emailSent) {
       throw new AppError('Failed to send password reset email.', 500);
     }
@@ -341,7 +341,7 @@ class AuthService {
     } catch (err) {
       throw new AppError('Invalid or expired token.', 400);
     }
-    
+
     if (decoded.type !== 'password_reset') {
       throw new AppError('Invalid token type', 400);
     }
@@ -353,14 +353,14 @@ class AuthService {
     if (!storedUserId) {
       throw new AppError('Password reset link has expired or has already been used.', 400);
     }
-    
+
     if (storedUserId !== userId) {
       throw new AppError(`Redis: User mismatch. Expected ${userId}, got ${storedUserId}.`, 400);
     }
 
     const user = await userRepository.findUserById(userId, true);
     if (!user) {
-       throw new AppError('User not found', 400);
+      throw new AppError('User not found', 400);
     }
 
     const isSamePassword = await user.matchPassword(password);
@@ -532,10 +532,10 @@ class AuthService {
 
     // Token Rotation: Invalidate old token and issue new ones
     await redisClient.del(redisKey);
-    
+
     const newAccessToken = this.generateAccessToken(user._id);
     const newRefreshToken = this.generateRefreshToken(user._id);
-    
+
     // Store new refresh token
     await redisClient.setEx(`refresh:${newRefreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
 
