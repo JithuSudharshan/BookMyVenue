@@ -203,7 +203,7 @@ const VendorVenueDetailPage = () => {
       {activeTab === 'details' && (
         <>
           {isRejected && (
-            <div className="max-w-[1120px] mx-auto px-6 lg:px-10 pt-6">
+            <div className="w-full px-6 lg:px-10 pt-6">
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
                 <FiInfo className="w-5 h-5 text-red-500 mt-0.5" />
                 <div>
@@ -215,7 +215,7 @@ const VendorVenueDetailPage = () => {
             </div>
           )}
 
-      <div className={`max-w-[1120px] mx-auto px-6 lg:px-10 ${isRejected ? 'pt-6' : 'pt-6'}`}>
+      <div className={`w-full px-6 lg:px-10 ${isRejected ? 'pt-6' : 'pt-6'}`}>
 
         {/* ── Header: Title & Subtitle ───────────────────────────────────── */}
         <div className="mb-6">

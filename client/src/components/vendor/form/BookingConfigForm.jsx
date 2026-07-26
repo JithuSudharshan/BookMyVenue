@@ -99,18 +99,7 @@ const BookingConfigForm = ({ config, onChange, isHourly }) => {
             <option value={60}>1 Hour</option>
           </select>
         </Field>
-        <Field label="Min Booking Duration" hint="Minimum time a customer must book.">
-          <select
-            value={config.minBookingDuration}
-            onChange={(e) => onChange({ ...config, minBookingDuration: Number(e.target.value) })}
-            className={inputCls(false)}
-          >
-            <option value={30}>30 Minutes</option>
-            <option value={60}>1 Hour</option>
-            <option value={120}>2 Hours</option>
-            <option value={180}>3 Hours</option>
-          </select>
-        </Field>
+
       </div>
     </div>
   );

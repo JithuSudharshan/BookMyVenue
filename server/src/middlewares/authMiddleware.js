@@ -3,6 +3,7 @@ import userRepository from '../repositories/userRepository.js';
 
 // Protect routes
 export const protect = async (req, res, next) => {
+  if (req.method === 'OPTIONS') return next(); // Allow CORS preflight through
   let token;
 
   // Read token from the 'accessToken' cookie
@@ -43,6 +44,7 @@ export const protect = async (req, res, next) => {
 // Grant access to specific roles
 export const authorize = (...roles) => {
   return (req, res, next) => {
+    if (req.method === 'OPTIONS') return next(); // Allow CORS preflight through
     if (!req.user) {
       return res.status(401).json({ message: 'Not authorized, no user found' });
     }

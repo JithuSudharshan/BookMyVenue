@@ -150,6 +150,7 @@ const CompactCalendar = ({
           <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full ring-1 ring-gray-400 bg-white"></div> Today</div>
           <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-yellow-400"></div> Partially Blocked</div>
           <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-50/50 border border-red-200"></div> Fully Blocked</div>
+          <div className="flex items-center gap-1.5"><Lock size={10} className="text-blue-500" /> Fully Booked</div>
         </div>
       )}
     </div>

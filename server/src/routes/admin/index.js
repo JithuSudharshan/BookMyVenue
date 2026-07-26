@@ -16,7 +16,11 @@ const router = express.Router();
 router.use("/", authRoutes);
 
 // Protected routes (Admin only)
-router.use(adminProtect);
+// Skip auth for OPTIONS preflight requests — browsers send them without a token
+router.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return next();
+  return adminProtect(req, res, next);
+});
 
 
 router.use("/dashboard", dashboardRoutes);

@@ -37,7 +37,7 @@ const VendorBookingsPage = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto w-full">
+    <div className="p-6 md:p-8 w-full">
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>

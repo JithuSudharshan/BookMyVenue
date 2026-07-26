@@ -3,9 +3,7 @@
 .wp-page {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px 16px 40px;
+  padding: 24px 32px 40px;
   color: #1a1a1a;
 }
 

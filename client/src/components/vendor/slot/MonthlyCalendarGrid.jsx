@@ -72,7 +72,7 @@ const MonthlyCalendarGrid = ({
         <div
           key={d}
           onClick={() => !isPast && onDateClick(dateStr)}
-          className={`h-[72px] p-2 border border-gray-100 flex flex-col items-center transition-colors relative
+          className={`h-24 p-2 border border-gray-100 flex flex-col items-center transition-colors relative
             ${isPast ? 'opacity-30 cursor-not-allowed bg-gray-50/50' : 'cursor-pointer hover:bg-gray-50'}
             ${isSelected ? 'bg-dark/5 border-dark' : ''}
           `}

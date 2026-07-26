@@ -102,7 +102,7 @@ const VenueManagement = () => {
   }
 
   return (
-    <div className="p-6 lg:p-8 min-h-screen bg-[#F8F9FA]">
+    <div className="w-full p-6 lg:p-8 min-h-screen bg-[#F8F9FA]">
 
       {/* ── Page Header ─────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

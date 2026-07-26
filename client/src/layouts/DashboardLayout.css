@@ -469,13 +469,12 @@
   flex: 1;
   min-width: 0;
   display: flex;
-  justify-content: center; /* Center the inner content if restricted */
+  flex-direction: column;
 }
 
-/* The inner wrapper restricts max width for ultra-wide screens */
+/* The inner wrapper occupies the full remaining width */
 .dl-main-content {
   width: 100%;
-  max-width: 1400px;
   padding: 40px;
   box-sizing: border-box;
 }

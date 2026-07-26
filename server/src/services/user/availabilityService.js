@@ -1,7 +1,7 @@
 import Venue from "../../models/venueModel.js";
 import { findOverridesByVenueAndMonth, findOverrideByVenueAndDate } from "../../repositories/vendor/slotOverrideRepository.js";
 import { generateHourlyStartTimes, checkDailyAvailability } from "../core/AvailabilityEngine.js";
-import AppError from "../../utils/appError.js";
+import AppError from "../../utils/AppError.js";
 
 export const getVenueAvailabilityForDate = async (venueId, requestDate) => {
     const venue = await Venue.findById(venueId).lean();
@@ -16,9 +16,7 @@ export const getVenueAvailabilityForDate = async (venueId, requestDate) => {
         return {
             mode: 'hourly',
             availableStartTimes,
-            interval: bookingConfig.bookingInterval || 60,
-            minDuration: bookingConfig.minBookingDuration || 60,
-            maxDuration: bookingConfig.maxBookingDuration || 1440
+            interval: bookingConfig.bookingInterval || 60
         };
     } else {
         const isAvailable = checkDailyAvailability(bookingConfig, override, requestDate);

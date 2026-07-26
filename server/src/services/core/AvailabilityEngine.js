@@ -24,9 +24,9 @@ export const minutesToTime = (minutes) => {
  * Validates basic daily availability (e.g. is the venue open at all today?)
  */
 export const checkDailyAvailability = (bookingConfig, override, requestDate) => {
-  if (bookingConfig.bookingMode === 'hourly') return false;
 
-  const dateObj = new Date(requestDate);
+  const [y, m, d] = requestDate.split('-');
+  const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
   const dayName = DAYS_OF_WEEK[dateObj.getDay()];
   
   const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
@@ -45,9 +45,9 @@ export const checkDailyAvailability = (bookingConfig, override, requestDate) => 
  * Generates an array of available start times for a given date
  */
 export const generateHourlyStartTimes = (bookingConfig, override, requestDate) => {
-  if (bookingConfig.bookingMode === 'daily') return [];
 
-  const dateObj = new Date(requestDate);
+  const [y, m, d] = requestDate.split('-');
+  const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
   const dayName = DAYS_OF_WEEK[dateObj.getDay()];
   
   const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
@@ -62,7 +62,7 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
   const openMin = timeToMinutes(dailyHours.openTime);
   const closeMin = timeToMinutes(dailyHours.closeTime);
   const interval = bookingConfig.bookingInterval || 60;
-  const minDuration = bookingConfig.minBookingDuration || 60;
+  const minDuration = interval; // Minimum duration is exactly the booking interval
   const prepTime = bookingConfig.preparationTime || 0;
 
   // Process blocks: convert to minutes and add prep time
@@ -110,8 +110,7 @@ export const generateValidEndTimes = (bookingConfig, override, requestDate, star
 
   const closeMin = timeToMinutes(dailyHours.closeTime);
   const interval = bookingConfig.bookingInterval || 60;
-  const minDuration = bookingConfig.minBookingDuration || 60;
-  const maxDuration = bookingConfig.maxBookingDuration || 1440;
+  const minDuration = interval; // Minimum duration is exactly the booking interval
   
   // Find the next block that occurs after the start time
   let nextBlockStart = closeMin;
@@ -139,7 +138,7 @@ export const generateValidEndTimes = (bookingConfig, override, requestDate, star
   const validEndTimes = [];
   let currentEnd = startMin + minDuration;
 
-  while (currentEnd <= nextBlockStart && (currentEnd - startMin) <= maxDuration) {
+  while (currentEnd <= nextBlockStart) {
     validEndTimes.push(minutesToTime(currentEnd));
     currentEnd += interval;
   }

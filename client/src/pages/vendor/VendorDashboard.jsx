@@ -46,7 +46,7 @@ const VendorDashboard = () => {
   // APPROVED STATE (Actual Dashboard)
   return (
     <div className="w-full">
-      <main className="max-w-container-max mx-auto mt-4 px-4 md:px-8">
+      <main className="w-full mt-4 px-4 md:px-8">
         <div className="bg-surface rounded-2xl p-8 border border-outline-variant shadow-sm relative overflow-hidden min-h-[500px]">
           
           <div className="flex items-center justify-between mb-8">

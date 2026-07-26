@@ -1,6 +1,6 @@
 import * as slotOverrideRepository from '../../repositories/vendor/slotOverrideRepository.js';
 import { findVenueByVendor } from '../../repositories/vendor/venueRepository.js';
-import AppError from '../../utils/appError.js';
+import AppError from '../../utils/AppError.js';
 import Venue from '../../models/venueModel.js';
 
 const isPastDate = (dateStr) => {
@@ -55,8 +55,8 @@ const checkTimeOverlap = (newFrom, newTo, existingBlocks) => {
     const eFrom = parseTime(block.fromTime);
     const eTo = parseTime(block.toTime);
     
-    // Check overlap with 1 hour (60 mins) buffer
-    if (!(nFrom >= eTo + 60 || nTo <= eFrom - 60)) {
+    // Check for strict time overlap
+    if (nFrom < eTo && nTo > eFrom) {
       return true; 
     }
   }
@@ -79,7 +79,7 @@ export const blockHourlySlot = async (vendorId, venueId, date, fromTime, toTime,
     }
     if (existingOverride.blocks && existingOverride.blocks.length > 0) {
       const hasOverlap = checkTimeOverlap(fromTime, toTime, existingOverride.blocks);
-      if (hasOverlap) throw new AppError('Selected time overlaps with existing blocks or requires a 1-hour buffer', 400);
+      if (hasOverlap) throw new AppError('Selected time overlaps with existing blocks', 400);
     }
   }
 

@@ -65,8 +65,6 @@ const INITIAL_FORM = {
       sunday: { isOpen: true, openTime: '09:00', closeTime: '21:00' }
     },
     bookingInterval: 60,
-    minBookingDuration: 60,
-    maxBookingDuration: 1440,
     preparationTime: 0,
     advanceBookingLimit: false,
     maxAdvanceBookingDays: 90
@@ -733,14 +731,14 @@ const AddVenue = () => {
       </div>
 
       {/* ── Main Content ─────────────────────────────────────── */}
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="w-full px-4 lg:px-8 py-10">
 
         <h1 className="text-3xl font-extrabold text-dark text-center mb-8">{isEditMode ? 'Edit Venue Details' : 'Add New Venue'}</h1>
 
         <StepIndicator currentStep={currentStep} />
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 mb-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 mb-8">
           <div className="animate-fade-in">
             {stepComponents[currentStep]}
           </div>
