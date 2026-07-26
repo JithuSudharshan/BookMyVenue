@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { vendorApi } from '../../api/vendor-api/vendorApi';
 import { AuthContext } from '../../store/AuthContext';
-import VendorProfileView from '../../components/vendor/profile/VendorProfileView';
+import VendorProfileView from '../../components/vendor/Profile/VendorProfileView';
 import AvatarUpload from '../../components/common/ProfileUi/AvatarUpload';
 import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
 import { toast } from 'sonner';

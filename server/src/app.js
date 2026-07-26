@@ -5,10 +5,10 @@ import passport from 'passport';
 import './config/passport.js';
 
 // ── Route imports ──────────────────────────────────────
-import authRoutes   from './routes/authRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
-import userRoutes   from './routes/user/index.js';    // /home, /venues
-import adminRoutes  from './routes/admin/index.js';   // /categories, /subcategories
+import userRoutes from './routes/user/index.js';    // /home, /venues
+import adminRoutes from './routes/admin/index.js';   // /categories, /subcategories
 import vendorRoutes from './routes/vendor/index.js';  // /venues (new structured)
 
 // Legacy feature routes — kept until migrated to subdomain structure
@@ -18,7 +18,27 @@ import legacyVendorRoutes from './routes/vendor/vendorRoutes.js';
 const app = express();
 
 // ── Middleware ─────────────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
+app.use(cors({
+    origin: (origin, callback) => {
+        // Evaluate at runtime to avoid ES module import hoisting issues with dotenv
+        const allowedOrigins = [
+            process.env.CLIENT_URL,
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'http://localhost:5174',
+            'http://127.0.0.1:5174'
+        ];
+        if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            console.log('Allowed origins:', allowedOrigins);
+            callback(null, false); // Do not throw an error, just block
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -29,12 +49,12 @@ import { responseFormatter } from './middlewares/responseFormatter.js';
 app.use(responseFormatter);
 
 // ── Routes ─────────────────────────────────────────────
-app.use('/api/auth',     authRoutes);
-app.use('/api/wallet',   walletRoutes);
-app.use('/api',          userRoutes);          // /api/home, /api/venues
-app.use('/api/admin',    adminRoutes);
-app.use('/api/vendor',   legacyVendorRoutes); // onboarding, profile
-app.use('/api/vendor',   vendorRoutes);        // venue management
+app.use('/api/auth', authRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api', userRoutes);          // /api/home, /api/venues
+app.use('/api/admin', adminRoutes);
+app.use('/api/vendor', legacyVendorRoutes); // onboarding, profile
+app.use('/api/vendor', vendorRoutes);        // venue management
 app.use('/api/customer', customerRoutes);
 
 // ── Health check ────────────────────────────────────────

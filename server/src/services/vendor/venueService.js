@@ -3,7 +3,7 @@ import Category from '../../models/categoryModel.js';
 import Subcategory from '../../models/subcategoryModel.js';
 import Venue from '../../models/venueModel.js';
 import { generateSlug } from '../../utils/generateSlug.js';
-import AppError from '../../utils/appError.js';
+import AppError from '../../utils/AppError.js';
 
 const validateTimeRange = (opening, closing) => {
     const openDate = new Date(`1970-01-01T${opening}:00Z`);

@@ -3,7 +3,7 @@ import redisClient from '../config/redis.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/sendEmail.js';
 import { validateSignupData, validateVendorSignupData } from '../validators/authValidator.js';
 import userRepository from '../repositories/userRepository.js';
-import AppError from '../utils/appError.js';
+import AppError from '../utils/AppError.js';
 
 class AuthService {
   async deleteOldTokens(prefix, userId) {
