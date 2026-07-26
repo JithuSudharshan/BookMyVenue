@@ -38,7 +38,7 @@ const BookingConfigForm = ({ config, onChange, isHourly }) => {
                         [day]: { ...dayData, isOpen: e.target.checked }
                       }
                     })}
-                    className="w-4 h-4 text-primary rounded focus:ring-primary"
+                    className="w-4 h-4 text-primary accent-primary rounded focus:ring-primary"
                   />
                   <span className="text-sm font-medium capitalize">{day}</span>
                 </div>
