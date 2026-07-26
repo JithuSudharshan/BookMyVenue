@@ -10,7 +10,11 @@ import {
   removeSlotOverride 
 } from '../../api/vendor-api/vendorApi';
 import { generateTimeOptions } from '../../utils/timeUtils';
-import { Calendar as CalendarIcon, Info, CheckCircle2, Clock } from 'lucide-react';
+import { generateTimeOptions } from '../../utils/timeUtils';
+import { Calendar as CalendarIcon, Info, CheckCircle2, Clock, Settings, LayoutGrid } from 'lucide-react';
+import BookingConfigForm from './form/BookingConfigForm';
+import TimeSlotPill from '../common/Slot/TimeSlotPill';
+import { updateVenue } from '../../api/vendor-api/vendorApi';
 
 import { VENDOR_SLOT_REASONS as REASONS } from '../../utils/venueConstants';
 
@@ -19,6 +23,9 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [overrides, setOverrides] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState('calendar'); // 'calendar' or 'settings'
+  const [localConfig, setLocalConfig] = useState(bookingConfig || {});
+  const [savingConfig, setSavingConfig] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
   const [selectedDateStr, setSelectedDateStr] = useState(null); 
   
@@ -125,6 +132,18 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
     }
   };
 
+  const handleSaveConfig = async () => {
+    setSavingConfig(true);
+    try {
+      await updateVenue(venueId, { bookingConfig: localConfig });
+      toast.success('Availability settings updated successfully');
+    } catch (error) {
+      toast.error('Failed to update settings');
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
   const selectedDateOverride = selectedDateStr ? overrides.find(o => o.date === selectedDateStr) : null;
   const timeToMinutes = (t) => {
     if (!t) return 0;
@@ -150,7 +169,10 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
         for (let current = startMin; current < endMin; current += interval) {
           const h = Math.floor(current / 60).toString().padStart(2, '0');
           const m = (current % 60).toString().padStart(2, '0');
-          slots.push(`${h}:${m}`);
+          const nextMin = current + interval;
+          const endH = Math.floor(nextMin / 60).toString().padStart(2, '0');
+          const endM = (nextMin % 60).toString().padStart(2, '0');
+          slots.push({ start: `${h}:${m}`, end: `${endH}:${endM}` });
         }
         setDayTimeSlots(slots);
       } else {
@@ -176,6 +198,48 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
         </div>
       )}
 
+      {/* Sub Navigation */}
+      <div className="flex border-b border-gray-200 mt-2 mb-6 gap-6">
+        <button
+          onClick={() => setActiveSubTab('calendar')}
+          className={`pb-3 font-semibold text-sm transition-colors flex items-center gap-2 ${
+            activeSubTab === 'calendar' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-dark'
+          }`}
+        >
+          <LayoutGrid className="w-4 h-4" /> Calendar & Blocks
+        </button>
+        {bookingModel === 'hourly' && (
+          <button
+            onClick={() => setActiveSubTab('settings')}
+            className={`pb-3 font-semibold text-sm transition-colors flex items-center gap-2 ${
+              activeSubTab === 'settings' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-dark'
+            }`}
+          >
+            <Settings className="w-4 h-4" /> Operating Hours & Rules
+          </button>
+        )}
+      </div>
+
+      {activeSubTab === 'settings' && bookingModel === 'hourly' && (
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <BookingConfigForm 
+            isHourly={true}
+            config={localConfig}
+            onChange={setLocalConfig}
+          />
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={handleSaveConfig}
+              disabled={savingConfig}
+              className="px-6 py-2.5 bg-on-surface hover:bg-black text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+            >
+              {savingConfig ? 'Saving...' : 'Save Settings'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeSubTab === 'calendar' && (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
         <div className="w-full">
           <MonthlyCalendarGrid 
@@ -284,8 +348,10 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
                     </div>
                     
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Time Grid (Click to toggle)</label>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                      {dayTimeSlots.map(time => {
+                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                      {dayTimeSlots.map(slotObj => {
+                        const time = slotObj.start;
+                        const endTime = slotObj.end;
                         const slotMin = timeToMinutes(time);
                         let isBlocked = false;
                         let blockInfo = null;
@@ -305,32 +371,19 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
                           }
                         }
 
-                        let buttonClass = "py-2 px-2 text-sm font-medium rounded-lg border transition-all flex flex-col items-center justify-center gap-1";
-                        let title = "Available (Click to block)";
-                        
-                        if (isBlocked) {
-                          if (blockInfo.reason === 'Customer Booking') {
-                            buttonClass += " bg-blue-50 text-blue-700 border-blue-200 cursor-not-allowed opacity-90";
-                            title = "Customer Booking";
-                          } else {
-                            buttonClass += " bg-red-50 text-red-700 border-red-200 hover:bg-red-100 hover:border-red-300 cursor-pointer";
-                            title = `${blockInfo.reason || 'Blocked'} (Click to unblock)`;
-                          }
-                        } else {
-                          buttonClass += " bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50 cursor-pointer";
-                        }
+                        let status = isBlocked 
+                          ? (blockInfo.reason === 'Customer Booking' ? 'customer_booking' : 'blocked')
+                          : 'available';
 
                         return (
-                          <button
+                          <TimeSlotPill
                             key={time}
-                            title={title}
+                            startTime={time}
+                            endTime={endTime}
+                            status={status}
+                            subtitle={isBlocked && blockInfo.reason !== 'Customer Booking' ? (blockInfo.reason === 'Maintenance' ? 'Maint' : 'Block') : undefined}
                             onClick={() => toggleTimeSlot(time, isBlocked, blockInfo)}
-                            className={buttonClass}
-                          >
-                            <span>{time}</span>
-                            {isBlocked && blockInfo.reason !== 'Customer Booking' && <span className="text-[9px] leading-none text-red-500 uppercase font-bold truncate w-full text-center">{blockInfo.reason === 'Maintenance' ? 'Maint' : 'Block'}</span>}
-                            {isBlocked && blockInfo.reason === 'Customer Booking' && <span className="text-[9px] leading-none text-blue-600 uppercase font-bold truncate w-full text-center">Booked</span>}
-                          </button>
+                          />
                         );
                       })}
                     </div>
@@ -370,8 +423,7 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
           )}
         </div>
       </div>
-
-
+      )}
     </div>
   );
 };

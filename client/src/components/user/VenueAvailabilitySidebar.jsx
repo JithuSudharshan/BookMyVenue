@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import CompactCalendar from './slot/CompactCalendar';
 import { getPublicAvailability } from '../../api/user-api/userApi';
 import BookingSummary from './BookingSummary';
+import TimeSlotPill from '../common/Slot/TimeSlotPill';
 
 const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthChange }) => {
   const { user } = useContext(AuthContext);
@@ -48,32 +49,13 @@ const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthC
     fetchHourlyAvailability();
   }, [selectedDates, venue._id, venue.bookingModel]);
 
-  // Calculate available end times when start time is selected
+  // Since booking logic is deferred for this phase, we don't need to compute multi-hour selections or end times
+  // We simply display the available time ranges.
   useEffect(() => {
-    if (fromTime && hourlyConfig) {
-      // In a full implementation, the backend could supply this via another endpoint, 
-      // but for now we can compute end times on the frontend based on start time + minDuration + maxDuration + interval
-      // until we hit a block. Since we don't have the blocks here, we assume availableStartTimes are gaps.
-      // Wait, we can't fully know end times without backend. 
-      // Let's implement a simple version or just let the backend calculate it if needed.
-      // Actually, since this is a frontend prototype logic update, let's just generate end times based on interval.
-      // A better way is to call the backend, but we don't have an endpoint for end times yet.
-      // Let's generate end times from fromTime up to maxDuration.
-      const startMin = parseInt(fromTime.split(':')[0]) * 60 + parseInt(fromTime.split(':')[1]);
-      let ends = [];
-      let curr = startMin + hourlyConfig.minDuration;
-      // We limit to 5 options for now for UX
-      while (curr <= startMin + hourlyConfig.maxDuration && ends.length < 10) {
-        const h = Math.floor(curr / 60).toString().padStart(2, '0');
-        const m = (curr % 60).toString().padStart(2, '0');
-        ends.push(`${h}:${m}`);
-        curr += hourlyConfig.interval;
-      }
-      setAvailableEndTimes(ends);
-      setToTime('');
-    } else {
-      setAvailableEndTimes([]);
-    }
+    // Reset selections on date change
+    setFromTime('');
+    setToTime('');
+    setAvailableEndTimes([]);
   }, [fromTime, hourlyConfig]);
 
   const handleDateClick = (dateStr) => {
@@ -199,36 +181,27 @@ const VenueAvailabilitySidebar = ({ venue, overrides = [], year, month, onMonthC
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">1. Select Start Time</label>
-                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                      {availableStartTimes.map(time => (
-                        <button
-                          key={time}
-                          onClick={() => handleFromTimeSelect(time)}
-                          className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${fromTime === time ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary'}`}
-                        >
-                          {time}
-                        </button>
-                      ))}
+                    <label className="text-xs font-bold text-gray-500 uppercase mb-3 block">Available Time Ranges</label>
+                    <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                      {availableStartTimes.map(time => {
+                        const [h, m] = time.split(':').map(Number);
+                        const interval = hourlyConfig?.interval || 60;
+                        const nextMin = h * 60 + m + interval;
+                        const endH = Math.floor(nextMin / 60).toString().padStart(2, '0');
+                        const endM = (nextMin % 60).toString().padStart(2, '0');
+                        const endTime = `${endH}:${endM}`;
+                        
+                        return (
+                          <TimeSlotPill
+                            key={time}
+                            startTime={time}
+                            endTime={endTime}
+                            status="available"
+                          />
+                        );
+                      })}
                     </div>
                   </div>
-
-                  {fromTime && (
-                    <div className="animate-fade-in">
-                      <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">2. Select End Time</label>
-                      <div className="flex flex-wrap gap-2">
-                        {availableEndTimes.map(time => (
-                          <button
-                            key={time}
-                            onClick={() => handleToTimeSelect(time)}
-                            className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${toTime === time ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary'}`}
-                          >
-                            {time}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
