@@ -149,13 +149,13 @@ function BookingsPage() {
           {bookings.map((booking) => {
             const bookingStatusStyle = getStatusBadgeColor(booking.bookingStatus);
             const paymentStatusStyle = getStatusBadgeColor(booking.paymentStatus);
-            const bookingDate = new Date(booking.bookingDate).toLocaleDateString('en-US', {
+            const bookingDate = new Date(booking.date || booking.startDate).toLocaleDateString('en-US', {
               weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
             });
-            const venue = booking.venueId || {};
+            const venue = booking.venue || {};
             const venueName = venue.name || 'Unknown Venue';
-            const location = venue.location ? `${venue.location.city}, ${venue.location.state}` : '';
-            const image = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
+            const location = venue.location ? `${venue.location.city || ''}` : '';
+            const image = (venue.images && venue.images.length > 0) ? venue.images[0].url : null;
 
             return (
               <div key={booking._id} className="bk-card">
@@ -230,7 +230,7 @@ function BookingsPage() {
                         <div className="bk-info-icon"><IndianRupee size={18} /></div>
                         <div className="bk-info-text">
                           <span className="bk-info-label">Total Amount</span>
-                          <span className="bk-info-val">₹{booking.totalAmount}</span>
+                          <span className="bk-info-val">₹{booking.pricing?.totalAmount || 0}</span>
                         </div>
                       </div>
                     </div>

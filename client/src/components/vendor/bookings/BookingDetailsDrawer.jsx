@@ -56,8 +56,8 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
 
   if (!isOpen || !booking) return null;
 
-  const venue = booking.venueId || {};
-  const customer = booking.userId || {};
+  const venue = booking.venue || {};
+  const customer = booking.customer || {};
   const pricing = booking.pricing || {};
   
   const isAdvancePayment = pricing.paymentPolicy === 'advance_payment';
@@ -71,12 +71,12 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity"
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[150] transition-opacity"
         onClick={onClose}
       />
       
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out">
+      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-[200] flex flex-col transform transition-transform duration-300 ease-in-out">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
           <div>
@@ -92,23 +92,23 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-50/50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
           
           {/* Status Section */}
-          <div className="flex gap-4">
-            <div className="flex-1 bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-              <p className="text-xs text-gray-500 mb-2">Booking Status</p>
+          <div className="flex gap-3">
+            <div className="flex-1 bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+              <p className="text-xs text-gray-500 mb-1.5">Booking Status</p>
               <StatusBadge status={booking.bookingStatus} type="booking" />
             </div>
-            <div className="flex-1 bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-              <p className="text-xs text-gray-500 mb-2">Payment Status</p>
+            <div className="flex-1 bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+              <p className="text-xs text-gray-500 mb-1.5">Payment Status</p>
               <StatusBadge status={booking.paymentStatus} type="payment" />
             </div>
           </div>
 
           {/* Venue & Booking Info */}
-          <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
+          <section className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm space-y-3">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-2 border-b border-gray-50 pb-2">
               <MapPin className="w-4 h-4 text-primary" /> Venue Information
             </h3>
             
@@ -137,13 +137,29 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
           </section>
 
           {/* Customer Info */}
-          <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
+          <section className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-2 border-b border-gray-50 pb-2">
               <User className="w-4 h-4 text-primary" /> Customer Information
             </h3>
             
             {showContact ? (
               <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-gray-500 mb-0.5">Name</p>
+                    <p className="text-sm font-medium text-gray-900">{customer.fullName || 'N/A'}</p>
+                  </div>
+                </div>
+                {customer.phone && (
+                  <div className="flex items-start gap-3">
+                    <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500 mb-0.5">Phone</p>
+                      <p className="text-sm font-medium text-gray-900">{customer.phone}</p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
                   <div>
@@ -151,7 +167,6 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
                     <p className="text-sm font-medium text-gray-900">{customer.email || 'N/A'}</p>
                   </div>
                 </div>
-                {/* Note: In MVP we don't fetch full profile, only email from User model. Phone might not be available unless populated from Customer profile. */}
               </div>
             ) : (
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800 flex items-start gap-2">
@@ -162,8 +177,8 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
           </section>
 
           {/* Payment Summary */}
-          <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
+          <section className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-2 border-b border-gray-50 pb-2">
               <FileText className="w-4 h-4 text-primary" /> Payment Summary
             </h3>
             
@@ -197,12 +212,12 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
 
           {/* Timeline */}
           {booking.timeline && booking.timeline.length > 0 && (
-            <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
+            <section className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-3 border-b border-gray-50 pb-2">
                 <Clock className="w-4 h-4 text-primary" /> Timeline
               </h3>
               
-              <div className="relative border-l-2 border-gray-100 ml-3 space-y-6">
+              <div className="relative border-l-2 border-gray-100 ml-3 space-y-4">
                 {booking.timeline.map((event, idx) => (
                   <div key={idx} className="relative pl-5">
                     <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-primary ring-4 ring-white" />

@@ -1,6 +1,8 @@
 import Booking from '../../models/bookingModel.js';
 import AppError from '../../utils/AppError.js';
 import Venue from '../../models/venueModel.js';
+import Customer from '../../models/customerModel.js';
+import { toVendorBookingDTO } from '../../dto/booking/VendorBookingDTO.js';
 
 /**
  * Fetch paginated bookings for a vendor, with optional filters.
@@ -45,10 +47,27 @@ export const getVendorBookings = async (vendorUserId, { page = 1, limit = 10, st
     );
   }
 
+  // Fetch all unique customer profiles for these bookings
+  const userIds = [...new Set(filtered.map(b => b.userId?._id || b.userId).filter(Boolean))];
+  const customers = await Customer.find({ userId: { $in: userIds } }).lean();
+  
+  // Build a lookup map: userId -> customerProfile
+  const customerMap = customers.reduce((acc, customer) => {
+    acc[customer.userId.toString()] = customer;
+    return acc;
+  }, {});
+
+  // Apply DTO
+  const dtoList = filtered.map(booking => {
+    const userIdStr = booking.userId?._id?.toString() || booking.userId?.toString();
+    const customerProfile = customerMap[userIdStr];
+    return toVendorBookingDTO(booking, customerProfile);
+  });
+
   const total = await Booking.countDocuments(query);
 
   return {
-    bookings: filtered,
+    bookings: dtoList,
     pagination: {
       total,
       page,

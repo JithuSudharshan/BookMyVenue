@@ -37,10 +37,10 @@ const StatusBadge = ({ status, styleMap, label }) => {
 };
 
 const BookingCard = memo(({ booking, onViewDetails }) => {
-  const venue = booking.venueId || {};
+  const venue = booking.venue || {};
   const venueName = venue.name || 'Unknown Venue';
   const city = venue.location?.city || '';
-  const image = venue.images?.find(i => i.isPrimary)?.url || venue.images?.[0]?.url;
+  const image = venue.primaryImage || null;
 
   const dateDisplay = booking.bookingMode === 'hourly'
     ? formatDate(booking.date)

@@ -3,6 +3,8 @@ import userRepository from '../repositories/userRepository.js';
 import * as customerRepository from '../repositories/customerRepository.js';
 import Booking from '../models/bookingModel.js';
 import '../models/venueModel.js'; // Register Venue schema for populate
+import Vendor from '../models/vendorModel.js';
+import { toCustomerBookingDTO } from '../dto/booking/CustomerBookingDTO.js';
 import * as wishlistRepository from '../repositories/wishlistRepository.js';
 import AppError from '../utils/AppError.js';
 
@@ -293,16 +295,34 @@ export const getBookings = async (userId, page = 1, limit = 10, filter = 'All') 
   const skip = (page - 1) * limit;
 
   const bookings = await Booking.find(query)
-    .populate('venueId', 'name location images pricing capacity description')
+    .populate('venueId', 'name location images pricing capacity description rules checkInTime checkOutTime')
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
+
+  // Fetch all unique vendor profiles for these bookings
+  const vendorUserIds = [...new Set(bookings.map(b => b.vendorId?._id || b.vendorId).filter(Boolean))];
+  const vendors = await Vendor.find({ userId: { $in: vendorUserIds } }).lean();
+
+  // Build a lookup map: userId -> vendorProfile
+  const vendorMap = vendors.reduce((acc, vendor) => {
+    acc[vendor.userId.toString()] = vendor;
+    return acc;
+  }, {});
+
+  // Apply DTO
+  const dtoList = bookings.map(booking => {
+    const vendorUserIdStr = booking.vendorId?._id?.toString() || booking.vendorId?.toString();
+    const vendorProfile = vendorMap[vendorUserIdStr];
+    return toCustomerBookingDTO(booking, vendorProfile);
+  });
 
   const total = await Booking.countDocuments(query);
   const totalPages = Math.ceil(total / limit);
 
   return {
-    bookings,
+    bookings: dtoList,
     pagination: {
       total,
       page,
