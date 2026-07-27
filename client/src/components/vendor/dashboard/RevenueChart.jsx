@@ -20,8 +20,10 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const RevenueChart = ({ data, timeRange, setTimeRange }) => {
   return (
-    <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm h-full flex flex-col min-h-[350px]">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+    <div className="relative overflow-hidden bg-gradient-to-br from-white/90 to-white/50 backdrop-blur-xl p-6 rounded-2xl border border-white shadow-[0_8px_30px_rgb(220,0,22,0.04)] h-full flex flex-col min-h-[350px]">
+      <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+      
+      <div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
         <div>
           <h3 className="font-headline-sm text-on-surface">Revenue & Bookings</h3>
           <p className="text-sm text-on-surface-variant">Performance overview over time</p>
@@ -29,7 +31,7 @@ const RevenueChart = ({ data, timeRange, setTimeRange }) => {
         <select 
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value)}
-          className="bg-surface-variant/30 text-sm border-none rounded-xl px-4 py-2.5 text-on-surface focus:ring-2 focus:ring-primary outline-none cursor-pointer hover:bg-surface-variant/50 transition-colors"
+          className="bg-white/60 backdrop-blur-md text-sm border border-white shadow-sm rounded-xl px-4 py-2.5 text-on-surface focus:ring-2 focus:ring-primary outline-none cursor-pointer hover:bg-white/80 transition-colors"
         >
           <option value="7">Last 7 days</option>
           <option value="30">Last 30 days</option>
@@ -43,8 +45,8 @@ const RevenueChart = ({ data, timeRange, setTimeRange }) => {
             <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#DC0016" stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor="#DC0016" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
@@ -68,16 +70,16 @@ const RevenueChart = ({ data, timeRange, setTimeRange }) => {
                 dx={-10}
               />
               <YAxis yAxisId="right" orientation="right" hide />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#9CA3AF', strokeWidth: 1, strokeDasharray: '4 4' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#e6bdb8', strokeWidth: 1, strokeDasharray: '4 4' }} />
               <Area 
                 yAxisId="left"
                 type="monotone" 
                 dataKey="revenue" 
-                stroke="#4F46E5" 
+                stroke="#DC0016" 
                 strokeWidth={3}
                 fillOpacity={1} 
                 fill="url(#colorRevenue)" 
-                activeDot={{ r: 6, strokeWidth: 0, fill: '#4F46E5' }}
+                activeDot={{ r: 6, strokeWidth: 0, fill: '#DC0016' }}
               />
               <Area 
                 yAxisId="right"

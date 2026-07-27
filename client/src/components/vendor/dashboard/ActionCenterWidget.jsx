@@ -24,8 +24,10 @@ const ActionCenterWidget = ({ items = [] }) => {
   };
 
   return (
-    <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm h-full flex flex-col">
-      <h3 className="font-headline-sm text-on-surface mb-6">Requires Attention</h3>
+    <div className="relative overflow-hidden bg-gradient-to-br from-white/90 to-white/50 backdrop-blur-xl p-6 rounded-2xl border border-white shadow-[0_8px_30px_rgb(220,0,22,0.04)] h-full flex flex-col">
+      <div className="relative z-10">
+        <h3 className="font-headline-sm text-on-surface mb-6">Requires Attention</h3>
+      </div>
       
       <div className="flex-1 flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-1">
         {items.length > 0 ? items.map((item, index) => (

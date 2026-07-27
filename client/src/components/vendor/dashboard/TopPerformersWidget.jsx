@@ -6,8 +6,8 @@ const TopPerformersWidget = ({ venues = [] }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6">
+    <div className="relative overflow-hidden bg-gradient-to-br from-white/90 to-white/50 backdrop-blur-xl p-6 rounded-2xl border border-white shadow-[0_8px_30px_rgb(220,0,22,0.04)] h-full flex flex-col">
+      <div className="relative z-10 flex justify-between items-center mb-6">
         <h3 className="font-headline-sm text-on-surface">Top Performing Venues</h3>
         <TrendingUp className="w-5 h-5 text-on-surface-variant" />
       </div>

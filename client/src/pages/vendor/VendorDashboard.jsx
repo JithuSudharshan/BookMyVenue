@@ -51,8 +51,12 @@ const VendorDashboard = () => {
   }
 
   return (
-    <div className="w-full pb-16">
-      <main className="w-full mt-4 px-4 md:px-8 max-w-7xl mx-auto">
+    <div className="w-full pb-16 min-h-screen bg-surface-container-low/50 relative overflow-hidden">
+      {/* Decorative background elements for glassmorphism */}
+      <div className="absolute top-0 right-0 w-full md:w-1/2 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-full md:w-1/2 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+      
+      <main className="w-full mt-4 px-4 md:px-8 max-w-7xl mx-auto relative z-10">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
