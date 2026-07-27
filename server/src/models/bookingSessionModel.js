@@ -50,9 +50,12 @@ const bookingSessionSchema = new mongoose.Schema(
 
     pricing: {
       baseAmount: { type: Number, required: true },
-      taxAmount: { type: Number, required: true },
       totalAmount: { type: Number, required: true },
       advanceAmount: { type: Number, required: true },
+      remainingAmount: { type: Number, required: true, default: 0 },
+      paymentPolicy: { type: String, enum: ['full_payment', 'advance_payment'], required: true, default: 'full_payment' },
+      balanceDueDate: { type: Date, default: null },
+      policyMetadata: { type: Object, default: {} },
       walletDeduction: { type: Number, default: 0 },
       razorpayAmount: { type: Number, default: 0 },
     },

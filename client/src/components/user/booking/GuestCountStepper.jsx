@@ -99,12 +99,6 @@ const GuestCountStepper = ({ maxCapacity }) => {
         </div>
       </div>
       
-      {/* Error Message rendered below the row, aligned to the right */}
-      {error && (
-        <div className="mt-2 text-xs text-red-500 text-right w-full">
-          {error}
-        </div>
-      )}
     </div>
   );
 };

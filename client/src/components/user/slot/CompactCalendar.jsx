@@ -62,10 +62,11 @@ const CompactCalendar = ({
       const isBooked = !isPast && override?.isFullDayBlocked && override?.fullDayReason === 'Customer Booking';
       const isBlocked = !isPast && override?.isFullDayBlocked && override?.fullDayReason !== 'Customer Booking';
       const hasPartialBlock = !isPast && !override?.isFullDayBlocked && override?.blockedSlots?.length > 0;
+      const isTooEarlyForDaily = bookingModel === 'daily' && isToday;
       
-      const disabled = isPast || isBlocked || isBooked;
+      const disabled = isPast || isBlocked || isBooked || isTooEarlyForDaily;
 
-      if (isPast) {
+      if (isPast || isTooEarlyForDaily) {
         cellClass += "opacity-30 cursor-not-allowed ";
       } else if (isBlocked) {
         cellClass += "cursor-not-allowed bg-red-50/30 ";
@@ -140,10 +141,15 @@ const CompactCalendar = ({
         {renderCells()}
       </div>
       {bookingModel === 'daily' ? (
-        <div className="p-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-on-surface-variant border-t border-outline-variant bg-surface-container-lowest">
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full ring-1 ring-gray-400 bg-white"></div> Today</div>
-          <div className="flex items-center gap-1.5"><Lock size={10} className="text-blue-500" /> Booked</div>
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-50/50 border border-red-200"></div> Blocked</div>
+        <div className="flex flex-col border-t border-outline-variant bg-surface-container-lowest">
+          <div className="p-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-on-surface-variant">
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full ring-1 ring-gray-400 bg-white"></div> Today (Unavailable)</div>
+            <div className="flex items-center gap-1.5"><Lock size={10} className="text-blue-500" /> Booked</div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-50/50 border border-red-200"></div> Blocked</div>
+          </div>
+          <div className="pb-3 px-3 text-center text-xs text-on-surface-variant italic">
+            Daily bookings must be reserved at least one day in advance.
+          </div>
         </div>
       ) : (
         <div className="p-3 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-on-surface-variant border-t border-outline-variant bg-surface-container-lowest">

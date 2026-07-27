@@ -10,6 +10,14 @@ export const isPastDate = (dateStr) => {
   return targetDate < today;
 };
 
+export const isTodayOrPastDate = (dateStr) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const targetDate = new Date(dateStr);
+  targetDate.setHours(0, 0, 0, 0);
+  return targetDate <= today;
+};
+
 const getDayOfWeek = (dateStr) => {
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const date = new Date(dateStr);
@@ -107,8 +115,8 @@ export const validateDailyRange = async (venueId, startDate, endDate) => {
     throw new AppError('This venue only accepts hourly bookings', 400);
   }
 
-  if (isPastDate(startDate)) {
-    throw new AppError('Cannot book past dates', 400);
+  if (isTodayOrPastDate(startDate)) {
+    throw new AppError('Daily bookings must be reserved at least one day in advance', 400);
   }
   
   const start = new Date(startDate);

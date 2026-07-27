@@ -4,7 +4,11 @@ import { protect } from '../../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(protect); // All booking routes require authentication
+// Public routes
+router.post('/pricing-summary', bookingController.getPricingSummary);
+
+// Protected routes
+router.use(protect); // All following booking routes require authentication
 
 // Session routes
 router.post('/session', bookingController.createSession);

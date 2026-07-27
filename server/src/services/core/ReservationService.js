@@ -3,6 +3,7 @@ import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
 import AppError from '../../utils/AppError.js';
 import { validateHourlySlots, validateDailyRange } from './AvailabilityValidatorService.js';
 import { calculateHourlyPrice, calculateDailyPrice } from './PricingEngineService.js';
+import { determinePaymentPolicy } from './PaymentPolicyEngine.js';
 import mongoose from 'mongoose';
 
 export const createReservation = async (userId, venueId, bookingData) => {
@@ -10,15 +11,19 @@ export const createReservation = async (userId, venueId, bookingData) => {
   
   let venue, pricing;
 
-  // 1. Validation & Pricing
+  // 1. Validation, Pricing, & Policy
   if (bookingMode === 'hourly') {
     const valResult = await validateHourlySlots(venueId, date, fromTime, toTime);
     venue = valResult.venue;
-    pricing = calculateHourlyPrice(venue, fromTime, toTime, guestCount);
+    const basePricing = calculateHourlyPrice(venue, fromTime, toTime, guestCount);
+    const policy = determinePaymentPolicy('hourly', date, basePricing.totalAmount);
+    pricing = { ...basePricing, ...policy };
   } else if (bookingMode === 'daily') {
     const valResult = await validateDailyRange(venueId, startDate, endDate);
     venue = valResult.venue;
-    pricing = calculateDailyPrice(venue, startDate, endDate, guestCount);
+    const basePricing = calculateDailyPrice(venue, startDate, endDate, guestCount);
+    const policy = determinePaymentPolicy('daily', startDate, basePricing.totalAmount);
+    pricing = { ...basePricing, ...policy };
   } else {
     throw new AppError('Invalid booking mode', 400);
   }

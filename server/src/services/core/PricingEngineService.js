@@ -18,20 +18,11 @@ export const calculateHourlyPrice = (venue, fromTime, toTime, guestCount) => {
   }
 
   const baseAmount = venue.price * durationHours;
-  const taxRate = 0.18; // 18% GST (can be configurable later)
-  const taxAmount = baseAmount * taxRate;
-  const totalAmount = baseAmount + taxAmount;
-
-  // Assuming full payment initially unless advance rules exist
-  // We can add advance logic later, for now advance = total
-  const advanceAmount = totalAmount; 
+  const totalAmount = baseAmount; // No tax for MVP
 
   return {
     baseAmount: Math.round(baseAmount),
-    taxAmount: Math.round(taxAmount),
     totalAmount: Math.round(totalAmount),
-    advanceAmount: Math.round(advanceAmount),
-    remainingAmount: Math.round(totalAmount - advanceAmount),
     durationHours
   };
 };
@@ -50,18 +41,11 @@ export const calculateDailyPrice = (venue, startDate, endDate, guestCount) => {
   }
 
   const baseAmount = venue.price * days;
-  const taxRate = 0.18;
-  const taxAmount = baseAmount * taxRate;
-  const totalAmount = baseAmount + taxAmount;
-
-  const advanceAmount = totalAmount;
+  const totalAmount = baseAmount; // No tax for MVP
 
   return {
     baseAmount: Math.round(baseAmount),
-    taxAmount: Math.round(taxAmount),
     totalAmount: Math.round(totalAmount),
-    advanceAmount: Math.round(advanceAmount),
-    remainingAmount: Math.round(totalAmount - advanceAmount),
     nights: days
   };
 };
