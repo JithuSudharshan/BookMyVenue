@@ -4,6 +4,8 @@
  * Follows purely functional design where possible, using venue config and overrides as inputs.
  */
 
+import { DEFAULT_BOOKING_INTERVAL } from '../../utils/venueConstants.js';
+
 const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 // Helper to parse HH:mm into minutes from midnight
@@ -61,7 +63,7 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
 
   const openMin = timeToMinutes(dailyHours.openTime);
   const closeMin = timeToMinutes(dailyHours.closeTime);
-  const interval = bookingConfig.bookingInterval || 60;
+  const interval = bookingConfig.bookingInterval || DEFAULT_BOOKING_INTERVAL;
   const minDuration = interval; // Minimum duration is exactly the booking interval
   const prepTime = bookingConfig.preparationTime || 0;
 
@@ -109,7 +111,7 @@ export const generateValidEndTimes = (bookingConfig, override, requestDate, star
   if (!dailyHours || !dailyHours.isOpen) return [];
 
   const closeMin = timeToMinutes(dailyHours.closeTime);
-  const interval = bookingConfig.bookingInterval || 60;
+  const interval = bookingConfig.bookingInterval || DEFAULT_BOOKING_INTERVAL;
   const minDuration = interval; // Minimum duration is exactly the booking interval
   
   // Find the next block that occurs after the start time

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import MonthlyCalendarGrid from './slot/MonthlyCalendarGrid';
 import BaseModal from '../ui/BaseModal';
 import { toast } from 'sonner';
@@ -9,13 +9,13 @@ import {
   blockHourlySlot, 
   removeSlotOverride 
 } from '../../api/vendor-api/vendorApi';
-import { generateTimeOptions } from '../../utils/timeUtils';
-import { Calendar as CalendarIcon, Info, CheckCircle2, Clock, Settings, LayoutGrid } from 'lucide-react';
+import { generateTimeOptions, timeToMinutes, formatTime } from '../../utils/timeUtils';
+import { Calendar as CalendarIcon, Info, CheckCircle2, Clock, Settings, LayoutGrid, X } from 'lucide-react';
 import BookingConfigForm from './form/BookingConfigForm';
 import AvailabilityRow from './slot/AvailabilityRow';
 import { updateVenue } from '../../api/vendor-api/vendorApi';
 
-import { VENDOR_SLOT_REASONS as REASONS } from '../../utils/venueConstants';
+import { VENDOR_SLOT_REASONS as REASONS, DEFAULT_BOOKING_INTERVAL } from '../../utils/venueConstants';
 
 const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAcknowledgedSlots, onAcknowledged }) => {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -38,9 +38,7 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
   const [hourlyReason, setHourlyReason] = useState('Maintenance');
   const [selectedHourlySlots, setSelectedHourlySlots] = useState([]);
   
-  // For time pill grid
-  const [dayOperatingHours, setDayOperatingHours] = useState({ openTime: '00:00', closeTime: '23:59' });
-  const [dayTimeSlots, setDayTimeSlots] = useState([]);
+  // For time pill grid (memoized below)
 
   const fetchOverview = async (y, m) => {
     setLoading(true);
@@ -124,7 +122,7 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
   const applyHourlyBlocks = async () => {
     if (selectedHourlySlots.length === 0) return;
     try {
-      const interval = bookingConfig?.bookingInterval || 60;
+      const interval = bookingConfig?.bookingInterval || DEFAULT_BOOKING_INTERVAL;
       await Promise.all(selectedHourlySlots.map(time => {
         const [h, m] = time.split(':').map(Number);
         const endM = h * 60 + m + interval;
@@ -166,20 +164,8 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
   };
 
   const selectedDateOverride = selectedDateStr ? overrides.find(o => o.date === selectedDateStr) : null;
-  const timeToMinutes = (t) => {
-    if (!t) return 0;
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-  };
-  const formatTime = (timeStr) => {
-    if (!timeStr) return '';
-    const [h, m] = timeStr.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const hr = h % 12 || 12;
-    return `${hr.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
-  };
 
-  useEffect(() => {
+  const { dayOperatingHours, dayTimeSlots } = useMemo(() => {
     if (bookingModel === 'hourly' && selectedDateStr) {
       const [y, m, day] = selectedDateStr.split('-');
       const d = new Date(Number(y), Number(m) - 1, Number(day));
@@ -187,10 +173,9 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
       const dayName = days[d.getDay()];
       
       const opHours = bookingConfig?.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:30' };
-      setDayOperatingHours(opHours);
       
       if (opHours.isOpen) {
-        const interval = bookingConfig?.bookingInterval || 60;
+        const interval = bookingConfig?.bookingInterval || DEFAULT_BOOKING_INTERVAL;
         const startMin = timeToMinutes(opHours.openTime);
         const endMin = timeToMinutes(opHours.closeTime);
         
@@ -203,11 +188,12 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
           const endM = (nextMin % 60).toString().padStart(2, '0');
           slots.push({ start: `${h}:${m}`, end: `${endH}:${endM}` });
         }
-        setDayTimeSlots(slots);
+        return { dayOperatingHours: opHours, dayTimeSlots: slots };
       } else {
-        setDayTimeSlots([]);
+        return { dayOperatingHours: opHours, dayTimeSlots: [] };
       }
     }
+    return { dayOperatingHours: { isOpen: true, openTime: '00:00', closeTime: '23:59' }, dayTimeSlots: [] };
   }, [selectedDateStr, bookingConfig, bookingModel]);
 
   // Calculate KPIs
@@ -247,7 +233,7 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Booking Window</span>
-          <span className="text-xl font-bold text-gray-900">{bookingConfig?.bookingInterval || 60} <span className="text-sm font-medium text-gray-500">mins</span></span>
+          <span className="text-xl font-bold text-gray-900">{bookingConfig?.bookingInterval || DEFAULT_BOOKING_INTERVAL} <span className="text-sm font-medium text-gray-500">mins</span></span>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center">
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Open Days</span>
@@ -528,7 +514,7 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
                         className="text-red-500 hover:text-red-700 p-1"
                         title="Remove block"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <X className="w-4 h-4" />
                       </button>
                     )}
                   </div>
