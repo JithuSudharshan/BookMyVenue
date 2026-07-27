@@ -4,7 +4,8 @@ import { ShieldAlert } from 'lucide-react';
 const VenueHostCard = ({ vendor }) => {
   if (!vendor) return null;
 
-  const firstName = vendor.name ? vendor.name.split(' ')[0] : 'Host';
+  const profile = vendor.profile || vendor;
+  const firstName = profile.fullName ? profile.fullName.split(' ')[0] : (profile.firstName || 'Host');
   const joinYear = vendor.createdAt ? new Date(vendor.createdAt).getFullYear() : new Date().getFullYear();
 
   return (
@@ -15,8 +16,8 @@ const VenueHostCard = ({ vendor }) => {
         {/* Left Card */}
         <div className="bg-white rounded-3xl p-8 shadow-[0_6px_16px_rgba(0,0,0,0.12)] border border-gray-100 flex flex-col items-center w-full md:w-[350px] flex-shrink-0">
           <div className="relative mb-4">
-            {vendor.profileImage ? (
-              <img src={vendor.profileImage} alt={firstName} className="w-28 h-28 rounded-full object-cover shadow-sm" />
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt={firstName} className="w-28 h-28 rounded-full object-cover shadow-sm" />
             ) : (
               <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-4xl">
                 {firstName.charAt(0).toUpperCase()}
