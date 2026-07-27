@@ -2,6 +2,15 @@ import Venue from '../../models/venueModel.js';
 import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
 import AppError from '../../utils/AppError.js';
 
+/**
+ * Resolves the effective booking mode for a venue.
+ * Priority: top-level bookingModel (legacy) → bookingConfig.bookingMode
+ * This must match the same priority used in BookingWidget on the frontend.
+ */
+const getEffectiveBookingMode = (venue) => {
+  return venue.bookingModel || venue.bookingConfig?.bookingMode;
+};
+
 export const isPastDate = (dateStr) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -51,7 +60,10 @@ export const validateHourlySlots = async (venueId, date, fromTime, toTime) => {
     throw new AppError('This venue is currently unavailable', 400);
   }
   if (venue.bookingConfig?.bookingMode === 'daily') {
-    throw new AppError('This venue only accepts daily bookings', 400);
+    const effectiveMode = getEffectiveBookingMode(venue);
+    if (effectiveMode === 'daily') {
+      throw new AppError('This venue only accepts daily bookings', 400);
+    }
   }
   
   if (isPastDate(date)) {
@@ -112,7 +124,10 @@ export const validateDailyRange = async (venueId, startDate, endDate) => {
     throw new AppError('This venue is currently unavailable', 400);
   }
   if (venue.bookingConfig?.bookingMode === 'hourly') {
-    throw new AppError('This venue only accepts hourly bookings', 400);
+    const effectiveMode = getEffectiveBookingMode(venue);
+    if (effectiveMode === 'hourly') {
+      throw new AppError('This venue only accepts hourly bookings', 400);
+    }
   }
 
   if (isTodayOrPastDate(startDate)) {

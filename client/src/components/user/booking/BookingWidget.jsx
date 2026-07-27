@@ -17,7 +17,9 @@ const BookingWidget = ({ venue, overrides = [], year, month, onMonthChange }) =>
     selectedDates, 
     setSelectedDates,
     fromTime,
+    setFromTime,
     toTime,
+    setToTime,
     guestCount,
     resetBookingState 
   } = useBooking();
@@ -64,6 +66,8 @@ const BookingWidget = ({ venue, overrides = [], year, month, onMonthChange }) =>
   const handleDateClick = (dateStr) => {
     if (bookingMode === 'hourly') {
       setSelectedDates([dateStr]);
+      setFromTime('');
+      setToTime('');
     } else {
       // Daily: Continuous range
       if (selectedDates.length === 0) {
