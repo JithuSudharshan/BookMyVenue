@@ -1,4 +1,5 @@
 import * as vendorProfileService from '../services/vendor/vendorProfileService.js';
+import * as vendorDashboardService from '../services/vendor/vendorDashboardService.js';
 
 export const getOnboardingStatus = async (req, res) => {
   try {
@@ -89,6 +90,16 @@ export const updateIdentity = async (req, res) => {
   try {
     const updatedVendor = await vendorProfileService.updateIdentityService(req.user._id, req.body, req.file);
     res.json({ success: true, vendor: updatedVendor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const getDashboardAnalytics = async (req, res) => {
+  try {
+    const { timeRange } = req.query;
+    const data = await vendorDashboardService.getDashboardDataService(req.user._id, timeRange);
+    res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
