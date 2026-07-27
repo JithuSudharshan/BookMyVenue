@@ -10,6 +10,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const SORT_OPTIONS = [
   { label: 'Recommended', value: 'recommended' },
+  { label: 'Distance: Nearest First', value: 'distance_asc' },
   { label: 'Price: Low to High', value: 'price_asc' },
   { label: 'Price: High to Low', value: 'price_desc' },
   { label: 'Highest Rated', value: 'rating' },
@@ -26,6 +27,7 @@ const ListingSearchBar = () => {
 
   const [activeField, setActiveField] = useState(null)
   const [locationValue, setLocationValue] = useState(searchParams.get('location') || '')
+  const [coords, setCoords] = useState(null)
   
   // Date parsing
   const initialDateStr = searchParams.get('date')
@@ -69,6 +71,14 @@ const ListingSearchBar = () => {
     
     if (locationValue) params.set('location', locationValue)
     else params.delete('location')
+
+    if (coords?.lat && coords?.lng) {
+      params.set('lat', coords.lat)
+      params.set('lng', coords.lng)
+    } else if (!locationValue) {
+      params.delete('lat')
+      params.delete('lng')
+    }
     
     if (dateRange.start) params.set('date', dateRange.start.toISOString().split('T')[0])
     else params.delete('date')
@@ -124,7 +134,7 @@ const ListingSearchBar = () => {
           <input
             type="text"
             value={locationValue}
-            onChange={e => setLocationValue(e.target.value)}
+            onChange={e => { setLocationValue(e.target.value); setCoords(null); }}
             onFocus={() => setActiveField('location')}
             placeholder="Search destinations"
             className="w-full bg-transparent outline-none text-gray-500 text-sm font-medium placeholder-gray-400 truncate"
@@ -189,7 +199,10 @@ const ListingSearchBar = () => {
       {activeField === 'location' && (
         <LocationPanel
           value={locationValue}
-          onChange={setLocationValue}
+          onChange={(name, selectedCoords = null) => {
+            setLocationValue(name);
+            setCoords(selectedCoords);
+          }}
           onSelectLocation={() => setActiveField('date')}
         />
       )}
@@ -248,6 +261,13 @@ const VenueListingPage = () => {
       // Extract URL params
       const loc = searchParams.get('location')
       if (loc) filters.location = loc
+      
+      const lat = searchParams.get('lat')
+      const lng = searchParams.get('lng')
+      if (lat && lng) {
+        filters.lat = lat
+        filters.lng = lng
+      }
       
       const g = searchParams.get('guests')
       if (g) filters.guests = g

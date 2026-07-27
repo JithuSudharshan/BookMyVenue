@@ -132,12 +132,19 @@ const ListingVenueCard = ({ venue }) => {
           </div>
         </div>
 
-        {/* Location */}
-        <p className="text-sm text-gray-500 truncate">
-          {typeof venue.location === 'object' && venue.location !== null
-            ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
-            : venue.location || 'Location not specified'}
-        </p>
+        {/* Location & Distance */}
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm text-gray-500 truncate">
+            {typeof venue.location === 'object' && venue.location !== null
+              ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
+              : venue.location || 'Location not specified'}
+          </p>
+          {venue.distanceKm != null && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full flex-shrink-0">
+              📍 {venue.distanceKm} km away
+            </span>
+          )}
+        </div>
 
         {/* Capacity */}
         {venue.capacity && (

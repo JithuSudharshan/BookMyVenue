@@ -1,10 +1,14 @@
 import { findPublicVenuesAggregation, getVenueFilterMetadata } from '../../repositories/user/venueRepository.js';
 import Category from '../../models/categoryModel.js';
 import Subcategory from '../../models/subcategoryModel.js';
+import { getCityCoordinates } from '../../utils/geoUtils.js';
 
 export const getVenuesService = async (queryParams) => {
     const {
         location,
+        lat,
+        lng,
+        radius,
         guests,
         category,
         subcategory,
@@ -19,8 +23,23 @@ export const getVenuesService = async (queryParams) => {
 
     const matchStage = {};
 
-    // 1. Search filters (Location)
-    if (location) {
+    // 1. Search filters (Location text & coordinate resolution)
+    let targetLat = null;
+    let targetLng = null;
+    const maxRadiusKm = Number(radius) || 50; // Default 50 km search radius
+
+    if (lat !== undefined && lng !== undefined && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+        targetLat = Number(lat);
+        targetLng = Number(lng);
+    } else if (location) {
+        const coords = getCityCoordinates(location);
+        if (coords) {
+            targetLat = coords.lat;
+            targetLng = coords.lng;
+        }
+    }
+
+    if (location && targetLat === null && targetLng === null) {
         const locationRegex = { $regex: location, $options: 'i' };
         matchStage.$or = [
             { 'location.city': locationRegex },
@@ -83,6 +102,7 @@ export const getVenuesService = async (queryParams) => {
     let sortStage = { createdAt: -1 }; // Default: Newest first (Recommended)
     if (sort === 'price_asc') sortStage = { price: 1 };
     else if (sort === 'price_desc') sortStage = { price: -1 };
+    else if (sort === 'distance_asc' || sort === 'distance') sortStage = { distanceKm: 1 };
     // rating skipped for now as per requirements
 
     // 8. Pagination math
@@ -95,7 +115,10 @@ export const getVenuesService = async (queryParams) => {
         matchStage,
         sortStage,
         skip,
-        limit: parsedLimit
+        limit: parsedLimit,
+        targetLat,
+        targetLng,
+        maxRadiusKm
     });
 
     // 10. Compute Pagination Metadata
