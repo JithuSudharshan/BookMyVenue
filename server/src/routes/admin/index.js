@@ -9,11 +9,8 @@ import venueRoutes from "./adminVenueRoutes.js";
 import bookingRoutes from "./adminBookingRoutes.js";
 import categoryRoutes from "./categoryRoute.js";
 import subcategoryRoutes from "./subcategoryRoute.js";
-<<<<<<< HEAD
 import walletRoutes from "./adminWalletRoutes.js";
-=======
 import { adminDeleteReview } from "../../controllers/reviewController.js";
->>>>>>> origin/dev-sreesha
 
 const router = express.Router();
 

@@ -1,7 +1,7 @@
 import Booking from '../models/bookingModel.js';
 import Venue from '../models/venueModel.js';
 import cloudinary from '../config/cloudinary.js';
-import AppError from '../utils/appError.js';
+import AppError from '../utils/AppError.js';
 import * as reviewRepository from '../repositories/reviewRepository.js';
 
 /**
