@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, Settings, Menu, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { NotificationDropdown } from '../../components/common/NotificationDropdown';
 
 export const DashboardHeader = ({ sidebarOpen, setSidebarOpen, isVendor }) => {
   const { user, logout } = useAuth();
@@ -40,10 +41,7 @@ export const DashboardHeader = ({ sidebarOpen, setSidebarOpen, isVendor }) => {
 
       <div className="dl-header-right">
         {/* Notification Bell */}
-        <button className="dl-icon-btn" aria-label="Notifications">
-          <Bell size={20} />
-          <span className="dl-notif-dot" />
-        </button>
+        <NotificationDropdown />
 
         {/* Profile Dropdown */}
         <div className="dl-profile-menu-wrapper">

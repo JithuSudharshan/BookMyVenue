@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react'
 import { AuthContext } from '../../store/AuthContext'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { FiMenu, FiSearch, FiX } from 'react-icons/fi'
+import { NotificationDropdown } from '../common/NotificationDropdown'
 
 /**
  * Navbar — two visual modes:
@@ -197,7 +198,9 @@ const Navbar = ({ scrolled = false }) => {
               </div>
             </>
           ) : (
-            <div className="relative" ref={avatarRef}>
+            <div className="flex items-center gap-3">
+              <NotificationDropdown />
+              <div className="relative" ref={avatarRef}>
               <button
                 onClick={() => setAvatarOpen(!avatarOpen)}
                 className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 overflow-hidden hover:shadow-md transition-shadow bg-primary text-white font-semibold"
@@ -259,6 +262,7 @@ const Navbar = ({ scrolled = false }) => {
                   </button>
                 </div>
               )}
+            </div>
             </div>
           )}
         </div>
