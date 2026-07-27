@@ -14,3 +14,4 @@ export const VENUE_STATUS = [
 
 export const VENDOR_SLOT_REASONS = ['Maintenance', 'Offline Booking', 'Other'];
 export const SLOT_REASONS = [...VENDOR_SLOT_REASONS, 'Customer Booking'];
+export const DEFAULT_BOOKING_INTERVAL = 60;

@@ -25,3 +25,23 @@ export const generateTimeOptions = (openingTime = '09:00', closingTime = '21:00'
   }
   return opts;
 };
+
+/**
+ * Converts HH:mm to minutes from midnight
+ */
+export const timeToMinutes = (t) => {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+};
+
+/**
+ * Formats HH:mm to 12-hour AM/PM string
+ */
+export const formatTime = (timeStr) => {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hr = h % 12 || 12;
+  return `${hr.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
+};

@@ -13,7 +13,8 @@ import {
   updateProfile,
   updateIdentity,
   updateAvatar,
-  deleteAvatar
+  deleteAvatar,
+  getDashboardAnalytics
 } from '../../controllers/vendorController.js';
 
 const router = express.Router();
@@ -23,6 +24,8 @@ router.use(protect);
 router.use(authorize('vendor'));
 
 router.get('/onboarding/status', getOnboardingStatus);
+
+router.get('/dashboard/analytics', getDashboardAnalytics);
 
 router.put(
   '/onboarding/step/1',

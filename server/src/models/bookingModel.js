@@ -114,6 +114,7 @@ bookingSchema.index({ vendorId: 1, bookingStatus: 1 });
 bookingSchema.index({ userId: 1, bookingStatus: 1 });
 bookingSchema.index({ venueId: 1, date: 1 });
 bookingSchema.index({ venueId: 1, startDate: 1 });
+bookingSchema.index({ venueId: 1, bookingDate: -1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 

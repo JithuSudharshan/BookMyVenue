@@ -2,26 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { vendorApi } from '../../api/vendor-api/vendorApi';
 import { toast } from 'sonner';
-import { AlertCircle, Plus, CheckCircle2 } from 'lucide-react';
+import { Wallet, Clock, Activity, Building2, Plus, CalendarCheck } from 'lucide-react';
+import StatCard from '../../components/vendor/dashboard/StatCard';
+import RevenueChart from '../../components/vendor/dashboard/RevenueChart';
+
+import ActionCenterWidget from '../../components/vendor/dashboard/ActionCenterWidget';
+import TopPerformersWidget from '../../components/vendor/dashboard/TopPerformersWidget';
+import TransactionHistory from '../../components/vendor/dashboard/TransactionHistory';
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
-  const [statusData, setStatusData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('30');
+  const [data, setData] = useState({
+    walletStats: { balance: 0, pendingPayouts: 0 },
+    activeVenuesCount: 0,
+    actionItems: [],
+    chartData: [],
+    topPerformers: [],
+    walletHistory: []
+  });
 
   useEffect(() => {
-    const fetchStatus = async () => {
+    const fetchData = async () => {
       try {
-        const res = await vendorApi.getOnboardingStatus();
-        setStatusData(res);
-        
-        if (res.onboardingStatus === 'approved') {
-          const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeVendor');
-          if (!hasSeenWelcome) {
-            toast.success('Welcome to the Vendor Portal! You have successfully authenticated.');
-            sessionStorage.setItem('hasSeenWelcomeVendor', 'true');
-          }
-        }
+        setLoading(true);
+        const res = await vendorApi.getDashboardAnalytics(timeRange);
+        setData(res);
       } catch (err) {
         toast.error('Failed to load dashboard data');
       } finally {
@@ -29,10 +36,10 @@ const VendorDashboard = () => {
       }
     };
     
-    fetchStatus();
-  }, []);
+    fetchData();
+  }, [timeRange]);
 
-  if (loading) {
+  if (loading && !data.chartData.length) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="relative w-10 h-10">
@@ -43,58 +50,80 @@ const VendorDashboard = () => {
     );
   }
 
-  // APPROVED STATE (Actual Dashboard)
   return (
-    <div className="w-full">
-      <main className="w-full mt-4 px-4 md:px-8">
-        <div className="bg-surface rounded-2xl p-8 border border-outline-variant shadow-sm relative overflow-hidden min-h-[500px]">
-          
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Vendor Dashboard</h1>
-              <p className="font-body-lg text-on-surface-variant">Manage your venues, bookings, and business profile here.</p>
-            </div>
-            <button
-              onClick={() => navigate('/vendor/venues/add')}
-              className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all shadow-sm"
-            >
-              <Plus className="w-5 h-5" />
-              Add Venue
-            </button>
+    <div className="w-full pb-16 min-h-screen bg-surface-container-low/50 relative overflow-hidden">
+      {/* Decorative background elements for glassmorphism */}
+      <div className="absolute top-0 right-0 w-full md:w-1/2 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-full md:w-1/2 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+      
+      <main className="w-full mt-4 px-4 md:px-8 max-w-7xl mx-auto relative z-10">
+        
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-1">Overview</h1>
+            <p className="font-body-lg text-on-surface-variant">Here's what's happening with your venues today.</p>
           </div>
-          
-          {/* Mock Dashboard Content */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant">
-              <h3 className="font-label-md text-on-surface-variant mb-1">Total Venues</h3>
-              <p className="font-headline-md text-on-surface">0</p>
-            </div>
-            <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant">
-              <h3 className="font-label-md text-on-surface-variant mb-1">Active Bookings</h3>
-              <p className="font-headline-md text-on-surface">0</p>
-            </div>
-            <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant">
-              <h3 className="font-label-md text-on-surface-variant mb-1">Wallet Balance</h3>
-              <p className="font-headline-md text-on-surface">₹0</p>
-            </div>
-          </div>
+          <button
+            onClick={() => navigate('/vendor/venues/add')}
+            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all shadow-sm shrink-0"
+          >
+            <Plus className="w-5 h-5" />
+            Add Venue
+          </button>
+        </div>
+        
+        {/* Row 1: KPI Stats (Bento Grid 4 cols) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <StatCard 
+            title="Total Balance" 
+            value={`₹${data.walletStats.balance.toLocaleString()}`}
+            icon={Wallet} 
+          />
+          <StatCard 
+            title="Pending Payouts" 
+            value={`₹${data.walletStats.pendingPayouts.toLocaleString()}`}
+            icon={Clock} 
+          />
+          <StatCard 
+            title="Active Venues" 
+            value={data.activeVenuesCount}
+            icon={Building2} 
+          />
+          <StatCard 
+            title="Total Bookings (Period)" 
+            value={data.chartData.reduce((acc, curr) => acc + curr.bookings, 0)}
+            icon={CalendarCheck} 
+          />
+        </div>
 
-          <div className="h-64 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col items-center justify-center p-6 text-center">
-             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-8 h-8 text-primary" />
-             </div>
-             <h3 className="font-headline-sm text-on-surface mb-2">You're Approved!</h3>
-             <p className="text-on-surface-variant font-body-md mb-6 max-w-md">
-               Your vendor account is fully active. The next step is to create your first venue listing to start receiving bookings.
-             </p>
-             <button
-              onClick={() => navigate('/vendor/venues/add')}
-              className="bg-primary text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all shadow-sm"
-             >
-               Create Your First Venue
-             </button>
+        {/* Row 2: Chart and Action Center (Bento Grid 12 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+          {/* Main Chart Area - spans 8 columns on large screens */}
+          <div className="lg:col-span-8">
+            <RevenueChart 
+              data={data.chartData} 
+              timeRange={timeRange} 
+              setTimeRange={setTimeRange} 
+            />
+          </div>
+          
+          {/* Action Center Sidebar - spans 4 columns on large screens */}
+          <div className="lg:col-span-4 h-full">
+            <ActionCenterWidget items={data.actionItems} />
           </div>
         </div>
+
+        {/* Row 3: Insights and History */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 h-full">
+            <TopPerformersWidget venues={data.topPerformers} />
+          </div>
+          <div className="lg:col-span-6 h-full">
+            <TransactionHistory transactions={data.walletHistory} />
+          </div>
+        </div>
+
       </main>
     </div>
   );
