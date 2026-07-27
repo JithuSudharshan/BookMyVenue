@@ -121,7 +121,7 @@ const SearchCard = () => {
         {/* Divider */}
         <div className={`w-px h-8 bg-gray-200 flex-shrink-0 transition-opacity ${activeField ? 'opacity-0' : 'opacity-100'}`} />
 
-        {/* ─── WHO ─── */}
+        {/* ─── HOW MANY ─── */}
         <div
           className={seg('guests')}
           onClick={() => setActiveField(activeField === 'guests' ? null : 'guests')}

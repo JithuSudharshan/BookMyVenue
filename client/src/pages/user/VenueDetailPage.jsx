@@ -6,6 +6,7 @@ import { Clock3 } from 'lucide-react';
 import { toast } from 'sonner';
 import BaseVenueDetailPage from '../../components/common/VenueUi/BaseVenueDetailPage';
 import VenueReviewsSection from '../../components/common/VenueReviewsSection';
+import VenueLocationSection from '../../components/common/VenueLocationSection';
 
 const VenueDetailPage = () => {
   const { id } = useParams();
@@ -72,6 +73,7 @@ const VenueDetailPage = () => {
       backLabel="Venues" 
       onBack={() => navigate('/venues')}
       sidebarSlot={bookingSidebar}
+      locationSlot={<VenueLocationSection location={venue?.location} venueName={venue?.name} />}
       reviewsSlot={id ? <VenueReviewsSection venueId={id} /> : null}
     />
   );

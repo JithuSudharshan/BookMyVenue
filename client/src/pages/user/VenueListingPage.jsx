@@ -158,12 +158,12 @@ const ListingSearchBar = () => {
         {/* Divider */}
         <div className={`w-px h-7 bg-gray-200 flex-shrink-0 transition-opacity ${activeField ? 'opacity-0' : ''}`} />
 
-        {/* WHO */}
+        {/* HOW MANY */}
         <div
           className={`${seg('guests')} pr-1`}
           onClick={() => setActiveField(activeField === 'guests' ? null : 'guests')}
         >
-          <p className="text-[10px] font-extrabold text-gray-900 tracking-wider mb-0.5">Who</p>
+          <p className="text-[10px] font-extrabold text-gray-900 tracking-wider mb-0.5">How Many</p>
           <input
             type="number"
             min="0"

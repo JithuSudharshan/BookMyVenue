@@ -17,6 +17,7 @@ const BaseVenueDetailPage = ({
   headerActionsSlot = null,
   sidebarSlot = null,
   customBadgesSlot = null,
+  locationSlot = null,
   reviewsSlot = null,
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -151,6 +152,13 @@ const BaseVenueDetailPage = ({
               <p className="text-on-surface-variant font-body-md">No amenities listed.</p>
             )}
           </div>
+
+          {locationSlot && (
+            <>
+              <hr className="border-outline-variant" />
+              {locationSlot}
+            </>
+          )}
 
           {reviewsSlot && (
             <>
