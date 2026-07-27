@@ -61,6 +61,13 @@ export const pullHourlySlotByBookingId = async (venueId, date, bookingId) => {
 };
 
 
+export const pullHourlySlotByBlockId = async (venueId, date, blockId) => {
+  return await AvailabilityOverride.updateOne(
+    { venueId, date },
+    { $pull: { blocks: { _id: blockId } } }
+  );
+};
+
 // If we need to pull by something other than bookingId (e.g. fromTime and toTime), we can add it here.
 export const pullHourlySlotByTime = async (venueId, date, fromTime, toTime) => {
   return await AvailabilityOverride.updateOne(

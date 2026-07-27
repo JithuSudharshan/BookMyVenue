@@ -13,13 +13,13 @@ export const createReservation = async (userId, venueId, bookingData) => {
 
   // 1. Validation, Pricing, & Policy
   if (bookingMode === 'hourly') {
-    const valResult = await validateHourlySlots(venueId, date, fromTime, toTime);
+    const valResult = await validateHourlySlots(venueId, date, fromTime, toTime, guestCount);
     venue = valResult.venue;
     const basePricing = calculateHourlyPrice(venue, fromTime, toTime, guestCount);
     const policy = determinePaymentPolicy('hourly', date, basePricing.totalAmount);
     pricing = { ...basePricing, ...policy };
   } else if (bookingMode === 'daily') {
-    const valResult = await validateDailyRange(venueId, startDate, endDate);
+    const valResult = await validateDailyRange(venueId, startDate, endDate, guestCount);
     venue = valResult.venue;
     const basePricing = calculateDailyPrice(venue, startDate, endDate, guestCount);
     const policy = determinePaymentPolicy('daily', startDate, basePricing.totalAmount);
@@ -28,7 +28,33 @@ export const createReservation = async (userId, venueId, bookingData) => {
     throw new AppError('Invalid booking mode', 400);
   }
 
-  // 2. Create Session (Atomic creation due to unique compound index)
+  // 2. Overlap Protection (Pre-validate before save)
+  if (bookingMode === 'hourly') {
+    const overlappingSession = await BookingSession.findOne({
+      venueId,
+      date,
+      bookingMode: 'hourly',
+      status: 'active',
+      fromTime: { $lt: toTime },
+      toTime: { $gt: fromTime }
+    });
+    if (overlappingSession) {
+      throw new AppError('This slot is currently reserved by someone else. Please try again later or choose another slot.', 409);
+    }
+  } else if (bookingMode === 'daily') {
+    const overlappingSession = await BookingSession.findOne({
+      venueId,
+      bookingMode: 'daily',
+      status: 'active',
+      startDate: { $lte: endDate },
+      endDate: { $gte: startDate }
+    });
+    if (overlappingSession) {
+      throw new AppError('These dates are currently reserved by someone else. Please try again later or choose other dates.', 409);
+    }
+  }
+
+  // 3. Create Session (Atomic creation due to unique compound index)
   // TTL is 10 minutes from now
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
 

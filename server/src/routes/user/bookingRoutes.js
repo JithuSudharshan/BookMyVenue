@@ -1,11 +1,12 @@
 import express from 'express';
 import * as bookingController from '../../controllers/bookingController.js';
 import { protect } from '../../middlewares/authMiddleware.js';
+import { pricingRateLimiter } from '../../middlewares/rateLimiter.js';
 
 const router = express.Router();
 
 // Public routes
-router.post('/pricing-summary', bookingController.getPricingSummary);
+router.post('/pricing-summary', pricingRateLimiter, bookingController.getPricingSummary);
 
 // Protected routes
 router.use(protect); // All following booking routes require authentication

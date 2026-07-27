@@ -2,8 +2,12 @@ import * as venueRepository from '../../repositories/vendor/venueRepository.js';
 import Category from '../../models/categoryModel.js';
 import Subcategory from '../../models/subcategoryModel.js';
 import Venue from '../../models/venueModel.js';
+import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
+import BookingSession from '../../models/bookingSessionModel.js';
+import Booking from '../../models/bookingModel.js';
 import { generateSlug } from '../../utils/generateSlug.js';
 import AppError from '../../utils/AppError.js';
+import { getTodayString } from '../../utils/dateUtils.js';
 
 const validateTimeRange = (opening, closing) => {
     const openDate = new Date(`1970-01-01T${opening}:00Z`);
@@ -158,6 +162,45 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
     }
 
     await validateVenueBusinessRules(updateData);
+
+    // Interval Locking
+    if (updateData.bookingConfig && updateData.bookingConfig.bookingInterval) {
+        if (venue.bookingConfig && venue.bookingConfig.bookingInterval) {
+            if (updateData.bookingConfig.bookingInterval !== venue.bookingConfig.bookingInterval) {
+                const todayStr = getTodayString();
+                
+                // 1. Check Availability Overrides
+                const hasOverrides = await AvailabilityOverride.findOne({ venueId, date: { $gte: todayStr } });
+                
+                // 2. Check Active Sessions (Hourly or Daily)
+                const hasSessions = await BookingSession.findOne({
+                    venueId,
+                    status: 'active',
+                    $or: [
+                        { date: { $gte: todayStr } },
+                        { startDate: { $gte: todayStr } }
+                    ]
+                });
+                
+                // 3. Check Bookings
+                const hasBookings = await Booking.findOne({
+                    venueId,
+                    bookingStatus: { $in: ['pending', 'confirmed'] },
+                    $or: [
+                        { date: { $gte: todayStr } },
+                        { startDate: { $gte: todayStr } }
+                    ]
+                });
+
+                if (hasOverrides || hasSessions || hasBookings) {
+                    throw new AppError(
+                        "Cannot change booking interval. This venue has upcoming bookings or active reservation sessions. Complete or cancel all future bookings before changing the booking interval.", 
+                        400
+                    );
+                }
+            }
+        }
+    }
 
     venue.set(updateData);
 

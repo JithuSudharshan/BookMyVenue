@@ -17,14 +17,14 @@ export const getPricingSummary = catchAsync(async (req, res) => {
     if (!date || !fromTime || !toTime) {
       return res.status(400).json({ status: 'fail', message: 'Missing date or time for hourly booking' });
     }
-    validationResult = await AvailabilityValidatorService.validateHourlySlots(venueId, date, fromTime, toTime);
+    validationResult = await AvailabilityValidatorService.validateHourlySlots(venueId, date, fromTime, toTime, guestCount);
     pricingData = PricingEngineService.calculateHourlyPrice(validationResult.venue, fromTime, toTime, guestCount);
     policyData = determinePaymentPolicy('hourly', date, pricingData.totalAmount);
   } else if (bookingMode === 'daily') {
     if (!startDate || !endDate) {
       return res.status(400).json({ status: 'fail', message: 'Missing dates for daily booking' });
     }
-    validationResult = await AvailabilityValidatorService.validateDailyRange(venueId, startDate, endDate);
+    validationResult = await AvailabilityValidatorService.validateDailyRange(venueId, startDate, endDate, guestCount);
     pricingData = PricingEngineService.calculateDailyPrice(validationResult.venue, startDate, endDate, guestCount);
     policyData = determinePaymentPolicy('daily', startDate, pricingData.totalAmount);
   } else {

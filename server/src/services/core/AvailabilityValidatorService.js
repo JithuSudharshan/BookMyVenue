@@ -1,50 +1,16 @@
 import Venue from '../../models/venueModel.js';
 import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
 import AppError from '../../utils/AppError.js';
-
-/**
- * Resolves the effective booking mode for a venue.
- * Priority: top-level bookingModel (legacy) → bookingConfig.bookingMode
- * This must match the same priority used in BookingWidget on the frontend.
- */
-const getEffectiveBookingMode = (venue) => {
-  return venue.bookingModel || venue.bookingConfig?.bookingMode;
-};
-
-export const isPastDate = (dateStr) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const targetDate = new Date(dateStr);
-  targetDate.setHours(0, 0, 0, 0);
-  return targetDate < today;
-};
-
-export const isTodayOrPastDate = (dateStr) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const targetDate = new Date(dateStr);
-  targetDate.setHours(0, 0, 0, 0);
-  return targetDate <= today;
-};
-
-const getDayOfWeek = (dateStr) => {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const date = new Date(dateStr);
-  return days[date.getDay()];
-};
-
-const parseTime = (timeStr) => {
-  const [h, m] = timeStr.split(':').map(Number);
-  return h * 60 + m;
-};
+import { getEffectiveBookingMode } from '../../utils/venueUtils.js';
+import { isPastDate, isTodayOrPastDate, getDayOfWeek, timeToMinutes, getTodayString, parseDateToInt } from '../../utils/dateUtils.js';
 
 const checkTimeOverlap = (newFrom, newTo, existingBlocks) => {
-  const nFrom = parseTime(newFrom);
-  const nTo = parseTime(newTo);
+  const nFrom = timeToMinutes(newFrom);
+  const nTo = timeToMinutes(newTo);
   
   for (const block of existingBlocks) {
-    const eFrom = parseTime(block.fromTime);
-    const eTo = parseTime(block.toTime);
+    const eFrom = timeToMinutes(block.fromTime);
+    const eTo = timeToMinutes(block.toTime);
     
     // Strict overlap logic
     if (nFrom < eTo && nTo > eFrom) {
@@ -54,16 +20,19 @@ const checkTimeOverlap = (newFrom, newTo, existingBlocks) => {
   return false;
 };
 
-export const validateHourlySlots = async (venueId, date, fromTime, toTime) => {
+export const validateHourlySlots = async (venueId, date, fromTime, toTime, guestCount) => {
   const venue = await Venue.findById(venueId);
   if (!venue || venue.venueStatus !== 'active' || venue.approval?.status !== 'approved') {
     throw new AppError('This venue is currently unavailable', 400);
   }
-  if (venue.bookingConfig?.bookingMode === 'daily') {
-    const effectiveMode = getEffectiveBookingMode(venue);
-    if (effectiveMode === 'daily') {
-      throw new AppError('This venue only accepts daily bookings', 400);
-    }
+  
+  const effectiveMode = getEffectiveBookingMode(venue);
+  if (effectiveMode === 'daily') {
+    throw new AppError('This venue only accepts daily bookings', 400);
+  }
+  
+  if (guestCount !== undefined && guestCount > venue.capacity) {
+    throw new AppError(`Guest count exceeds venue capacity of ${venue.capacity}`, 400);
   }
   
   if (isPastDate(date)) {
@@ -89,10 +58,10 @@ export const validateHourlySlots = async (venueId, date, fromTime, toTime) => {
     throw new AppError('Venue is closed on this day', 400);
   }
 
-  const nFrom = parseTime(fromTime);
-  const nTo = parseTime(toTime);
-  const opOpen = parseTime(operatingHours.openTime);
-  const opClose = parseTime(operatingHours.closeTime);
+  const nFrom = timeToMinutes(fromTime);
+  const nTo = timeToMinutes(toTime);
+  const opOpen = timeToMinutes(operatingHours.openTime);
+  const opClose = timeToMinutes(operatingHours.closeTime);
 
   if (nFrom < opOpen || nTo > opClose) {
     throw new AppError('Selected time is outside operating hours', 400);
@@ -118,24 +87,27 @@ export const validateHourlySlots = async (venueId, date, fromTime, toTime) => {
   return { isValid: true, venue };
 };
 
-export const validateDailyRange = async (venueId, startDate, endDate) => {
+export const validateDailyRange = async (venueId, startDate, endDate, guestCount) => {
   const venue = await Venue.findById(venueId);
   if (!venue || venue.venueStatus !== 'active' || venue.approval?.status !== 'approved') {
     throw new AppError('This venue is currently unavailable', 400);
   }
-  if (venue.bookingConfig?.bookingMode === 'hourly') {
-    const effectiveMode = getEffectiveBookingMode(venue);
-    if (effectiveMode === 'hourly') {
-      throw new AppError('This venue only accepts hourly bookings', 400);
-    }
+  
+  const effectiveMode = getEffectiveBookingMode(venue);
+  if (effectiveMode === 'hourly') {
+    throw new AppError('This venue only accepts hourly bookings', 400);
+  }
+
+  if (guestCount !== undefined && guestCount > venue.capacity) {
+    throw new AppError(`Guest count exceeds venue capacity of ${venue.capacity}`, 400);
   }
 
   if (isTodayOrPastDate(startDate)) {
     throw new AppError('Daily bookings must be reserved at least one day in advance', 400);
   }
   
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = parseDateToInt(startDate);
+  const end = parseDateToInt(endDate);
   if (start > end) {
     throw new AppError('End date must be after start date', 400);
   }
@@ -153,8 +125,10 @@ export const validateDailyRange = async (venueId, startDate, endDate) => {
 
   // Check each day in the range
   const datesToCheck = [];
-  let curr = new Date(start);
-  while (curr <= end) {
+  const startDateObj = new Date(startDate); // Just for looping days safely
+  const endDateObj = new Date(endDate);
+  let curr = new Date(startDateObj);
+  while (curr <= endDateObj) {
     datesToCheck.push(`${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`);
     curr.setDate(curr.getDate() + 1);
   }

@@ -1,20 +1,12 @@
-export const calculateHourlyPrice = (venue, fromTime, toTime, guestCount) => {
-  const parseTime = (timeStr) => {
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + m;
-  };
+import { timeToMinutes, daysBetween } from '../../utils/dateUtils.js';
 
-  const startMins = parseTime(fromTime);
-  const endMins = parseTime(toTime);
+export const calculateHourlyPrice = (venue, fromTime, toTime, guestCount) => {
+  const startMins = timeToMinutes(fromTime);
+  const endMins = timeToMinutes(toTime);
   const durationHours = (endMins - startMins) / 60;
 
   if (durationHours <= 0) {
     throw new Error('Invalid duration');
-  }
-
-  // Basic capacity check
-  if (guestCount > venue.capacity) {
-    throw new Error(`Guest count exceeds venue capacity of ${venue.capacity}`);
   }
 
   const baseAmount = venue.price * durationHours;
@@ -28,17 +20,9 @@ export const calculateHourlyPrice = (venue, fromTime, toTime, guestCount) => {
 };
 
 export const calculateDailyPrice = (venue, startDate, endDate, guestCount) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  
   // Calculate total days (inclusive of both start and end dates)
-  const timeDiff = end.getTime() - start.getTime();
-  let days = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+  let days = daysBetween(startDate, endDate) + 1;
   if (days <= 0) days = 1;
-
-  if (guestCount > venue.capacity) {
-    throw new Error(`Guest count exceeds venue capacity of ${venue.capacity}`);
-  }
 
   const baseAmount = venue.price * days;
   const totalAmount = baseAmount; // No tax for MVP

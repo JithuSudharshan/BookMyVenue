@@ -4,30 +4,14 @@
  * Follows purely functional design where possible, using venue config and overrides as inputs.
  */
 
-const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-// Helper to parse HH:mm into minutes from midnight
-export const timeToMinutes = (timeStr) => {
-  if (!timeStr) return 0;
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  return hours * 60 + minutes;
-};
-
-// Helper to format minutes from midnight to HH:mm
-export const minutesToTime = (minutes) => {
-  const h = Math.floor(minutes / 60).toString().padStart(2, '0');
-  const m = (minutes % 60).toString().padStart(2, '0');
-  return `${h}:${m}`;
-};
+import { getDayOfWeek, timeToMinutes, minutesToTime, getTodayString, getNowMinutes } from '../../utils/dateUtils.js';
 
 /**
  * Validates basic daily availability (e.g. is the venue open at all today?)
  */
 export const checkDailyAvailability = (bookingConfig, override, requestDate) => {
 
-  const [y, m, d] = requestDate.split('-');
-  const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
-  const dayName = DAYS_OF_WEEK[dateObj.getDay()];
+  const dayName = getDayOfWeek(requestDate);
   
   const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
   if (!dailyHours || !dailyHours.isOpen) {
@@ -46,9 +30,7 @@ export const checkDailyAvailability = (bookingConfig, override, requestDate) => 
  */
 export const generateHourlyStartTimes = (bookingConfig, override, requestDate) => {
 
-  const [y, m, d] = requestDate.split('-');
-  const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
-  const dayName = DAYS_OF_WEEK[dateObj.getDay()];
+  const dayName = getDayOfWeek(requestDate);
   
   const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
   if (!dailyHours || !dailyHours.isOpen) {
@@ -63,14 +45,13 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
   const closeMin = timeToMinutes(dailyHours.closeTime);
   const interval = bookingConfig.bookingInterval || 60;
   const minDuration = interval; // Minimum duration is exactly the booking interval
-  const prepTime = bookingConfig.preparationTime || 0;
 
-  // Process blocks: convert to minutes and add prep time
+  // Process blocks: convert to minutes
   const occupiedRanges = [];
   if (override && override.blocks) {
     override.blocks.forEach(block => {
       const fromMin = timeToMinutes(block.fromTime);
-      const toMin = timeToMinutes(block.toTime) + prepTime; // Buffer applied after booking
+      const toMin = timeToMinutes(block.toTime);
       occupiedRanges.push({ start: fromMin, end: toMin });
     });
   }
@@ -79,13 +60,11 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
   let effectiveOpenMin = openMin;
   
   // Real-time cutoff for today's date
-  const today = new Date();
-  // Format today as YYYY-MM-DD in local time
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayStr = getTodayString();
   
   if (requestDate === todayStr) {
     const TODAY_BUFFER_MINUTES = 30; // Cannot book a slot starting in < 30 minutes
-    const currentMin = today.getHours() * 60 + today.getMinutes();
+    const currentMin = getNowMinutes();
     const cutoff = currentMin + TODAY_BUFFER_MINUTES;
     
     // Snap to the next available interval
@@ -120,8 +99,7 @@ export const generateHourlyStartTimes = (bookingConfig, override, requestDate) =
  */
 export const generateValidEndTimes = (bookingConfig, override, requestDate, startTimeStr) => {
   const startMin = timeToMinutes(startTimeStr);
-  const dateObj = new Date(requestDate);
-  const dayName = DAYS_OF_WEEK[dateObj.getDay()];
+  const dayName = getDayOfWeek(requestDate);
   
   const dailyHours = bookingConfig.operatingHours?.[dayName] || { isOpen: true, openTime: '00:00', closeTime: '23:59' };
   if (!dailyHours || !dailyHours.isOpen) return [];
@@ -136,18 +114,9 @@ export const generateValidEndTimes = (bookingConfig, override, requestDate, star
   if (override && override.blocks) {
     for (const block of override.blocks) {
       const blockStartMin = timeToMinutes(block.fromTime);
-      // We don't apply prep time here because the prep time belongs to the existing block,
-      // and we are trying to fit AHEAD of it. If we overlap its prep time, we can't end then.
-      // Wait, actually, if a block starts at 11:00, we can end at 11:00. The prep time is AFTER the block.
-      // What if there is prep time after OUR booking?
-      // If we end at 11:00, we need prepTime of our own before the next block!
-      const ourPrepTime = bookingConfig.preparationTime || 0;
-      
-      // So if next block starts at blockStartMin, we must end by blockStartMin - ourPrepTime
       if (blockStartMin > startMin) {
-        const effectiveLimit = blockStartMin - ourPrepTime;
-        if (effectiveLimit < nextBlockStart) {
-          nextBlockStart = effectiveLimit;
+        if (blockStartMin < nextBlockStart) {
+          nextBlockStart = blockStartMin;
         }
       }
     }

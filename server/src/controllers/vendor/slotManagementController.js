@@ -44,9 +44,9 @@ export const blockHourlySlot = async (req, res, next) => {
 export const removeOverride = async (req, res, next) => {
   try {
     const { id: venueId } = req.params;
-    const { date, bookingId, slotIndex } = req.body;
+    const { date, bookingId, blockId } = req.body;
     const vendorId = req.user._id;
-    const data = await slotManagementService.removeOverride(vendorId, venueId, date, bookingId, slotIndex);
+    const data = await slotManagementService.removeOverride(vendorId, venueId, date, bookingId, blockId);
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };

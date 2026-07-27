@@ -16,6 +16,13 @@ connectRedis();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  
+  // Timezone sanity check for production readiness
+  const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (systemTz !== 'Asia/Kolkata') {
+    console.warn(`\n[WARNING] Server Timezone is ${systemTz}, but BookMyVenue expects Asia/Kolkata.`);
+    console.warn(`This is fine for dev, but for production, ensure the server OS is set to IST (Asia/Kolkata) to avoid unexpected date boundary issues.\n`);
+  }
 });
 
 

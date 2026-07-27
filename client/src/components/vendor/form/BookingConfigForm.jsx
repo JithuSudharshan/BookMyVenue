@@ -73,7 +73,6 @@ const BookingConfigForm = ({ config, onChange, isHourly }) => {
         </div>
       </div>
 
-      {/* Booking Rules */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Field label="Booking Interval" hint="Granularity of start times (e.g., every 30 mins or 1 hour).">
           <select
@@ -86,20 +85,6 @@ const BookingConfigForm = ({ config, onChange, isHourly }) => {
             <option value={120}>2 Hours</option>
           </select>
         </Field>
-        <Field label="Preparation Time" hint="Time blocked automatically after each booking.">
-          <select
-            value={config.preparationTime}
-            onChange={(e) => onChange({ ...config, preparationTime: Number(e.target.value) })}
-            className={inputCls(false)}
-          >
-            <option value={0}>None</option>
-            <option value={15}>15 Minutes</option>
-            <option value={30}>30 Minutes</option>
-            <option value={45}>45 Minutes</option>
-            <option value={60}>1 Hour</option>
-          </select>
-        </Field>
-
       </div>
     </div>
   );

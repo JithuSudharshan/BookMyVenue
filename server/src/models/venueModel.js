@@ -138,7 +138,6 @@ const venueSchema = new mongoose.Schema(
       },
 
       bookingInterval: { type: Number, default: 60 },
-      preparationTime: { type: Number, default: 0 },
       
       advanceBookingLimit: { type: Boolean, default: false },
       maxAdvanceBookingDays: { type: Number, default: 90 },

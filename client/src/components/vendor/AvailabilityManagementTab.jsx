@@ -108,7 +108,7 @@ const AvailabilityManagementTab = ({ venueId, bookingModel, bookingConfig, hasAc
         return toast.error("You cannot manually unblock a customer's booking here.");
       }
       try {
-        await removeSlotOverride(venueId, { date: selectedDateStr, slotIndex: blockInfo.index });
+        await removeSlotOverride(venueId, { date: selectedDateStr, blockId: blockInfo._id });
         toast.success('Time slot unblocked');
         fetchOverview(year, month);
       } catch (err) {
