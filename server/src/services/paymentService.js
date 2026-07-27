@@ -1,5 +1,5 @@
 import * as paymentRepository from '../repositories/paymentRepository.js';
-import AppError from '../utils/appError.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * Fetch paginated payments for a user.

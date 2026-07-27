@@ -1,5 +1,5 @@
 import * as paymentService from '../services/paymentService.js';
-import AppError from '../utils/appError.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * @desc    Get customer transactions (payments)
