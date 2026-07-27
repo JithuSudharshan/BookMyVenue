@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema(
@@ -117,3 +118,4 @@ bookingSchema.index({ venueId: 1, startDate: 1 });
 const Booking = mongoose.model('Booking', bookingSchema);
 
 export default Booking;
+

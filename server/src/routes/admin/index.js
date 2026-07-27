@@ -9,7 +9,11 @@ import venueRoutes from "./adminVenueRoutes.js";
 import bookingRoutes from "./adminBookingRoutes.js";
 import categoryRoutes from "./categoryRoute.js";
 import subcategoryRoutes from "./subcategoryRoute.js";
+<<<<<<< HEAD
 import walletRoutes from "./adminWalletRoutes.js";
+=======
+import { adminDeleteReview } from "../../controllers/reviewController.js";
+>>>>>>> origin/dev-sreesha
 
 const router = express.Router();
 
@@ -32,5 +36,6 @@ router.use("/bookings", bookingRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/subcategories", subcategoryRoutes);
 router.use("/wallet", walletRoutes);
+router.delete("/reviews/:reviewId", adminDeleteReview);
 
 export default router;

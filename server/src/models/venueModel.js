@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import { BOOKING_MODELS } from '../utils/venueConstants.js';
 
 function isStrict() {
-    // Only enforce required fields if the venue is NOT a draft or rejected
-    return ['submitted', 'under_review', 'approved'].includes(this.approval?.status);
+  // Only enforce required fields if the venue is NOT a draft or rejected
+  return ['submitted', 'under_review', 'approved'].includes(this.approval?.status);
 }
 
 const venueSchema = new mongoose.Schema(
@@ -113,6 +113,19 @@ const venueSchema = new mongoose.Schema(
       min: 0,
     },
 
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    reviews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     // ─── Booking Configuration ───────────────────────────────
     bookingModel: {
       type: String,
@@ -210,13 +223,15 @@ const venueSchema = new mongoose.Schema(
 );
 
 // Custom validation for images length when submitted
-venueSchema.pre('validate', function(next) {
-    if (isStrict.call(this) && (!this.images || this.images.length < 3)) {
-        this.invalidate('images', 'At least 3 images are required for submission');
-    }
-    next();
+venueSchema.pre('validate', function (next) {
+  if (isStrict.call(this) && (!this.images || this.images.length < 3)) {
+    this.invalidate('images', 'At least 3 images are required for submission');
+  }
+  next();
 });
 
 const Venue = mongoose.model('Venue', venueSchema);
 
 export default Venue;
+
+

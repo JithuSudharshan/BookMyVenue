@@ -2,9 +2,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { 
   CalendarDays, MapPin, Users, IndianRupee, 
   Clock, ChevronLeft, ChevronRight,
-  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Image as ImageIcon
+  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Star
 } from 'lucide-react';
 import { getCustomerBookings } from "../../api/user-api/bookingApi";
+import ReviewForm from '../../components/common/ReviewForm';
+import ReviewDetailsModal from '../../components/common/ReviewDetailsModal';
 import './BookingsPage.css';
 
 function BookingsPage() {
@@ -17,6 +19,10 @@ function BookingsPage() {
   
   // Local UI state for filtering
   const [filter, setFilter] = useState('All');
+
+  // Review form & details state
+  const [reviewTarget, setReviewTarget] = useState(null); // { bookingId, venueId, existingReview }
+  const [viewReviewTarget, setViewReviewTarget] = useState(null); // { bookingId, venueId, review }
 
   const limit = 5;
 
@@ -245,9 +251,23 @@ function BookingsPage() {
                   <button className="bk-btn bk-btn-outline" onClick={() => {}}>
                     <FileText size={16} /> Receipt
                   </button>
-                  <button className="bk-btn bk-btn-primary" onClick={() => {}}>
-                    View Details
-                  </button>
+                  {booking.bookingStatus === 'Completed' && (
+                    booking.review ? (
+                      <button
+                        className="bk-btn bk-btn-outline border-primary text-primary font-semibold"
+                        onClick={() => setViewReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id, review: booking.review })}
+                      >
+                        <Star size={16} className="fill-amber-400 text-amber-400" /> View Review
+                      </button>
+                    ) : (
+                      <button
+                        className="bk-btn bk-btn-primary"
+                        onClick={() => setReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id })}
+                      >
+                        <Star size={16} /> Write a Review
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
             );
@@ -268,6 +288,42 @@ function BookingsPage() {
             <ChevronRight size={20} />
           </button>
         </div>
+      )}
+
+      {/* Review Form Modal (for submit and edit) */}
+      {reviewTarget && (
+        <ReviewForm
+          isOpen={Boolean(reviewTarget)}
+          onClose={() => setReviewTarget(null)}
+          bookingId={reviewTarget.bookingId}
+          venueId={reviewTarget.venueId}
+          existingReview={reviewTarget.existingReview || null}
+          onSuccess={() => {
+            setReviewTarget(null);
+            fetchBookings(page, filter);
+          }}
+        />
+      )}
+
+      {/* View Review Modal */}
+      {viewReviewTarget && (
+        <ReviewDetailsModal
+          isOpen={Boolean(viewReviewTarget)}
+          onClose={() => setViewReviewTarget(null)}
+          review={viewReviewTarget.review}
+          onEdit={(review) => {
+            setViewReviewTarget(null);
+            setReviewTarget({
+              bookingId: viewReviewTarget.bookingId,
+              venueId: viewReviewTarget.venueId,
+              existingReview: review,
+            });
+          }}
+          onDeleteSuccess={() => {
+            setViewReviewTarget(null);
+            fetchBookings(page, filter);
+          }}
+        />
       )}
     </div>
   );

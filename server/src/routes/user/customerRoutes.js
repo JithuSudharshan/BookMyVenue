@@ -1,9 +1,11 @@
 import express from 'express';
 import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, getWishlist, addToWishlist, removeFromWishlist } from '../../controllers/customerController.js';
 import { getUserTransactions } from '../../controllers/paymentController.js';
+import { submitReview, editReview, deleteOwnReview } from '../../controllers/reviewController.js';
 import { validateBody } from '../../middlewares/validationMiddleware.js';
 import { customerProfileSchema, personalInfoSchema, addressSchema } from '../../validators/customerValidator.js';
-import { uploadAvatarMiddleware, handleUploadError } from '../../middlewares/uploadMiddleware.js';
+import { uploadAvatarMiddleware, handleUploadError, uploadReviewImages } from '../../middlewares/uploadMiddleware.js';
+import { submitReviewSchema, editReviewSchema } from '../../validators/reviewValidator.js';
 import { protect, authorize } from '../../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -40,5 +42,10 @@ router.get('/transactions', getUserTransactions);
 router.get('/wishlist', getWishlist);
 router.post('/wishlist/:venueId', addToWishlist);
 router.delete('/wishlist/:venueId', removeFromWishlist);
+
+// Routes: /api/customer/reviews
+router.post('/reviews', uploadReviewImages, handleUploadError, validateBody(submitReviewSchema), submitReview);
+router.put('/reviews/:reviewId', uploadReviewImages, handleUploadError, validateBody(editReviewSchema), editReview);
+router.delete('/reviews/:reviewId', deleteOwnReview);
 
 export default router;

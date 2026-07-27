@@ -8,6 +8,8 @@ import BaseVenueDetailPage from '../../components/common/VenueUi/BaseVenueDetail
 import BookingWidget from '../../components/user/booking/BookingWidget';
 import { BookingProvider } from '../../store/BookingContext';
 import { addToWishlist, removeFromWishlist, getWishlist } from '../../api/user-api/wishlistApi';
+import VenueReviewsSection from '../../components/common/VenueReviewsSection';
+import VenueLocationSection from '../../components/common/VenueLocationSection';
 
 const VenueDetailPage = () => {
   const { id } = useParams();
@@ -134,6 +136,8 @@ const VenueDetailPage = () => {
         onBack={() => navigate('/venues')}
         sidebarSlot={bookingSidebar}
         headerActionsSlot={wishlistButton}
+        locationSlot={<VenueLocationSection location={venue?.location} venueName={venue?.name} />}
+        reviewsSlot={id ? <VenueReviewsSection venueId={id} /> : null}
       />
     </div>
   );

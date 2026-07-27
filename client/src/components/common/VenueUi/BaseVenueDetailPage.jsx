@@ -20,6 +20,8 @@ const BaseVenueDetailPage = ({
   headerActionsSlot = null,
   sidebarSlot = null,
   customBadgesSlot = null,
+  locationSlot = null,
+  reviewsSlot = null,
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
 
@@ -156,6 +158,20 @@ const BaseVenueDetailPage = ({
               )}
             </div>
           </div>
+
+          {locationSlot && (
+            <>
+              <hr className="border-outline-variant" />
+              {locationSlot}
+            </>
+          )}
+
+          {reviewsSlot && (
+            <>
+              <hr className="border-outline-variant" />
+              {reviewsSlot}
+            </>
+          )}
         </div>
 
         <div className="lg:col-span-2">

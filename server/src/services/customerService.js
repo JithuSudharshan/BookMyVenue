@@ -2,6 +2,7 @@ import cloudinary from '../config/cloudinary.js';
 import userRepository from '../repositories/userRepository.js';
 import * as customerRepository from '../repositories/customerRepository.js';
 import Booking from '../models/bookingModel.js';
+import Review from '../models/reviewModel.js';
 import '../models/venueModel.js'; // Register Venue schema for populate
 import Vendor from '../models/vendorModel.js';
 import { toCustomerBookingDTO } from '../dto/booking/CustomerBookingDTO.js';
@@ -311,11 +312,21 @@ export const getBookings = async (userId, page = 1, limit = 10, filter = 'All') 
     return acc;
   }, {});
 
-  // Apply DTO
+  // Fetch reviews for bookings
+  const bookingIds = bookings.map((b) => b._id);
+  const reviews = await Review.find({ bookingId: { $in: bookingIds } }).lean();
+  const reviewMap = {};
+  reviews.forEach((r) => {
+    reviewMap[r.bookingId.toString()] = r;
+  });
+
+  // Apply DTO and attach review
   const dtoList = bookings.map(booking => {
     const vendorUserIdStr = booking.vendorId?._id?.toString() || booking.vendorId?.toString();
     const vendorProfile = vendorMap[vendorUserIdStr];
-    return toCustomerBookingDTO(booking, vendorProfile);
+    const dto = toCustomerBookingDTO(booking, vendorProfile);
+    dto.review = reviewMap[booking._id.toString()] || null;
+    return dto;
   });
 
   const total = await Booking.countDocuments(query);
