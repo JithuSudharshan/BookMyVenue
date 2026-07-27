@@ -1,5 +1,6 @@
 import * as vendorProfileService from '../services/vendor/vendorProfileService.js';
 import * as vendorDashboardService from '../services/vendor/vendorDashboardService.js';
+import notificationService from '../services/notificationService.js';
 
 export const getOnboardingStatus = async (req, res) => {
   try {
@@ -41,6 +42,14 @@ export const saveStep3 = async (req, res) => {
 export const submitForReview = async (req, res) => {
   try {
     const updatedProfile = await vendorProfileService.submitForReviewService(req.user._id);
+    
+    notificationService.notifyAdmins({
+        title: 'New Vendor Onboarding',
+        message: `Vendor "${updatedProfile.fullName || 'New Vendor'}" has submitted their profile for review.`,
+        type: 'INFO',
+        link: `/admin/vendors/${updatedProfile._id}` // Link to admin vendor review page
+    });
+
     res.json({ message: 'Profile submitted for review successfully', profile: updatedProfile });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
