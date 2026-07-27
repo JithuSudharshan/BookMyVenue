@@ -5,7 +5,7 @@ import Wishlist from '../models/wishlistModel.js';
  */
 export const findByUserId = async (userId, skip = 0, limit = 20) => {
   return await Wishlist.find({ userId })
-    .populate('venueId', 'name location images pricing capacity description')
+    .populate('venueId', 'name slug location images price capacity amenities bookingModel venueStatus subcategoryId averageRating totalReviews')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
