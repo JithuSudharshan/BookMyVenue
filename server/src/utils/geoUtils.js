@@ -123,9 +123,9 @@ export const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c;
@@ -162,3 +162,25 @@ export const getCityCoordinates = (locationStr) => {
 
   return null;
 };
+
+/**
+ * Returns all city/locality keys from KERALA_CITY_COORDINATES
+ * whose distance from the target point is within maxRadiusKm.
+ *
+ * Used to build a MongoDB $in filter before the aggregation pipeline
+ * so that only venues in nearby cities are loaded into memory.
+ *
+ * @param {number} targetLat
+ * @param {number} targetLng
+ * @param {number} maxRadiusKm
+ * @returns {string[]} Array of matching city/locality name strings
+ */
+export const getCitiesWithinRadius = (targetLat, targetLng, maxRadiusKm) => {
+  return Object.entries(KERALA_CITY_COORDINATES)
+    .filter(([, coords]) => {
+      const dist = calculateHaversineDistance(targetLat, targetLng, coords.lat, coords.lng);
+      return dist !== null && dist <= maxRadiusKm;
+    })
+    .map(([cityName]) => cityName);
+};
+

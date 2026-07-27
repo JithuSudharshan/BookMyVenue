@@ -1,5 +1,5 @@
 import Venue from '../../models/venueModel.js';
-import { getCityCoordinates, calculateHaversineDistance } from '../../utils/geoUtils.js';
+import { getCityCoordinates, calculateHaversineDistance, getCitiesWithinRadius } from '../../utils/geoUtils.js';
 
 export const findPublicVenuesAggregation = async ({
     matchStage = {},
@@ -19,8 +19,26 @@ export const findPublicVenuesAggregation = async ({
 
     // 2. If target coordinates are provided, compute Haversine distance and filter within default radius (50 km)
     if (targetLat !== null && targetLng !== null && !isNaN(targetLat) && !isNaN(targetLng)) {
+        // Resolve which known cities/localities fall within the target radius.
+        const nearbyCities = getCitiesWithinRadius(targetLat, targetLng, maxRadiusKm);
+
+        // If no known cities fall within range, return empty results immediately.
+        if (nearbyCities.length === 0) {
+            return { totalCount: 0, venues: [] };
+        }
+
+        // Build a case-insensitive MongoDB $in filter from the nearby city names
+        const cityFilter = nearbyCities.map(c => new RegExp(`^${c}$`, 'i'));
+        const geoBaseMatch = {
+            ...baseMatch,
+            $or: [
+                { 'location.city': { $in: cityFilter } },
+                { 'location.state': { $in: cityFilter } }
+            ]
+        };
+
         const geoPipeline = [
-            { $match: baseMatch },
+            { $match: geoBaseMatch },
             {
                 $lookup: {
                     from: 'categories',
@@ -227,7 +245,7 @@ export const getVenueFilterMetadata = async () => {
     if (result.length > 0) {
         return result[0];
     }
-    
+
     return {
         minPrice: 0,
         maxPrice: 5000,

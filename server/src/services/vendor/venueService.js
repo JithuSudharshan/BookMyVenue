@@ -104,7 +104,7 @@ export const submitVenueService = async (vendorId, venueId) => {
     // Set approval status to trigger strict Mongoose validation on save()
     venue.approval.status = 'submitted';
     venue.approval.submittedAt = new Date();
-    
+
     // Using .save() triggers Mongoose's full document validation (which now uses isStrict())
     return await venue.save();
 };
@@ -122,7 +122,7 @@ export const createVenueService = async (vendorId, venueData) => {
     }
 
     venueData.vendorId = vendorId;
-    venueData.approval = { 
+    venueData.approval = {
         status: 'submitted',
         submittedAt: new Date()
     };
