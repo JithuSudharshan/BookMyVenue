@@ -99,12 +99,12 @@ const LivePricingSummary = ({ venue }) => {
       
       <div className="flex justify-between text-sm text-on-surface-variant">
         <span>Venue Charges ({bookingMode === 'hourly' ? `${pricing.durationHours} hours` : `${pricing.nights} days`})</span>
-        <span>₹{pricing.totalAmount}</span>
+        <span>₹{pricing.totalAmount?.toLocaleString('en-IN')}</span>
       </div>
       
       <div className="flex justify-between font-bold text-on-surface pt-2 border-t border-dashed border-outline-variant mt-2">
         <span>Total Amount</span>
-        <span>₹{pricing.totalAmount}</span>
+        <span>₹{pricing.totalAmount?.toLocaleString('en-IN')}</span>
       </div>
 
       {/* Payment Policy UI from Backend */}

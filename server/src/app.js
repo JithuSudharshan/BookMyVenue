@@ -10,6 +10,7 @@ import walletRoutes from './routes/walletRoutes.js';
 import userRoutes from './routes/user/index.js';    // /home, /venues
 import adminRoutes from './routes/admin/index.js';   // /categories, /subcategories
 import vendorRoutes from './routes/vendor/index.js';  // /venues (new structured)
+import webhookRoutes from './routes/webhookRoutes.js';
 
 // Legacy feature routes — kept until migrated to subdomain structure
 import customerRoutes from './routes/user/customerRoutes.js';
@@ -44,7 +45,11 @@ app.use(cors({
 }));
 // Explicitly handle all OPTIONS requests
 app.options('*', cors());
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(passport.initialize());
@@ -61,6 +66,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/vendor', legacyVendorRoutes); // onboarding, profile
 app.use('/api/vendor', vendorRoutes);        // venue management
 app.use('/api/customer', customerRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // ── Health check ────────────────────────────────────────
 app.get('/', (req, res) => res.send('API is running...'));

@@ -3,6 +3,7 @@ import * as AvailabilityValidatorService from '../services/core/AvailabilityVali
 import * as PricingEngineService from '../services/core/PricingEngineService.js';
 import { determinePaymentPolicy } from '../services/core/PaymentPolicyEngine.js';
 import { buildBookingSummary } from '../services/core/BookingSummaryBuilder.js';
+import PaymentService from '../services/core/PaymentService.js';
 import catchAsync from '../utils/catchAsync.js';
 
 export const getPricingSummary = catchAsync(async (req, res) => {
@@ -85,5 +86,55 @@ export const releaseSession = catchAsync(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Reservation released successfully'
+  });
+});
+
+export const createPaymentOrder = catchAsync(async (req, res) => {
+  const { sessionId } = req.body;
+  
+  const session = await ReservationService.getActiveSession(sessionId);
+
+  if (session.userId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ status: 'fail', message: 'Unauthorized access to this session' });
+  }
+
+  const orderDetails = await PaymentService.createRazorpayOrder(session);
+
+  res.status(200).json({
+    success: true,
+    data: orderDetails
+  });
+});
+
+export const verifyPayment = catchAsync(async (req, res) => {
+  const { sessionId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+
+  if (!sessionId || !razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+    return res.status(400).json({ status: 'fail', message: 'Missing payment verification details' });
+  }
+
+  // 1. Authenticate Signature via PaymentService
+  const isValid = PaymentService.verifyRazorpaySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+  if (!isValid) {
+    return res.status(400).json({ status: 'fail', message: 'Invalid payment signature' });
+  }
+
+  // 2. Delegate to ReservationService for idempotency and booking creation
+  const paymentDetails = {
+    method: 'razorpay',
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature
+  };
+
+  const booking = await ReservationService.confirmReservation(sessionId, paymentDetails);
+
+  res.status(200).json({
+    success: true,
+    message: 'Payment verified and booking confirmed successfully',
+    data: {
+      bookingId: booking._id,
+      bookingNumber: booking.bookingNumber
+    }
   });
 });

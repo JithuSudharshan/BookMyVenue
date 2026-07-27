@@ -15,8 +15,8 @@ export const buildBookingSummary = (pricingData, policyData) => {
   };
 
   if (policyData.paymentPolicy === 'advance_payment') {
-    summary.ui.userMessage = `Pay Today (${policyData.policyMetadata.advancePercentage}% Advance): ₹${policyData.advanceAmount}`;
-    summary.ui.userMessageSub = `Remaining Balance: ₹${policyData.remainingAmount}`;
+    summary.ui.userMessage = `Pay Today (${policyData.policyMetadata.advancePercentage}% Advance): ₹${policyData.advanceAmount.toLocaleString('en-IN')}`;
+    summary.ui.userMessageSub = `Remaining Balance: ₹${policyData.remainingAmount.toLocaleString('en-IN')}`;
     
     const dueDateStr = policyData.balanceDueDate.toLocaleDateString('en-GB', { 
       day: 'numeric', month: 'short', year: 'numeric' 
@@ -27,7 +27,7 @@ export const buildBookingSummary = (pricingData, policyData) => {
       { step: dueDateStr, text: 'Balance Due', status: 'pending' }
     ];
   } else {
-    summary.ui.userMessage = `Today's Payment (100%): ₹${pricingData.totalAmount}`;
+    summary.ui.userMessage = `Today's Payment (100%): ₹${pricingData.totalAmount.toLocaleString('en-IN')}`;
     summary.ui.userMessageSub = `Full payment is required for this booking.`;
     
     summary.ui.paymentTimeline = [

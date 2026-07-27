@@ -16,4 +16,8 @@ router.post('/session', bookingController.createSession);
 router.get('/session/:sessionId', bookingController.getSession);
 router.delete('/session/:sessionId', bookingController.releaseSession);
 
+// Payment routes
+router.post('/payment/order', bookingController.createPaymentOrder);
+router.post('/payment/verify', bookingController.verifyPayment);
+
 export default router;

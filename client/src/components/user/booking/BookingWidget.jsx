@@ -148,7 +148,7 @@ const BookingWidget = ({ venue, overrides = [], year, month, onMonthChange }) =>
     <div className="bg-surface rounded-3xl p-6 border border-outline-variant shadow-md sticky top-6">
       <div className="flex justify-between items-baseline mb-4">
         <h3 className="text-2xl font-bold text-gray-900">
-          ₹{venue.price} <span className="text-sm font-normal text-gray-500">/ {bookingMode === 'hourly' ? 'hour' : 'day'}</span>
+          ₹{venue.price?.toLocaleString('en-IN')} <span className="text-sm font-normal text-gray-500">/ {bookingMode === 'hourly' ? 'hour' : 'day'}</span>
         </h3>
       </div>
 

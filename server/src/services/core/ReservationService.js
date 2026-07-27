@@ -1,11 +1,13 @@
 import BookingSession from '../../models/bookingSessionModel.js';
+import Booking from '../../models/bookingModel.js';
+import Venue from '../../models/venueModel.js';
 import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
 import AppError from '../../utils/AppError.js';
+import { generateBookingNumber } from '../../utils/bookingUtils.js';
 import { validateHourlySlots, validateDailyRange } from './AvailabilityValidatorService.js';
 import { calculateHourlyPrice, calculateDailyPrice } from './PricingEngineService.js';
 import { determinePaymentPolicy } from './PaymentPolicyEngine.js';
 import mongoose from 'mongoose';
-
 export const createReservation = async (userId, venueId, bookingData) => {
   const { bookingMode, date, fromTime, toTime, startDate, endDate, guestCount } = bookingData;
   
@@ -86,7 +88,7 @@ export const createReservation = async (userId, venueId, bookingData) => {
 };
 
 export const getActiveSession = async (sessionId) => {
-  const session = await BookingSession.findOne({ sessionId, status: 'active' }).populate('venueId', 'name location price');
+  const session = await BookingSession.findOne({ sessionId, status: 'active' }).populate('venueId', 'name location price images');
   if (!session) {
     throw new AppError('Reservation session expired or not found', 404);
   }
@@ -109,25 +111,78 @@ export const releaseReservation = async (sessionId) => {
 };
 
 // Confirm is called after payment success
-export const confirmReservation = async (sessionId) => {
-  const session = await BookingSession.findOne({ sessionId });
+export const confirmReservation = async (sessionId, paymentDetails = {}) => {
+  const session = await BookingSession.findOne({ sessionId }).populate('venueId');
   if (!session) throw new AppError('Session not found', 404);
-  if (session.status === 'confirmed') return session; // Idempotent
+  
+  if (session.status === 'confirmed') return session; // Idempotent: already processed
 
+  if (session.status !== 'active') {
+    throw new AppError(`Cannot confirm reservation. Session status is ${session.status}`, 400);
+  }
+
+  // Generate Booking Number
+  const bookingNumber = generateBookingNumber();
+
+  // Create Booking Document
+  const booking = new Booking({
+    bookingNumber,
+    sessionId: session.sessionId,
+    userId: session.userId,
+    venueId: session.venueId._id,
+    vendorId: session.venueId.vendorId, // Assuming venue has vendorId
+    bookingMode: session.bookingMode,
+    
+    date: session.date,
+    fromTime: session.fromTime,
+    toTime: session.toTime,
+    
+    startDate: session.startDate,
+    endDate: session.endDate,
+    
+    guestCount: session.guestCount,
+    pricing: session.pricing,
+    
+    payment: {
+      method: paymentDetails.method || 'razorpay',
+      walletAmount: session.walletDeductedAmt || 0,
+      razorpayAmount: session.pricing.razorpayAmount || 0,
+      razorpayOrderId: paymentDetails.razorpayOrderId || session.razorpayOrderId,
+      razorpayPaymentId: paymentDetails.razorpayPaymentId,
+      razorpaySignature: paymentDetails.razorpaySignature,
+      paidAt: new Date()
+    },
+    
+    bookingStatus: 'confirmed',
+    paymentStatus: 'completed', // Or partial if advance payment
+    timeline: [
+      { status: 'confirmed', note: 'Booking confirmed and payment successful' }
+    ]
+  });
+
+  if (session.pricing.paymentPolicy === 'advance_payment') {
+    booking.paymentStatus = 'partial';
+  }
+
+  await booking.save();
+
+  // Update Session
   session.status = 'confirmed';
+  session.paymentStatus = 'completed';
+  session.razorpayPaymentId = paymentDetails.razorpayPaymentId;
   await session.save();
 
   // Create AvailabilityOverride to permanently block the slot
   if (session.bookingMode === 'hourly') {
     await AvailabilityOverride.findOneAndUpdate(
-      { venueId: session.venueId, date: session.date },
+      { venueId: session.venueId._id, date: session.date },
       {
         $push: {
           blocks: {
             fromTime: session.fromTime,
             toTime: session.toTime,
             reason: 'Customer Booking',
-            // bookingId will be updated later when Booking is created, or passed here if available
+            bookingId: booking._id
           }
         }
       },
@@ -145,7 +200,7 @@ export const confirmReservation = async (sessionId) => {
     
     for (const d of dates) {
       await AvailabilityOverride.findOneAndUpdate(
-        { venueId: session.venueId, date: d },
+        { venueId: session.venueId._id, date: d },
         {
           isFullDayBlocked: true,
           fullDayReason: 'Customer Booking'
@@ -155,5 +210,5 @@ export const confirmReservation = async (sessionId) => {
     }
   }
 
-  return session;
+  return booking;
 };
