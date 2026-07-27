@@ -1,11 +1,5 @@
 import * as paymentService from '../services/paymentService.js';
-
-const getUserIdFromRequest = (req) => {
-  if (req.user && req.user._id) {
-    return req.user._id;
-  }
-  return req.headers['x-user-id'] || req.headers['x-mock-user-id'] || null;
-};
+import AppError from '../utils/appError.js';
 
 /**
  * @desc    Get customer transactions (payments)
@@ -14,7 +8,10 @@ const getUserIdFromRequest = (req) => {
  */
 export const getUserTransactions = async (req, res) => {
   try {
-    const userId = getUserIdFromRequest(req);
+    if (!req.user?._id) {
+      throw new AppError('Unauthorized. User ID not found.', 401);
+    }
+    const userId = req.user._id;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const filter = req.query.filter || 'All';
@@ -30,3 +27,4 @@ export const getUserTransactions = async (req, res) => {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
+
