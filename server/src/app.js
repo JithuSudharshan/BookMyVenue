@@ -14,6 +14,7 @@ import vendorRoutes from './routes/vendor/index.js';  // /venues (new structured
 // Legacy feature routes — kept until migrated to subdomain structure
 import customerRoutes from './routes/user/customerRoutes.js';
 import legacyVendorRoutes from './routes/vendor/vendorRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/vendor', legacyVendorRoutes); // onboarding, profile
 app.use('/api/vendor', vendorRoutes);        // venue management
 app.use('/api/customer', customerRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ── Health check ────────────────────────────────────────
 app.get('/', (req, res) => res.send('API is running...'));
