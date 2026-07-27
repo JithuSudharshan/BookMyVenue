@@ -12,14 +12,9 @@ class PaymentService {
       throw new AppError('Cannot create payment order for an inactive session', 400);
     }
 
-    // Reuse existing order if present
-    if (session.razorpayOrderId) {
-      return {
-        id: session.razorpayOrderId,
-        amount: Math.round(session.pricing.razorpayAmount * 100), // Note: razorpayAmount should be pre-calculated in session
-        currency: 'INR'
-      };
-    }
+    // We no longer reuse the existing order here.
+    // Creating a fresh Razorpay order for each retry is recommended
+    // while preserving the same BookingSession and pricing snapshot.
 
     // Amount to be paid via Razorpay (either advance or total, minus wallet deduction)
     let payableAmount = 0;

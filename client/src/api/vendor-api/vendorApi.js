@@ -209,3 +209,31 @@ export const acknowledgeSlots = async (venueId) => {
   const response = await axiosInstance.patch(`/vendor/venues/${venueId}/availability/acknowledge`);
   return response.data?.data;
 };
+
+// ─── Vendor Bookings API ──────────────────────────────────────────────────────
+
+/**
+ * Fetch paginated bookings for the authenticated vendor.
+ * @param {Object} params - { page, limit, status, venueId, bookingMode, search }
+ */
+export const getVendorBookings = async (params = {}) => {
+  const response = await axiosInstance.get('/vendor/bookings', { params });
+  return response.data;
+};
+
+/**
+ * Fetch KPI stats for the vendor booking dashboard.
+ */
+export const getVendorBookingStats = async () => {
+  const response = await axiosInstance.get('/vendor/bookings/stats');
+  return response.data?.data;
+};
+
+/**
+ * Fetch slim venue list for the booking filter dropdown.
+ */
+export const getVendorVenueList = async () => {
+  const response = await axiosInstance.get('/vendor/bookings/venues');
+  return response.data?.data;
+};
+

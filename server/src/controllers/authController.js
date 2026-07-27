@@ -54,7 +54,11 @@ export const login = async (req, res) => {
     
     res.json(userData);
   } catch (error) {
-    res.status(error.statusCode || 500).json({ message: error.message });
+    console.error("Login Error:", error);
+    res.status(error.statusCode || 500).json({ 
+      message: error.message, 
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
+    });
   }
 };
 

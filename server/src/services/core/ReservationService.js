@@ -88,9 +88,15 @@ export const createReservation = async (userId, venueId, bookingData) => {
 };
 
 export const getActiveSession = async (sessionId) => {
-  const session = await BookingSession.findOne({ sessionId, status: 'active' }).populate('venueId', 'name location price images');
+  const session = await BookingSession.findOne({ sessionId }).populate('venueId', 'name location price images');
   if (!session) {
-    throw new AppError('Reservation session expired or not found', 404);
+    throw new AppError('Reservation session not found', 404);
+  }
+  if (session.status === 'confirmed') {
+    throw new AppError('ALREADY_CONFIRMED', 400);
+  }
+  if (session.status !== 'active') {
+    throw new AppError(`Reservation session is ${session.status}`, 400);
   }
   // If it's technically expired but TTL hasn't reaped it yet
   if (new Date() > session.expiresAt) {

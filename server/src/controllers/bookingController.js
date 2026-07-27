@@ -59,25 +59,32 @@ export const createSession = catchAsync(async (req, res) => {
   });
 });
 
-export const getSession = catchAsync(async (req, res) => {
-  const { sessionId } = req.params;
-  const session = await ReservationService.getActiveSession(sessionId);
+export const getSession = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const session = await ReservationService.getActiveSession(sessionId);
 
-  // Ensure the user requesting is the one who created it
-  if (session.userId.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ status: 'fail', message: 'Unauthorized access to this session' });
-  }
-
-  const remainingSeconds = Math.max(0, Math.floor((new Date(session.expiresAt) - new Date()) / 1000));
-
-  res.status(200).json({
-    success: true,
-    data: {
-      session,
-      remainingSeconds
+    // Ensure the user requesting is the one who created it
+    if (session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ status: 'fail', message: 'Unauthorized access to this session' });
     }
-  });
-});
+
+    const remainingSeconds = Math.max(0, Math.floor((new Date(session.expiresAt) - new Date()) / 1000));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        session,
+        remainingSeconds
+      }
+    });
+  } catch (error) {
+    if (error.message === 'ALREADY_CONFIRMED') {
+      return res.status(200).json({ success: true, alreadyConfirmed: true });
+    }
+    next(error);
+  }
+};
 
 export const releaseSession = catchAsync(async (req, res) => {
   const { sessionId } = req.params;
@@ -89,22 +96,29 @@ export const releaseSession = catchAsync(async (req, res) => {
   });
 });
 
-export const createPaymentOrder = catchAsync(async (req, res) => {
-  const { sessionId } = req.body;
-  
-  const session = await ReservationService.getActiveSession(sessionId);
+export const createPaymentOrder = async (req, res, next) => {
+  try {
+    const { sessionId } = req.body;
+    
+    const session = await ReservationService.getActiveSession(sessionId);
 
-  if (session.userId.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ status: 'fail', message: 'Unauthorized access to this session' });
+    if (session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ status: 'fail', message: 'Unauthorized access to this session' });
+    }
+
+    const orderDetails = await PaymentService.createRazorpayOrder(session);
+
+    res.status(200).json({
+      success: true,
+      data: orderDetails
+    });
+  } catch (error) {
+    if (error.message === 'ALREADY_CONFIRMED') {
+      return res.status(200).json({ success: true, alreadyConfirmed: true });
+    }
+    next(error);
   }
-
-  const orderDetails = await PaymentService.createRazorpayOrder(session);
-
-  res.status(200).json({
-    success: true,
-    data: orderDetails
-  });
-});
+};
 
 export const verifyPayment = catchAsync(async (req, res) => {
   const { sessionId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;

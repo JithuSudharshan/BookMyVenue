@@ -36,6 +36,7 @@ const PaymentCheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState('pending'); // pending, failed, cancelled, expired, completed
 
   useEffect(() => {
     fetchSession();
@@ -43,17 +44,25 @@ const PaymentCheckoutPage = () => {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      toast.error('Session expired. Please try booking again.');
-      navigate('/venues'); // Redirect to listing
+      if (paymentStatus !== 'completed' && paymentStatus !== 'expired') {
+        setPaymentStatus('expired');
+      }
       return;
     }
+    if (paymentStatus === 'expired' || paymentStatus === 'completed') return;
+
     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, navigate]);
+  }, [timeLeft, paymentStatus]);
 
   const fetchSession = async () => {
     try {
       const response = await axiosInstance.get(`/bookings/session/${sessionId}`);
+      if (response.data.alreadyConfirmed) {
+        toast.info('Booking is already confirmed!');
+        navigate('/customer/bookings');
+        return;
+      }
       setSession(response.data.data.session);
       setTimeLeft(response.data.data.remainingSeconds);
     } catch (error) {
@@ -69,6 +78,11 @@ const PaymentCheckoutPage = () => {
     try {
       // 1. Create order
       const orderResponse = await axiosInstance.post('/bookings/payment/order', { sessionId });
+      if (orderResponse.data.alreadyConfirmed) {
+        toast.info('Booking is already confirmed!');
+        navigate('/customer/bookings');
+        return;
+      }
       const order = orderResponse.data.data;
 
       // 2. Open Razorpay
@@ -90,11 +104,20 @@ const PaymentCheckoutPage = () => {
             });
 
             if (verifyResponse.data.success) {
+              setPaymentStatus('completed');
               toast.success('Booking confirmed successfully!');
               navigate('/customer/bookings');
             }
           } catch (error) {
+            setPaymentStatus('failed');
             toast.error(error.response?.data?.message || 'Payment verification failed.');
+            setIsProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPaymentStatus('cancelled');
+            setIsProcessing(false);
           }
         },
         prefill: {
@@ -110,6 +133,7 @@ const PaymentCheckoutPage = () => {
       const rzp = new window.Razorpay(options);
       
       rzp.on('payment.failed', function (response) {
+        setPaymentStatus('failed');
         toast.error(response.error.description || 'Payment failed. Please try again.');
         setIsProcessing(false);
       });
@@ -117,6 +141,7 @@ const PaymentCheckoutPage = () => {
       rzp.open();
 
     } catch (error) {
+      setPaymentStatus('failed');
       toast.error(error.response?.data?.message || 'Could not initialize payment gateway.');
       setIsProcessing(false);
     }
@@ -155,11 +180,35 @@ const PaymentCheckoutPage = () => {
             <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
             <p className="text-sm text-gray-500 mt-1 font-medium">Ref ID: {refId}</p>
           </div>
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-sm">
+          <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-sm ${paymentStatus === 'expired' ? 'bg-gray-100 text-gray-600' : 'bg-red-50 text-red-600'}`}>
             <Clock className="w-4 h-4" />
-            Time remaining: {formatTime(timeLeft)}
+            {paymentStatus === 'expired' ? 'Session Expired' : `Time remaining: ${formatTime(timeLeft)}`}
           </div>
         </div>
+
+        {paymentStatus === 'cancelled' && (
+          <div className="mb-8 p-4 bg-orange-50 border border-orange-200 rounded-xl flex items-start gap-3">
+            <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-orange-900">Payment Cancelled</h4>
+              <p className="text-sm text-orange-800 mt-1">
+                Your payment was cancelled. Your reservation is still held—please retry the payment before the timer expires.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {paymentStatus === 'failed' && (
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+            <Info className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-red-900">Payment Failed</h4>
+              <p className="text-sm text-red-800 mt-1">
+                Your payment could not be completed. Your reservation is still held. Please try another payment method before the timer expires.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-3 space-y-8">
@@ -279,76 +328,97 @@ const PaymentCheckoutPage = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-2">
-            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 sticky top-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800">Price Breakdown</h3>
-              <div className="space-y-3 mb-6 pb-6 border-b border-gray-200 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Base Price</span>
-                  <span className="font-medium text-gray-800">₹{formatCurrency(pricing.baseAmount)}</span>
+          {paymentStatus === 'expired' ? (
+            <div className="lg:col-span-2">
+              <div className="bg-red-50 p-8 rounded-2xl border border-red-200 text-center sticky top-6">
+                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8" />
                 </div>
-                {pricing.walletDeduction > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Wallet Applied</span>
-                    <span className="font-medium">- ₹{formatCurrency(pricing.walletDeduction)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-base font-bold pt-2 text-gray-800">
-                  <span>Total Amount</span>
-                  <span>₹{formatCurrency(pricing.totalAmount)}</span>
-                </div>
-                {pricing.paymentPolicy === 'advance_payment' && (
-                  <div className="flex justify-between text-blue-600 pt-1">
-                    <span>Advance Payable (50%)</span>
-                    <span className="font-medium">₹{formatCurrency(pricing.advanceAmount)}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-700">Amount to Pay Now</span>
-                  <span className="text-2xl font-bold text-primary">₹{formatCurrency(payableAmount)}</span>
-                </div>
-              </div>
-
-              <div className="mb-6 flex items-start gap-2">
-                <input 
-                  type="checkbox" 
-                  id="terms"
-                  className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-                  checked={isTermsAccepted}
-                  onChange={(e) => setIsTermsAccepted(e.target.checked)}
-                />
-                <label htmlFor="terms" className="text-xs text-gray-600 cursor-pointer">
-                  I have read and agree to the <span className="text-primary hover:underline">Terms & Conditions</span> and the <span className="text-primary hover:underline">Cancellation Policy</span>.
-                </label>
-              </div>
-
-              <button
-                onClick={handlePayment}
-                disabled={isProcessing || !isTermsAccepted}
-                className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isProcessing ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <CreditCard className="w-5 h-5" />
-                    Pay ₹{formatCurrency(payableAmount)}
-                  </>
-                )}
-              </button>
-              
-              <div className="flex flex-col items-center justify-center gap-1 mt-6 text-xs text-gray-500">
-                <div className="flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4 text-green-500" />
-                  <span className="font-medium text-gray-700">Secured by Razorpay</span>
-                </div>
-                <span>100% secure & encrypted payments</span>
+                <h3 className="text-xl font-bold text-red-900 mb-2">Reservation Expired</h3>
+                <p className="text-sm text-red-700 mb-6">
+                  The time limit for this reservation has ended, and your slot has been released.
+                </p>
+                <button
+                  onClick={() => navigate('/venues')}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl shadow transition"
+                >
+                  Start New Booking
+                </button>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="lg:col-span-2">
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 sticky top-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">Price Breakdown</h3>
+                <div className="space-y-3 mb-6 pb-6 border-b border-gray-200 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Base Price</span>
+                    <span className="font-medium text-gray-800">₹{formatCurrency(pricing.baseAmount)}</span>
+                  </div>
+                  {pricing.walletDeduction > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Wallet Applied</span>
+                      <span className="font-medium">- ₹{formatCurrency(pricing.walletDeduction)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-base font-bold pt-2 text-gray-800">
+                    <span>Total Amount</span>
+                    <span>₹{formatCurrency(pricing.totalAmount)}</span>
+                  </div>
+                  {pricing.paymentPolicy === 'advance_payment' && (
+                    <div className="flex justify-between text-blue-600 pt-1">
+                      <span>Advance Payable ({pricing.policyMetadata?.advancePercentage || 50}%)</span>
+                      <span className="font-medium">₹{formatCurrency(pricing.advanceAmount)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">Amount to Pay Now</span>
+                    <span className="text-2xl font-bold text-primary">₹{formatCurrency(payableAmount)}</span>
+                  </div>
+                </div>
+
+                <div className="mb-6 flex items-start gap-2">
+                  <input 
+                    type="checkbox" 
+                    id="terms"
+                    className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    checked={isTermsAccepted}
+                    onChange={(e) => setIsTermsAccepted(e.target.checked)}
+                    disabled={isProcessing}
+                  />
+                  <label htmlFor="terms" className="text-xs text-gray-600 cursor-pointer">
+                    I have read and agree to the <span className="text-primary hover:underline">Terms & Conditions</span> and the <span className="text-primary hover:underline">Cancellation Policy</span>.
+                  </label>
+                </div>
+
+                <button
+                  onClick={handlePayment}
+                  disabled={isProcessing || !isTermsAccepted}
+                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isProcessing ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <CreditCard className="w-5 h-5" />
+                      {paymentStatus === 'failed' || paymentStatus === 'cancelled' ? 'Retry Payment' : `Pay ₹${formatCurrency(payableAmount)}`}
+                    </>
+                  )}
+                </button>
+                
+                <div className="flex flex-col items-center justify-center gap-1 mt-6 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <ShieldCheck className="w-4 h-4 text-green-500" />
+                    <span className="font-medium text-gray-700">Secured by Razorpay</span>
+                  </div>
+                  <span>100% secure & encrypted payments</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
