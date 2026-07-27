@@ -124,6 +124,11 @@ export const vendorApi = {
     return response.data?.data ?? response.data;
   },
 
+  getDashboardAnalytics: async (timeRange = '30') => {
+    const response = await axiosInstance.get('/vendor/dashboard/analytics', { params: { timeRange } });
+    return response.data?.data ?? response.data;
+  },
+
   saveStep1: async (formData) => {
     const response = await axiosInstance.put('/vendor/onboarding/step/1', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
