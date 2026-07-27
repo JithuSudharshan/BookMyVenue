@@ -70,3 +70,9 @@ export const cancelBooking = (bookingId, cancellationData) =>
     method: 'PATCH',
     body: JSON.stringify(cancellationData),
   });
+
+export const getAdminWallet = (params = {}) => {
+  const queryStr = new URLSearchParams(params).toString();
+  return request(`/admin/wallet${queryStr ? `?${queryStr}` : ''}`);
+};
+

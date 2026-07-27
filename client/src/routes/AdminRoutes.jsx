@@ -11,6 +11,7 @@ import VenueManagement from '../pages/admin/VenueManagement';
 import VenueDetails from '../pages/admin/VenueDetails';
 import BookingManagement from '../pages/admin/BookingManagement';
 import BookingDetails from '../pages/admin/BookingDetails';
+import AdminWalletPage from '../pages/admin/AdminWalletPage';
 
 export default function AdminRoutes() {
   return (
@@ -28,6 +29,7 @@ export default function AdminRoutes() {
         <Route path="venues/:id" element={<VenueDetails />} />
         <Route path="bookings" element={<BookingManagement />} />
         <Route path="bookings/:id" element={<BookingDetails />} />
+        <Route path="wallet" element={<AdminWalletPage />} />
       </Route>
     </Routes>
   );
