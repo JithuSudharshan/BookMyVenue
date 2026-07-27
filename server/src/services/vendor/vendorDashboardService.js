@@ -60,7 +60,7 @@ export const getDashboardDataService = async (vendorId, timeRange = '30') => {
     title: v.name || 'Untitled Venue',
     message: 'Continue your venue setup',
     actionText: 'Continue',
-    actionLink: `/vendor/venues/add?draftId=${v._id}`
+    actionLink: `/vendor/venues/edit/${v._id}`
   }));
 
   // Rejected

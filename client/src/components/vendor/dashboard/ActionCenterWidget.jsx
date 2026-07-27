@@ -29,18 +29,18 @@ const ActionCenterWidget = ({ items = [] }) => {
         <h3 className="font-headline-sm text-on-surface mb-6">Requires Attention</h3>
       </div>
       
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-1">
+      <div className="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[400px] pr-1">
         {items.length > 0 ? items.map((item, index) => (
-          <div key={`${item.id}-${index}`} className={`flex items-start gap-4 p-4 rounded-xl border hover:ring-2 hover:ring-primary/40 transition-all ${getBg(item.type)}`}>
+          <div key={`${item.id}-${index}`} className={`flex items-start gap-3 p-3 rounded-xl border hover:ring-2 hover:ring-inset hover:ring-primary/40 transition-all ${getBg(item.type)}`}>
             <div className="shrink-0 mt-0.5">
               {getIcon(item.type)}
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-label-lg text-on-surface truncate">{item.title}</h4>
-              <p className="font-body-sm text-on-surface-variant line-clamp-2 mt-0.5 mb-2.5">{item.message}</p>
+              <h4 className="font-label-md text-on-surface truncate">{item.title}</h4>
+              <p className="text-xs text-on-surface-variant line-clamp-2 mt-0.5 mb-2">{item.message}</p>
               <button 
                 onClick={() => navigate(item.actionLink)}
-                className="text-xs font-semibold px-3 py-1.5 bg-white ring-1 ring-outline-variant/50 rounded-lg hover:bg-surface-variant/30 hover:text-primary transition-colors shadow-sm"
+                className="text-[11px] font-semibold px-2.5 py-1 bg-white ring-1 ring-outline-variant/50 rounded-lg hover:bg-surface-variant/30 hover:text-primary transition-colors shadow-sm"
               >
                 {item.actionText}
               </button>
