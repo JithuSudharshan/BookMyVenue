@@ -307,11 +307,6 @@
   color: #d93025;
 }
 
-.wp-txn-icon-refund {
-  background: #e8f0fe;
-  color: #1a73e8;
-}
-
 .wp-txn-details {
   flex: 1;
   min-width: 0;
@@ -355,7 +350,6 @@
 
 .wp-txn-amount.credit { color: #1e8e3e; }
 .wp-txn-amount.debit { color: #1a1a1a; }
-.wp-txn-amount.refund { color: #1a73e8; }
 
 .wp-txn-badge {
   display: inline-block;
@@ -369,7 +363,6 @@
 
 .wp-txn-badge.credit { background: #e6f4ea; color: #1e8e3e; }
 .wp-txn-badge.debit { background: #f5f5f5; color: #484848; }
-.wp-txn-badge.refund { background: #e8f0fe; color: #1a73e8; }
 
 /* Empty / Loading States */
 .wp-state {
@@ -476,3 +469,147 @@
     align-items: center;
   }
 }
+
+/* Top-Up CTA & Modal Styling */
+.wp-balance-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 1;
+}
+
+.wp-topup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.wp-topup-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.wp-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wp-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wp-input-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.wp-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.wp-input-symbol {
+  position: absolute;
+  left: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.wp-topup-input {
+  width: 100%;
+  padding: 12px 16px 12px 36px;
+  font-size: 18px;
+  font-weight: 600;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: #111827;
+}
+
+.wp-topup-input:focus {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+.wp-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.wp-preset-chip {
+  padding: 10px 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.wp-preset-chip:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.wp-preset-chip.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.wp-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.wp-pay-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.wp-pay-btn:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.wp-pay-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.wp-error-text {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+

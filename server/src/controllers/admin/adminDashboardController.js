@@ -2,7 +2,14 @@ import { getDashboardStatsService } from "../../services/admin/adminDashboardSer
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const stats = await getDashboardStatsService();
+    const { timeframe, startDate, endDate } = req.query;
+
+    const stats = await getDashboardStatsService({
+      timeframe,
+      startDate,
+      endDate,
+    });
+
     res.status(200).json(stats);
   } catch (error) {
     res.status(500).json({

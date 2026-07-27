@@ -21,12 +21,8 @@ export const getTransactions = async (walletId, page = 1, limit = 10, filter = '
   const query = { walletId };
   if (filter === 'Credit') {
     query.transactionType = 'Credit';
-    query.description = { $not: /refund/i };
   } else if (filter === 'Debit') {
     query.transactionType = 'Debit';
-  } else if (filter === 'Refund') {
-    query.transactionType = 'Credit';
-    query.description = /refund/i;
   }
 
   const transactions = await WalletTransaction.find(query)

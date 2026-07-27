@@ -183,6 +183,19 @@ const venueSchema = new mongoose.Schema(
       default: false,
     },
 
+    // ─── Rating & Reviews ─────────────────────────────────────
+    averageRating: {
+      type: Number,
+      default: 4.8,
+      min: 0,
+      max: 5,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     // ─── Visibility ──────────────────────────────────────────
     venueStatus: {
       type: String,

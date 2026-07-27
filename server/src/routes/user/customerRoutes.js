@@ -1,5 +1,6 @@
 import express from 'express';
 import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, getWishlist, addToWishlist, removeFromWishlist } from '../../controllers/customerController.js';
+import { getUserTransactions } from '../../controllers/paymentController.js';
 import { validateBody } from '../../middlewares/validationMiddleware.js';
 import { customerProfileSchema, personalInfoSchema, addressSchema } from '../../validators/customerValidator.js';
 import { uploadAvatarMiddleware, handleUploadError } from '../../middlewares/uploadMiddleware.js';
@@ -31,6 +32,9 @@ router
 
 // Route: /api/customers/bookings
 router.get('/bookings', getCustomerBookings);
+
+// Route: /api/customers/transactions
+router.get('/transactions', getUserTransactions);
 
 // Routes: /api/customers/wishlist
 router.get('/wishlist', getWishlist);

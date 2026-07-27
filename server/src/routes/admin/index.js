@@ -9,6 +9,7 @@ import venueRoutes from "./adminVenueRoutes.js";
 import bookingRoutes from "./adminBookingRoutes.js";
 import categoryRoutes from "./categoryRoute.js";
 import subcategoryRoutes from "./subcategoryRoute.js";
+import walletRoutes from "./adminWalletRoutes.js";
 
 const router = express.Router();
 
@@ -30,5 +31,6 @@ router.use("/venues", venueRoutes);
 router.use("/bookings", bookingRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/subcategories", subcategoryRoutes);
+router.use("/wallet", walletRoutes);
 
 export default router;

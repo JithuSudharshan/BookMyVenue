@@ -1,0 +1,257 @@
+.tp-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tp-header {
+  margin-bottom: 24px;
+}
+
+.tp-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.tp-subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.tp-filters-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.tp-filters-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.tp-filter-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tp-filter-btn:hover {
+  background: #f3f4f6;
+}
+
+.tp-filter-btn.active {
+  background: var(--primary-color, #e11d48);
+  color: white;
+  border-color: var(--primary-color, #e11d48);
+}
+
+.tp-count-badge {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+/* Table Styling */
+.tp-table-wrapper {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.tp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tp-th {
+  background: #f8f9fb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.tp-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.tp-tr:last-child .tp-td {
+  border-bottom: none;
+}
+
+.tp-tr {
+  transition: background-color 0.15s ease;
+}
+
+.tp-tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+.tp-tr:hover {
+  background-color: #f1f5f9;
+}
+
+.tp-icon-wrapper-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tp-icon-booking {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.tp-icon-wallet {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
+
+.tp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Loading state */
+.tp-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #6b7280;
+}
+
+.tp-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top-color: var(--primary-color, #e11d48);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.tp-empty-state {
+  background: #fff;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 60px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tp-empty-icon {
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.tp-empty-state h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.tp-empty-state p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Error state */
+.tp-error-state {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #991b1b;
+}
+
+/* Pagination */
+.tp-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.tp-page-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tp-page-btn:not(:disabled):hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.tp-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tp-page-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+}

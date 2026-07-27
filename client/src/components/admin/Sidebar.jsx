@@ -7,7 +7,8 @@ import {
   UserRoundCog,
   Users,
   Receipt,
-  LayoutGrid
+  LayoutGrid,
+  Wallet
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getSavedAdmin } from '../../services/httpService';
@@ -20,6 +21,7 @@ const navItems = [
   { to: '/admin/venues', label: 'Venues', icon: CalendarCheck },
   { to: '/admin/categories', label: 'Categories', icon: LayoutGrid },
   { to: '/admin/bookings', label: 'Bookings', icon: Receipt },
+  { to: '/admin/wallet', label: 'Wallet', icon: Wallet },
 ];
 
 function Sidebar() {
