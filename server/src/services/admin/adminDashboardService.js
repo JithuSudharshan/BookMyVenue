@@ -1,5 +1,5 @@
-import { getDashboardCounts } from "../../repositories/admin/adminDashboardRepository.js";
+import { getDashboardFullData } from "../../repositories/admin/adminDashboardRepository.js";
 
-export const getDashboardStatsService = async () => {
-  return await getDashboardCounts();
+export const getDashboardStatsService = async (queryOptions = {}) => {
+  return await getDashboardFullData(queryOptions);
 };

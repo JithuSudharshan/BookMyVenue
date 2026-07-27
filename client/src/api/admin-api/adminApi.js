@@ -9,7 +9,10 @@ export const loginAdmin = async (credentials) => {
   return admin;
 };
 
-export const getDashboardStats = () => request('/admin/dashboard');
+export const getDashboardStats = (params = {}) => {
+  const queryStr = new URLSearchParams(params).toString();
+  return request(`/admin/dashboard${queryStr ? `?${queryStr}` : ''}`);
+};
 
 export const getUsers = (params = {}) => {
   const queryStr = new URLSearchParams(params).toString();
