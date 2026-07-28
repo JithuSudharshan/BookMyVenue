@@ -54,7 +54,7 @@ const MetaCard = ({ label, value }) => (
   </div>
 );
 
-const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
+const BookingDetailsDrawer = ({ isOpen, onClose, booking, onCancelBooking }) => {
   // Prevent scrolling on body when drawer is open
   useEffect(() => {
     if (isOpen) {
@@ -311,9 +311,20 @@ const BookingDetailsDrawer = ({ isOpen, onClose, booking }) => {
           <button disabled className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-400 bg-gray-50 rounded-xl border border-gray-100 cursor-not-allowed hover:bg-gray-100 transition-colors">
             <Download className="w-3.5 h-3.5" /> Invoice
           </button>
-          <button disabled className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-red-400/50 bg-red-50/50 rounded-xl border border-red-50 cursor-not-allowed transition-colors">
-            <XCircle className="w-3.5 h-3.5" /> Cancel
-          </button>
+          
+          {['pending', 'confirmed'].includes(booking.bookingStatus?.toLowerCase()) ? (
+            <button 
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 transition-colors cursor-pointer"
+              onClick={() => onCancelBooking && onCancelBooking(booking._id)}
+            >
+              <XCircle className="w-3.5 h-3.5" /> Cancel
+            </button>
+          ) : (
+            <button disabled className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-red-400/50 bg-red-50/50 rounded-xl border border-red-50 cursor-not-allowed transition-colors">
+              <XCircle className="w-3.5 h-3.5" /> Cancel
+            </button>
+          )}
+
           <button disabled className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-400 bg-gray-50 rounded-xl border border-gray-100 cursor-not-allowed hover:bg-gray-100 transition-colors">
             <CheckCircle className="w-3.5 h-3.5" /> Mark Done
           </button>

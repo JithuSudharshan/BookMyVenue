@@ -2,11 +2,12 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { 
   CalendarDays, MapPin, Users, IndianRupee, 
   Clock, ChevronLeft, ChevronRight,
-  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Star
+  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Star, Ban
 } from 'lucide-react';
-import { getCustomerBookings } from "../../api/user-api/bookingApi";
+import { getCustomerBookings, cancelCustomerBooking } from "../../api/user-api/bookingApi";
 import ReviewForm from '../../components/common/ReviewForm';
 import ReviewDetailsModal from '../../components/common/ReviewDetailsModal';
+import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
 import './BookingsPage.css';
 
 function BookingsPage() {
@@ -58,6 +59,19 @@ function BookingsPage() {
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
     setPage(1);
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (window.confirm("Are you sure you want to cancel this booking? The refund will be credited to your wallet instantly.")) {
+      try {
+        setLoading(true);
+        await cancelCustomerBooking(bookingId, "Customer requested cancellation");
+        fetchBookings(page, filter);
+      } catch (err) {
+        alert(err.message || "Failed to cancel booking");
+        setLoading(false);
+      }
+    }
   };
 
 
@@ -116,8 +130,8 @@ function BookingsPage() {
         </div>
       )}
 
-      {/* Filters */}
-      {totalBookingsCount > 0 && (
+      {/* Filters - Always show if they have bookings, or if they have an active filter that returned 0 results */}
+      {(totalBookingsCount > 0 || filter !== 'All') && (
         <div className="bk-filters">
           {['All', 'Upcoming', 'Completed', 'Cancelled'].map(f => (
             <button 
@@ -153,123 +167,52 @@ function BookingsPage() {
           )}
           
           {bookings.map((booking) => {
-            const bookingStatusStyle = getStatusBadgeColor(booking.bookingStatus);
-            const paymentStatusStyle = getStatusBadgeColor(booking.paymentStatus);
-            const bookingDate = new Date(booking.date || booking.startDate).toLocaleDateString('en-US', {
-              weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-            });
             const venue = booking.venue || {};
-            const venueName = venue.name || 'Unknown Venue';
-            const location = venue.location ? `${venue.location.city || ''}` : '';
-            const image = (venue.images && venue.images.length > 0) ? venue.images[0].url : null;
+
+            const customerActions = (
+              <>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all" onClick={() => {}}>
+                  <MessageSquare size={14} /> Contact Venue
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all" onClick={() => {}}>
+                  <FileText size={14} /> Receipt
+                </button>
+                
+                {['pending', 'confirmed'].includes(booking.bookingStatus?.toLowerCase()) && (
+                  <button 
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all"
+                    onClick={() => handleCancelBooking(booking._id)}
+                  >
+                    <Ban size={14} /> Cancel Booking
+                  </button>
+                )}
+                
+                {booking.bookingStatus === 'Completed' && (
+                  booking.review ? (
+                    <button
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-100 hover:bg-amber-100 rounded-xl transition-all"
+                      onClick={() => setViewReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id, review: booking.review })}
+                    >
+                      <Star size={14} className="fill-amber-400" /> View Review
+                    </button>
+                  ) : (
+                    <button
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white bg-primary hover:bg-primary/90 border border-transparent rounded-xl transition-all shadow-sm"
+                      onClick={() => setReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id })}
+                    >
+                      <Star size={14} /> Write a Review
+                    </button>
+                  )
+                )}
+              </>
+            );
 
             return (
-              <div key={booking._id} className="bk-card">
-                <div className="bk-card-main">
-                  {/* Venue Image */}
-                  <div className="bk-card-img-wrap">
-                    {image ? (
-                      <img src={image} alt={venueName} className="bk-card-img" />
-                    ) : (
-                      <div className="bk-card-no-img w-full h-full bg-surface-container flex items-center justify-center text-on-surface-variant">
-                        <Calendar size={32} />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="bk-card-content">
-                    <div className="bk-card-header">
-                      <div>
-                        <h3 className="bk-venue-name">{venueName}</h3>
-                        {location && (
-                          <div className="bk-venue-loc">
-                            <MapPin size={14} />
-                            {location}
-                          </div>
-                        )}
-                      </div>
-                      <div className="bk-badges" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-wider">Booking</span>
-                          <span className={`bk-badge ${bookingStatusStyle.bg} ${bookingStatusStyle.text}`}>
-                            {getStatusIcon(booking.bookingStatus)} {booking.bookingStatus}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-wider">Payment</span>
-                          <span className={`bk-badge ${paymentStatusStyle.bg} ${paymentStatusStyle.text}`}>
-                            {booking.paymentStatus}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bk-info-grid">
-                      <div className="bk-info-chip">
-                        <div className="bk-info-icon"><CalendarDays size={18} /></div>
-                        <div className="bk-info-text">
-                          <span className="bk-info-label">Date</span>
-                          <span className="bk-info-val">{bookingDate}</span>
-                        </div>
-                      </div>
-                      
-                      {booking.slotIds && booking.slotIds.length > 0 && (
-                        <div className="bk-info-chip">
-                          <div className="bk-info-icon"><Clock size={18} /></div>
-                          <div className="bk-info-text">
-                            <span className="bk-info-label">Slots</span>
-                            <span className="bk-info-val">{booking.slotIds.length} Slot(s)</span>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="bk-info-chip">
-                        <div className="bk-info-icon"><Users size={18} /></div>
-                        <div className="bk-info-text">
-                          <span className="bk-info-label">Guests</span>
-                          <span className="bk-info-val">{booking.guestCount}</span>
-                        </div>
-                      </div>
-
-                      <div className="bk-info-chip">
-                        <div className="bk-info-icon"><IndianRupee size={18} /></div>
-                        <div className="bk-info-text">
-                          <span className="bk-info-label">Total Amount</span>
-                          <span className="bk-info-val">₹{booking.pricing?.totalAmount || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions Footer */}
-                <div className="bk-card-footer">
-                  <button className="bk-btn bk-btn-outline" onClick={() => {}}>
-                    <MessageSquare size={16} /> Contact Venue
-                  </button>
-                  <button className="bk-btn bk-btn-outline" onClick={() => {}}>
-                    <FileText size={16} /> Receipt
-                  </button>
-                  {booking.bookingStatus === 'Completed' && (
-                    booking.review ? (
-                      <button
-                        className="bk-btn bk-btn-outline border-primary text-primary font-semibold"
-                        onClick={() => setViewReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id, review: booking.review })}
-                      >
-                        <Star size={16} className="fill-amber-400 text-amber-400" /> View Review
-                      </button>
-                    ) : (
-                      <button
-                        className="bk-btn bk-btn-primary"
-                        onClick={() => setReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id })}
-                      >
-                        <Star size={16} /> Write a Review
-                      </button>
-                    )
-                  )}
-                </div>
-              </div>
+              <BaseBookingCard
+                key={booking._id}
+                booking={booking}
+                footerActions={customerActions}
+              />
             );
           })}
         </div>

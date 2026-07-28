@@ -1,5 +1,6 @@
 import catchAsync from '../utils/catchAsync.js';
 import * as vendorBookingService from '../services/core/vendorBookingService.js';
+import bookingLifecycleOrchestrator from '../services/core/BookingLifecycleOrchestrator.js';
 
 /**
  * GET /api/vendor/bookings
@@ -39,4 +40,24 @@ export const getVendorVenueList = catchAsync(async (req, res) => {
   const vendorUserId = req.user._id;
   const venues = await vendorBookingService.getVendorVenueList(vendorUserId);
   res.status(200).json({ success: true, data: venues });
+});
+
+/**
+ * POST /api/vendor/bookings/:id/cancel
+ * Cancels a booking as a vendor.
+ */
+export const cancelVendorBooking = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { reason, description } = req.body;
+  
+  const cancelledBooking = await bookingLifecycleOrchestrator.cancelBooking(id, 'vendor', {
+    reason: reason || 'Vendor requested cancellation',
+    description
+  });
+  
+  res.status(200).json({
+    success: true,
+    message: 'Booking cancelled successfully',
+    data: cancelledBooking
+  });
 });

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import { getVendorBookings, getVendorBookingStats, getVendorVenueList } from '../../api/vendor-api/vendorApi';
+import { getVendorBookings, getVendorBookingStats, getVendorVenueList, cancelVendorBooking } from '../../api/vendor-api/vendorApi';
 
 import BookingStatsCards from '../../components/vendor/bookings/BookingStatsCards';
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
 import BookingTabs from '../../components/vendor/bookings/BookingTabs';
-import BookingCard from '../../components/vendor/bookings/BookingCard';
+import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
+import { Eye } from 'lucide-react';
 import BookingDetailsDrawer from '../../components/vendor/bookings/BookingDetailsDrawer';
 
 const VendorBookingsPage = () => {
@@ -89,6 +90,19 @@ const VendorBookingsPage = () => {
     setDrawerOpen(true);
   };
 
+  const handleCancelBooking = async (bookingId) => {
+    if (window.confirm("Are you sure you want to cancel this booking? A full refund will be credited to the customer's wallet instantly.")) {
+      try {
+        await cancelVendorBooking(bookingId, "Vendor requested cancellation");
+        toast.success("Booking cancelled successfully.");
+        fetchBookings(page, activeTab, filters);
+        setDrawerOpen(false);
+      } catch (err) {
+        toast.error(err.message || "Failed to cancel booking");
+      }
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 w-full max-w-7xl mx-auto">
       {/* Header section */}
@@ -124,10 +138,21 @@ const VendorBookingsPage = () => {
           </div>
         ) : (
           bookings.map((booking) => (
-            <BookingCard 
+            <BaseBookingCard 
               key={booking._id} 
-              booking={booking} 
-              onViewDetails={openDrawer} 
+              booking={booking}
+              extraInformation={
+                <p className="text-xs text-gray-400 font-mono">#{booking.bookingNumber}</p>
+              }
+              footerActions={
+                <button
+                  onClick={() => openDrawer(booking)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-primary hover:text-white rounded-xl transition-all group-hover:bg-primary group-hover:text-white"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  View Details
+                </button>
+              }
             />
           ))
         )}
@@ -161,6 +186,7 @@ const VendorBookingsPage = () => {
         isOpen={drawerOpen} 
         onClose={() => setDrawerOpen(false)} 
         booking={selectedBooking} 
+        onCancelBooking={handleCancelBooking}
       />
     </div>
   );

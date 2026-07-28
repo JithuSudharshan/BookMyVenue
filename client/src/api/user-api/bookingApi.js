@@ -15,4 +15,20 @@ export const getCustomerBookings = async (page = 1, limit = 10, filter = 'All') 
   }
 };
 
-
+/**
+ * Cancel a Customer Booking
+ * @param {string} bookingId
+ * @param {string} reason
+ * @returns {Promise<Object>}
+ */
+export const cancelCustomerBooking = async (bookingId, reason, description = '') => {
+  try {
+    const response = await axiosInstance.post(`/customer/bookings/${bookingId}/cancel`, {
+      reason,
+      description
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed to cancel booking.');
+  }
+};

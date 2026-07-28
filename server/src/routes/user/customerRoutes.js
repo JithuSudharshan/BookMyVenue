@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, getWishlist, addToWishlist, removeFromWishlist } from '../../controllers/customerController.js';
+import { getUserProfile, updateUserProfile, updatePersonalInfo, updateAddress, updateAvatar, deleteAvatar, getCustomerBookings, cancelCustomerBooking, getWishlist, addToWishlist, removeFromWishlist } from '../../controllers/customerController.js';
 import { getUserTransactions } from '../../controllers/paymentController.js';
 import { submitReview, editReview, deleteOwnReview } from '../../controllers/reviewController.js';
 import { validateBody } from '../../middlewares/validationMiddleware.js';
@@ -34,6 +34,7 @@ router
 
 // Route: /api/customers/bookings
 router.get('/bookings', getCustomerBookings);
+router.post('/bookings/:id/cancel', cancelCustomerBooking);
 
 // Route: /api/customers/transactions
 router.get('/transactions', getUserTransactions);

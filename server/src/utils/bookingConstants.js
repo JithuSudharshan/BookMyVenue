@@ -1,0 +1,37 @@
+/**
+ * bookingConstants.js
+ * Centralized state machine constants for the Booking Lifecycle.
+ * These map exactly to the Mongoose lowercase schema enum definitions.
+ */
+
+export const BOOKING_STATUS = {
+  PENDING: 'pending',
+  CONFIRMED: 'confirmed',
+  CANCELLED: 'cancelled',
+  COMPLETED: 'completed',
+  REFUND_PENDING: 'refund_pending',
+  REFUNDED: 'refunded'
+};
+
+export const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  PARTIAL: 'partial',
+  COMPLETED: 'completed',
+  REFUNDED: 'refunded'
+};
+
+export const TRANSACTION_TYPE = {
+  CREDIT: 'Credit',
+  DEBIT: 'Debit'
+};
+
+export const REFUND_DESTINATION = {
+  WALLET: 'wallet',
+  RAZORPAY: 'razorpay'
+};
+
+export const NOTIFICATION_EVENTS = {
+  BOOKING_CREATED: 'booking_created',
+  BOOKING_CANCELLED: 'booking_cancelled',
+  REFUND_PROCESSED: 'refund_processed'
+};

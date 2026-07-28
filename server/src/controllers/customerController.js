@@ -1,4 +1,5 @@
 import * as customerService from '../services/customerService.js';
+import bookingLifecycleOrchestrator from '../services/core/BookingLifecycleOrchestrator.js';
 
 // Helper to retrieve active user identifier from request context/headers
 const getUserIdFromRequest = (req) => {
@@ -136,6 +137,31 @@ export const getCustomerBookings = async (req, res) => {
       success: true,
       data: data.bookings,
       pagination: data.pagination
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Cancel a customer booking
+ * @route   POST /api/customers/bookings/:id/cancel
+ * @access  Private
+ */
+export const cancelCustomerBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, description } = req.body;
+    
+    const cancelledBooking = await bookingLifecycleOrchestrator.cancelBooking(id, 'user', {
+      reason: reason || 'Customer requested cancellation',
+      description
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Booking cancelled successfully',
+      data: cancelledBooking
     });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });

@@ -242,3 +242,21 @@ export const getVendorVenueList = async () => {
   return response.data?.data;
 };
 
+/**
+ * Cancel a Vendor Booking
+ * @param {string} bookingId
+ * @param {string} reason
+ * @returns {Promise<Object>}
+ */
+export const cancelVendorBooking = async (bookingId, reason, description = '') => {
+  try {
+    const response = await axiosInstance.post(`/vendor/bookings/${bookingId}/cancel`, {
+      reason,
+      description
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed to cancel booking.');
+  }
+};
+

@@ -142,41 +142,6 @@ export const getBookingById = async (id) => {
     .populate("slotIds");
 };
 
-export const cancelBookingById = async (id, { cancellationReason, cancellationDescription }) => {
-  const booking = await Booking.findById(id);
-  if (!booking) return null;
-
-  const cancellableStatuses = ["Pending", "Confirmed"];
-  if (!cancellableStatuses.includes(booking.bookingStatus)) {
-    const err = new Error(`Cannot cancel a booking with status: ${booking.bookingStatus}`);
-    err.statusCode = 409;
-    throw err;
-  }
-
-  booking.bookingStatus = "Cancelled";
-  booking.cancellationReason = cancellationReason;
-  booking.cancellationDescription = cancellationDescription;
-
-  if (booking.advanceAmount > 0) {
-    booking.paymentStatus = "Refunded";
-  }
-  await booking.save();
-
-  // Liberate slots
-  if (booking.slotIds && booking.slotIds.length > 0) {
-    const validSlotObjectIds = booking.slotIds.filter(id => 
-      id && typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id)
-    );
-    if (validSlotObjectIds.length > 0) {
-      await AvailabilityOverride.deleteMany(
-        { _id: { $in: validSlotObjectIds } }
-      );
-    }
-  }
-
-  return booking;
-};
-
 export const getBookingStats = async () => {
   const stats = await Booking.aggregate([
     {
