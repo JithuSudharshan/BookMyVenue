@@ -1,125 +1,211 @@
+import mongoose from 'mongoose';
 import Booking from '../../models/bookingModel.js';
-import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
 import CancellationPolicyEngine from './CancellationPolicyEngine.js';
 import RefundEngine from './RefundEngine.js';
 import TransactionService from './TransactionService.js';
 import AuditLogService from './AuditLogService.js';
-import notificationService from '../notificationService.js';
-import { 
-  BOOKING_STATUS, 
-  PAYMENT_STATUS, 
-  REFUND_DESTINATION
+import EventBus from '../../utils/EventBus.js';
+import BookingStateMachine from './BookingStateMachine.js';
+import AvailabilityService from './AvailabilityService.js';
+import {
+  BOOKING_STATUS,
+  PAYMENT_STATUS,
+  REFUND_DESTINATION,
+  USER_ROLES,
+  DOMAIN_EVENTS
 } from '../../utils/bookingConstants.js';
 import AppError from '../../utils/AppError.js';
 
 class BookingLifecycleOrchestrator {
-  
+
   /**
    * Orchestrates the cancellation of a booking safely across all domains.
-   * Execution Order: Validation -> Strategy -> Transaction -> State Update -> Liberation -> Audit & Notification.
    * 
-   * @param {string} bookingId - The ID of the booking to cancel.
-   * @param {string} actorRole - The role initiating the cancellation ('user', 'vendor', 'admin').
-   * @param {Object} cancellationDetails - { reason, description }
+   * @param {Object} context - Cancellation context.
+   * @param {string} context.actorId - ID of the user initiating cancellation.
+   * @param {string} context.actorRole - Role of the user ('user', 'vendor', 'admin').
+   * @param {string} context.bookingId - ID of the booking to cancel.
+   * @param {string} context.cancellationReason - Reason provided for cancellation.
+   * @param {string} context.requestSource - Source (e.g. 'customer_portal')
+   * @param {string} context.ip - IP address
+   * @param {string} context.userAgent - User agent
    * @returns {Promise<Object>} The cancelled booking document.
    */
-  async cancelBooking(bookingId, actorRole, { reason, description }) {
-    // 1. Fetch Booking
-    const booking = await Booking.findById(bookingId).populate('userId', '_id');
-    if (!booking) {
-      throw new AppError('Booking not found', 404);
-    }
+  async cancel(context) {
+    const booking = await this._loadBooking(context.bookingId);
 
-    // 2. Validation
-    CancellationPolicyEngine.validate(booking, actorRole);
+    this._validateOwnership(booking, context.actorId, context.actorRole);
 
-    // 3. Refund Policy Calculation
+    // Strict State Machine Transition Check
+    BookingStateMachine.validateTransition(booking.bookingStatus, BOOKING_STATUS.CANCELLED);
+
+    // Business Rules
+    CancellationPolicyEngine.validate(booking, context.actorRole);
     const { refundableAmount, destination } = RefundEngine.calculate(booking);
 
-    let transaction = null;
+    // MongoDB Session for strict transactional consistency
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // 4. Financial Transaction (if applicable)
-    // Execute BEFORE database state changes to prevent dropping refunds on DB failures.
-    if (refundableAmount > 0) {
-      if (destination === REFUND_DESTINATION.WALLET) {
-        const customerUserId = booking.userId._id || booking.userId;
-        const ledgerDescription = `Refund for cancelled booking: ${bookingId}`;
-        
-        transaction = await TransactionService.processWalletRefund(
-          customerUserId, 
-          refundableAmount, 
-          booking._id,
-          ledgerDescription
-        );
-      } else {
-        throw new AppError('Only wallet refunds are supported in the MVP phase.', 501);
+    let walletTransaction = null;
+    let finalBookingStatus = null;
+    let finalPaymentStatus = null;
+
+    try {
+      // 1. Process Financials (Wallet Credit + Idempotency)
+      if (refundableAmount > 0 && destination === REFUND_DESTINATION.WALLET) {
+        walletTransaction = await this._processFinancials(booking, refundableAmount, session);
       }
+
+      // 2. Atomic Booking Status Update via State Matching
+      const updatedBooking = await this._updateBooking(booking, context, refundableAmount, session);
+      finalBookingStatus = updatedBooking.bookingStatus;
+      finalPaymentStatus = updatedBooking.paymentStatus;
+
+      // 3. Release Availability (Executed LAST in transaction)
+      await this._releaseAvailability(booking, session);
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
     }
 
-    // 5. Booking State Update
-    booking.bookingStatus = BOOKING_STATUS.CANCELLED;
-    
-    if (refundableAmount > 0) {
-      booking.paymentStatus = PAYMENT_STATUS.REFUNDED;
-      booking.refundAmount = refundableAmount;
-      booking.refundStatus = 'processed';
-    }
-    
-    booking.cancellation = {
-      cancelledAt: new Date(),
-      cancelledBy: actorRole,
-      reason: reason,
-      description: description
-    };
-    
-    // Legacy support
-    booking.cancellationReason = reason;
-    booking.cancellationDescription = description;
+    // Post-Commit Actions
+    this._publishEvents(booking, walletTransaction, refundableAmount, context, finalBookingStatus, finalPaymentStatus);
 
-    await booking.save();
-
-    // 6. Availability Release
-    if (booking.slotIds && booking.slotIds.length > 0) {
-      const validSlotObjectIds = booking.slotIds.filter(id => 
-        id && typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id.toString())
-      );
-      if (validSlotObjectIds.length > 0) {
-        await AvailabilityOverride.deleteMany(
-          { _id: { $in: validSlotObjectIds } }
-        ).catch(err => {
-          console.error(`[Non-Fatal] Failed to liberate slots for cancelled booking ${bookingId}:`, err);
-        });
-      }
-    }
-
-    // 7. Audit Log
-    AuditLogService.logTransition('BOOKING', booking._id, 'CANCELLED', actorRole, {
-      reason,
+    // Write detailed Audit Log
+    AuditLogService.logTransition('BOOKING', booking._id, 'CANCELLED', context.actorRole, {
+      cancelledBy: context.actorId,
+      reason: context.cancellationReason,
       refundableAmount,
-      transactionId: transaction ? transaction._id : null
+      refundReference: walletTransaction ? walletTransaction._id : null,
+      ip: context.ip,
+      userAgent: context.userAgent
     });
 
-    // 8. Notifications
-    try {
-      const customerUserId = booking.userId._id || booking.userId;
-      const vendorUserId = booking.vendorId;
+    // Return the clean entity to the Controller
+    return this._loadBooking(context.bookingId);
+  }
 
-      const title = 'Booking Cancelled';
-      const message = `Booking ${bookingId.toString().substring(0,8)} has been cancelled by ${actorRole}.`;
+  // --- Internal Delegate Methods ---
 
-      if (actorRole !== 'vendor') {
-        await notificationService.createNotification(vendorUserId, title, message, 'BOOKING', bookingId);
+  async _loadBooking(bookingId) {
+    const booking = await Booking.findById(bookingId).populate('userId', '_id');
+    if (!booking) throw new AppError('Booking not found', 404);
+    return booking;
+  }
+
+  _validateOwnership(booking, actorId, actorRole) {
+    const actorIdStr = actorId.toString();
+    if (actorRole === USER_ROLES.CUSTOMER && booking.userId._id.toString() !== actorIdStr) {
+      throw new AppError('Unauthorized: You do not have permission to cancel this booking.', 403);
+    }
+    if (actorRole === USER_ROLES.VENDOR && booking.vendorId.toString() !== actorIdStr) {
+      throw new AppError('Unauthorized: You do not own the venue for this booking.', 403);
+    }
+  }
+
+  async _processFinancials(booking, refundableAmount, session) {
+    const customerUserId = booking.userId._id || booking.userId;
+    const ledgerDescription = `Refund for cancelled booking: ${booking.bookingNumber || booking._id}`;
+    const idempotencyKey = `REFUND:${booking._id}:wallet`;
+
+    return await TransactionService.processWalletRefund(
+      customerUserId,
+      refundableAmount,
+      booking._id,
+      idempotencyKey,
+      ledgerDescription,
+      session
+    );
+  }
+
+  async _updateBooking(booking, context, refundableAmount, session) {
+    const timelineEvents = [
+      {
+        status: BOOKING_STATUS.CANCELLED,
+        note: `Cancelled by ${context.actorRole}: ${context.cancellationReason}`,
+        timestamp: new Date()
       }
-      
-      if (actorRole !== 'user') {
-        const refundMsg = refundableAmount > 0 ? ` ₹${refundableAmount} has been refunded to your wallet.` : '';
-        await notificationService.createNotification(customerUserId, title, message + refundMsg, 'BOOKING', bookingId);
+    ];
+
+    const updateData = {
+      $set: {
+        bookingStatus: BOOKING_STATUS.CANCELLED,
+        cancellation: {
+          cancelledAt: new Date(),
+          cancelledBy: context.actorId,
+          cancelledByRole: context.actorRole,
+          reason: context.cancellationReason,
+          description: ''
+        },
+        cancellationReason: context.cancellationReason,
       }
-    } catch (notifyErr) {
-      console.error('[Non-Fatal] Failed to dispatch cancellation notifications:', notifyErr);
+    };
+
+    if (refundableAmount > 0) {
+      updateData.$set.paymentStatus = PAYMENT_STATUS.REFUNDED;
+      updateData.$set.refundAmount = refundableAmount;
+      updateData.$set.refundStatus = 'processed';
+      timelineEvents.push({
+        status: 'refunded',
+        note: `Refund of ₹${refundableAmount} instantly processed to customer wallet.`,
+        timestamp: new Date()
+      });
     }
 
-    return booking;
+    timelineEvents.push({
+      status: 'slots_released',
+      note: 'Venue availability slots successfully released.',
+      timestamp: new Date()
+    });
+
+    updateData.$push = {
+      timeline: {
+        $each: timelineEvents
+      }
+    };
+
+    // Atomic state matching inside transaction ensures another process didn't change it
+    const updatedBooking = await Booking.findOneAndUpdate(
+      {
+        _id: booking._id,
+        bookingStatus: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED] }
+      },
+      updateData,
+      { new: true, session }
+    );
+
+    if (!updatedBooking) {
+      throw new AppError('Booking transition failed: Booking is not in a cancellable state.', 409);
+    }
+    return updatedBooking;
+  }
+
+  async _releaseAvailability(booking, session) {
+    if (booking.slotIds && booking.slotIds.length > 0) {
+      await AvailabilityService.releaseBookingSlots(booking.slotIds, session);
+    }
+  }
+
+  _publishEvents(booking, walletTransaction, refundableAmount, context, newBookingStatus, newPaymentStatus) {
+    EventBus.publish(DOMAIN_EVENTS.BOOKING_CANCELLED, {
+      bookingId: booking._id,
+      venueId: booking.venueId,
+      customerId: booking.userId._id || booking.userId,
+      vendorId: booking.vendorId,
+      actorId: context.actorId,
+      actorRole: context.actorRole,
+      refundAmount: refundableAmount,
+      refundReference: walletTransaction ? walletTransaction._id : null,
+      cancelledAt: new Date(),
+      bookingStatus: newBookingStatus,
+      paymentStatus: newPaymentStatus,
+      requestSource: context.requestSource
+    });
   }
 }
 

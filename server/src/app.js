@@ -17,7 +17,13 @@ import customerRoutes from './routes/user/customerRoutes.js';
 import legacyVendorRoutes from './routes/vendor/vendorRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 
+// Event Subscribers
+import { setupBookingEventSubscribers } from './subscribers/bookingEventSubscriber.js';
+
 const app = express();
+
+// Initialize Event Subscribers
+setupBookingEventSubscribers();
 
 // ── Middleware ─────────────────────────────────────────
 app.use(cors({

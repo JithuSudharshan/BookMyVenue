@@ -7,8 +7,9 @@ import BookingStatsCards from '../../components/vendor/bookings/BookingStatsCard
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
 import BookingTabs from '../../components/vendor/bookings/BookingTabs';
 import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
-import { Eye, Phone, Mail, Lock, Download, XCircle, CheckCircle } from 'lucide-react';
+import { Eye, Phone, Mail, Lock, Download, XCircle, CheckCircle, Ban, ChevronLeft } from 'lucide-react';
 import BaseBookingDetailsDrawer from '../../components/common/bookings/BaseBookingDetailsDrawer';
+import SlideToCancel from '../../components/common/bookings/SlideToCancel';
 
 const VendorBookingsPage = () => {
   const [stats, setStats] = useState(null);
@@ -29,6 +30,8 @@ const VendorBookingsPage = () => {
   // Drawer state
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('VENUE_UNAVAILABLE');
 
   // Debounced fetch
   const fetchBookings = useCallback(async (currentPage, currentTab, currentFilters) => {
@@ -91,16 +94,31 @@ const VendorBookingsPage = () => {
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (window.confirm("Are you sure you want to cancel this booking? A full refund will be credited to the customer's wallet instantly.")) {
-      try {
-        await cancelVendorBooking(bookingId, "Vendor requested cancellation");
+    try {
+      setLoading(true);
+      const res = await cancelVendorBooking(bookingId, cancellationReason);
+      if (res.success && res.data) {
+        setBookings(prev => prev.map(b => b._id === bookingId ? res.data : b));
+        setSelectedBooking(res.data);
+        setIsCancelling(false);
         toast.success("Booking cancelled successfully.");
-        fetchBookings(page, activeTab, filters);
-        setDrawerOpen(false);
-      } catch (err) {
-        toast.error(err.message || "Failed to cancel booking");
+      } else {
+        fetchBookings(page, activeTab, filters); // Fallback
       }
+    } catch (err) {
+      toast.error(err.message || "Failed to cancel booking");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const startCancellationFlow = () => {
+    setIsCancelling(true);
+    setCancellationReason('VENUE_UNAVAILABLE');
+  };
+
+  const cancelCancellationFlow = () => {
+    setIsCancelling(false);
   };
 
   // Vendor Specific Drawer Content
@@ -175,7 +193,7 @@ const VendorBookingsPage = () => {
         {['pending', 'confirmed'].includes(booking.bookingStatus?.toLowerCase()) ? (
           <button 
             className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm cursor-pointer"
-            onClick={() => handleCancelBooking(booking._id)}
+            onClick={startCancellationFlow}
           >
             <XCircle className="w-3.5 h-3.5" /> Cancel
           </button>
@@ -189,6 +207,77 @@ const VendorBookingsPage = () => {
           <CheckCircle className="w-4 h-4" /> Mark Done
         </button>
       </>
+    );
+  };
+
+  const renderCancellationView = () => {
+    if (!selectedBooking) return null;
+    return (
+      <div className="flex flex-col h-full bg-red-50/30">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
+          <button onClick={cancelCancellationFlow} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <h2 className="text-lg font-bold text-gray-900">Cancel Booking</h2>
+          <div className="w-9" />
+        </div>
+        
+        <div className="p-6 flex-1 overflow-y-auto">
+          <div className="bg-white border border-red-100 rounded-xl p-5 mb-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <Ban className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">Cancellation Summary</h3>
+                <p className="text-xs text-gray-500">Ref: {selectedBooking.bookingNumber}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3 pt-3 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Customer Refund Amount</span>
+                <span className="font-bold text-gray-900">₹{selectedBooking.totalAmount - (selectedBooking.remainingAmount || 0)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Refund Destination</span>
+                <span className="font-medium text-gray-900">Customer Wallet</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Refund Status</span>
+                <span className="font-medium text-green-600">Instant</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Reason for Cancellation</label>
+            <select
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-sm bg-white"
+            >
+              <option value="VENUE_UNAVAILABLE">Venue Unavailable</option>
+              <option value="DOUBLE_BOOKED">Double Booked / Sync Error</option>
+              <option value="MAINTENANCE">Emergency Maintenance</option>
+              <option value="CUSTOMER_REQUEST">Customer Requested Offline</option>
+              <option value="FORCE_MAJEURE">Force Majeure / Natural Disaster</option>
+              <option value="OTHER">Other Reason</option>
+            </select>
+          </div>
+          
+          <div className="bg-red-50 text-red-800 p-4 rounded-xl text-xs leading-relaxed mb-6 border border-red-100">
+            <strong>Warning:</strong> Vendor-initiated cancellations negatively impact your venue's reliability score. The customer will receive an instant 100% refund to their wallet.
+          </div>
+        </div>
+
+        <div className="p-4 bg-white border-t border-gray-100">
+          <SlideToCancel 
+            onConfirm={() => handleCancelBooking(selectedBooking._id)}
+            isLoading={loading}
+          />
+        </div>
+      </div>
     );
   };
 
@@ -277,6 +366,8 @@ const VendorBookingsPage = () => {
         booking={selectedBooking} 
         roleSpecificInformation={renderVendorDrawerInformation(selectedBooking)}
         actionSlot={renderVendorDrawerActions(selectedBooking)}
+        isCancelling={isCancelling}
+        cancellationView={renderCancellationView()}
       />
     </div>
   );

@@ -35,3 +35,15 @@ export const NOTIFICATION_EVENTS = {
   BOOKING_CANCELLED: 'booking_cancelled',
   REFUND_PROCESSED: 'refund_processed'
 };
+
+export const USER_ROLES = {
+  CUSTOMER: 'user',
+  VENDOR: 'vendor',
+  ADMIN: 'admin'
+};
+
+export const DOMAIN_EVENTS = {
+  BOOKING_CANCELLED: 'BookingCancelled',
+  REFUND_PROCESSED: 'RefundProcessed',
+  AVAILABILITY_RELEASED: 'AvailabilityReleased'
+};

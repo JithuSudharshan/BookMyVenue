@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Heart, MapPin, Users, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, Sparkles, Clock, Star } from 'lucide-react';
+import { toast } from 'sonner';
 import { getWishlist, removeFromWishlist } from '../../api/user-api/wishlistApi';
 import './WishlistPage.css';
 
@@ -42,7 +43,7 @@ function WishlistPage() {
       setWishlist((prev) => prev.filter((item) => item._id !== wishlistId));
       setTotalItems((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      alert(err.message || 'Failed to remove from wishlist');
+      toast.error(err.message || 'Failed to remove from wishlist');
     } finally {
       setRemovingId(null);
     }

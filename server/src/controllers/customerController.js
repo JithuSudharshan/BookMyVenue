@@ -1,5 +1,10 @@
 import * as customerService from '../services/customerService.js';
 import bookingLifecycleOrchestrator from '../services/core/BookingLifecycleOrchestrator.js';
+import { toCustomerBookingDTO } from '../dto/booking/CustomerBookingDTO.js';
+import Vendor from '../models/vendorModel.js';
+import Review from '../models/reviewModel.js';
+import Booking from '../models/bookingModel.js';
+import { USER_ROLES } from '../utils/bookingConstants.js';
 
 // Helper to retrieve active user identifier from request context/headers
 const getUserIdFromRequest = (req) => {
@@ -154,16 +159,37 @@ export const cancelCustomerBooking = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason, description } = req.body;
+    const userId = getUserIdFromRequest(req);
     
-    const cancelledBooking = await bookingLifecycleOrchestrator.cancelBooking(id, 'user', {
-      reason: reason || 'Customer requested cancellation',
-      description
-    });
+    // 1. Build context
+    const context = {
+      bookingId: id,
+      actorId: userId,
+      actorRole: USER_ROLES.CUSTOMER,
+      cancellationReason: reason || 'Customer requested cancellation',
+      description: description || '',
+      requestSource: 'customer_portal',
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent'] || 'Unknown'
+    };
+
+    // 2. Delegate to orchestrator
+    const cancelledBooking = await bookingLifecycleOrchestrator.cancel(context);
     
+    // 3. Fetch related data to return the full DTO
+    const populatedBooking = await Booking.findById(cancelledBooking._id).populate('venueId').lean();
+    const vendorUserId = populatedBooking.vendorId._id || populatedBooking.vendorId;
+    const vendorProfile = await Vendor.findOne({ userId: vendorUserId }).lean();
+    const review = await Review.findOne({ bookingId: populatedBooking._id }).lean();
+    
+    // 4. Build and return DTO
+    const dto = toCustomerBookingDTO(populatedBooking, vendorProfile);
+    dto.review = review || null;
+
     res.status(200).json({
       success: true,
       message: 'Booking cancelled successfully',
-      data: cancelledBooking
+      data: dto
     });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });

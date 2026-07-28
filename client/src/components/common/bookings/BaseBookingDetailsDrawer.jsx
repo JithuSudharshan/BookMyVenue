@@ -13,7 +13,9 @@ const BaseBookingDetailsDrawer = ({
   booking, 
   roleSpecificInformation,
   actionSlot,
-  isCustomerPortal
+  isCustomerPortal,
+  isCancelling = false,
+  cancellationView = null
 }) => {
   
   // Prevent scrolling on body when drawer is open
@@ -43,32 +45,37 @@ const BaseBookingDetailsDrawer = ({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-          
-          {/* Row 1: Quick Overview Strip */}
-          <DrawerQuickOverview booking={booking} />
+          {isCancelling ? (
+            cancellationView
+          ) : (
+            <>
+              {/* Row 1: Quick Overview Strip */}
+              <DrawerQuickOverview booking={booking} />
 
-          {/* Row 2: Split Layout (Venue Hero | Payment Summary) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DrawerVenueSummary booking={booking} isCustomerPortal={isCustomerPortal} />
-            <DrawerPaymentSummary pricing={booking.pricing} paymentStatus={booking.paymentStatus} />
-          </div>
-          
-          {/* Row 3: Split Layout (Booking Info Grid | Timeline) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             <DrawerInfoGrid booking={booking} />
-             <DrawerTimeline booking={booking} />
-          </div>
+              {/* Row 2: Split Layout (Venue Hero | Payment Summary) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <DrawerVenueSummary booking={booking} isCustomerPortal={isCustomerPortal} />
+                <DrawerPaymentSummary pricing={booking.pricing} paymentStatus={booking.paymentStatus} />
+              </div>
+              
+              {/* Row 3: Split Layout (Booking Info Grid | Timeline) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <DrawerInfoGrid booking={booking} />
+                 <DrawerTimeline booking={booking} />
+              </div>
 
-          {/* Row 4: Role Specific Information (Customer/Vendor modules) */}
-          {roleSpecificInformation && (
-            <div className="pt-2">
-              {roleSpecificInformation}
-            </div>
+              {/* Row 4: Role Specific Information (Customer/Vendor modules) */}
+              {roleSpecificInformation && (
+                <div className="pt-2">
+                  {roleSpecificInformation}
+                </div>
+              )}
+            </>
           )}
         </div>
         
-        {/* Sticky Action Bar */}
-        {actionSlot && (
+        {/* Sticky Action Bar - Hide standard action bar when cancelling */}
+        {!isCancelling && actionSlot && (
           <div className="flex-shrink-0 border-t border-gray-200/60 bg-white/95 backdrop-blur-sm px-6 py-4 flex items-center justify-end gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             {actionSlot}
           </div>

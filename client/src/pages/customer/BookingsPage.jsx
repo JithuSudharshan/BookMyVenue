@@ -4,11 +4,13 @@ import {
   Clock, ChevronLeft, ChevronRight,
   CheckCircle, XCircle, FileText, Calendar, MessageSquare, Star, Ban
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { getCustomerBookings, cancelCustomerBooking } from "../../api/user-api/bookingApi";
 import ReviewForm from '../../components/common/ReviewForm';
 import ReviewDetailsModal from '../../components/common/ReviewDetailsModal';
 import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
 import BaseBookingDetailsDrawer from '../../components/common/bookings/BaseBookingDetailsDrawer';
+import SlideToCancel from '../../components/common/bookings/SlideToCancel';
 import CustomerDrawerInfo from '../../components/customer/bookings/CustomerDrawerInfo';
 import BookingTabs from '../../components/vendor/bookings/BookingTabs';
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
@@ -32,6 +34,10 @@ function BookingsPage() {
   // Drawer state
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  
+  // Cancellation UX State
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('Change of plans');
 
   const limit = 5;
 
@@ -80,16 +86,31 @@ function BookingsPage() {
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (window.confirm("Are you sure you want to cancel this booking? The refund will be credited to your wallet instantly.")) {
-      try {
-        setLoading(true);
-        await cancelCustomerBooking(bookingId, "Customer requested cancellation");
-        fetchBookings(page, filter);
-      } catch (err) {
-        alert(err.message || "Failed to cancel booking");
-        setLoading(false);
+    try {
+      setLoading(true);
+      const res = await cancelCustomerBooking(bookingId, cancellationReason);
+      if (res.success && res.data) {
+        setBookings(prev => prev.map(b => b._id === bookingId ? res.data : b));
+        setSelectedBooking(res.data);
+        setIsCancelling(false);
+        setFilter('cancelled');
+      } else {
+        fetchBookings(page, filter); // Fallback
       }
+    } catch (err) {
+      toast.error(err.message || "Failed to cancel booking");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const startCancellationFlow = () => {
+    setIsCancelling(true);
+    setCancellationReason('Change of plans');
+  };
+
+  const cancelCancellationFlow = () => {
+    setIsCancelling(false);
   };
 
   const handleOpenDrawer = (booking) => {
@@ -99,7 +120,10 @@ function BookingsPage() {
 
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
-    setTimeout(() => setSelectedBooking(null), 300); // clear after animation
+    setTimeout(() => {
+      setSelectedBooking(null);
+      setIsCancelling(false);
+    }, 300); // clear after animation
   };
 
   const getStatusBadgeColor = (status) => {
@@ -133,14 +157,6 @@ function BookingsPage() {
     }
   };
 
-  if (loading && bookings.length === 0) {
-    return (
-      <div className="bk-page flex flex-col items-center pt-20">
-        <p className="text-on-surface-variant font-body-md">Loading bookings...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="bk-page">
       <div className="bk-header">
@@ -162,7 +178,12 @@ function BookingsPage() {
         <BookingFilters filters={searchFilters} venues={[]} onChange={handleSearchFilterChange} />
       </div>
 
-      {bookings.length === 0 && !loading && !error ? (
+      {loading && bookings.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="font-medium text-sm">Loading bookings...</p>
+        </div>
+      ) : bookings.length === 0 && !error ? (
         <div className="bk-empty">
           <div className="bk-empty-icon">
             <CalendarDays size={32} />
@@ -176,10 +197,11 @@ function BookingsPage() {
           </a>
         </div>
       ) : (
-        <div className="bk-list">
-          {bookings.length === 0 && !loading && (
-            <div className="p-10 text-center text-on-surface-variant">
-              No bookings found for the selected filter.
+        <div className="bk-list relative">
+          {/* Overlay loading spinner if changing filters while having data */}
+          {loading && bookings.length > 0 && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-xl">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           )}
           
@@ -265,6 +287,76 @@ function BookingsPage() {
           booking={selectedBooking}
           isCustomerPortal={true}
           roleSpecificInformation={<CustomerDrawerInfo booking={selectedBooking} />}
+          isCancelling={isCancelling}
+          cancellationView={
+            <div className="flex flex-col h-full space-y-6 pt-4 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={cancelCancellationFlow}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-500" />
+                </button>
+                <h3 className="text-xl font-semibold text-gray-900">Cancel Booking</h3>
+              </div>
+
+              <div className="bg-red-50 border border-red-100 rounded-xl p-5 space-y-3">
+                <div className="flex items-start gap-3 text-red-800">
+                  <Ban className="w-5 h-5 mt-0.5 shrink-0" />
+                  <p className="text-sm">
+                    You are about to cancel this booking. This action cannot be undone. 
+                    The venue slots will be immediately released.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
+                <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-3">Refund Breakdown</h4>
+                
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Amount Paid</span>
+                    <span className="font-medium">
+                      ₹{((selectedBooking.pricing?.totalAmount || 0) - (selectedBooking.pricing?.remainingAmount || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Cancellation Fee</span>
+                    <span className="font-medium text-green-600">- ₹0</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <span className="font-semibold text-gray-900">Wallet Refund</span>
+                    <span className="font-bold text-lg text-gray-900">
+                      ₹{((selectedBooking.pricing?.totalAmount || 0) - (selectedBooking.pricing?.remainingAmount || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Reason for cancellation</label>
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white cursor-pointer"
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  disabled={loading}
+                >
+                  <option value="Change of plans">Change of plans</option>
+                  <option value="Found a better venue">Found a better venue</option>
+                  <option value="Event postponed">Event postponed</option>
+                  <option value="Accidental booking">Accidental booking</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="mt-auto pt-8">
+                <SlideToCancel 
+                  onConfirm={() => handleCancelBooking(selectedBooking._id)}
+                  isLoading={loading}
+                />
+              </div>
+            </div>
+          }
           actionSlot={
             <>
               {selectedBooking.accessPolicy?.permissions?.canContactVendor ? (
@@ -290,10 +382,7 @@ function BookingsPage() {
               {selectedBooking.accessPolicy?.permissions?.canCancel && (
                 <button 
                   className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm cursor-pointer"
-                  onClick={() => {
-                    handleCloseDrawer();
-                    handleCancelBooking(selectedBooking._id);
-                  }}
+                  onClick={startCancellationFlow}
                 >
                   <Ban className="w-3.5 h-3.5" /> Cancel
                 </button>

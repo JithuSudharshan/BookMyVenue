@@ -1,6 +1,10 @@
 import catchAsync from '../utils/catchAsync.js';
 import * as vendorBookingService from '../services/core/vendorBookingService.js';
 import bookingLifecycleOrchestrator from '../services/core/BookingLifecycleOrchestrator.js';
+import { USER_ROLES } from '../utils/bookingConstants.js';
+import Booking from '../models/bookingModel.js';
+import User from '../models/userModel.js';
+import { toVendorBookingDTO } from '../dto/booking/VendorBookingDTO.js';
 
 /**
  * GET /api/vendor/bookings
@@ -49,15 +53,31 @@ export const getVendorVenueList = catchAsync(async (req, res) => {
 export const cancelVendorBooking = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { reason, description } = req.body;
+  const vendorUserId = req.user._id;
+
+  const context = {
+    bookingId: id,
+    actorId: vendorUserId,
+    actorRole: USER_ROLES.VENDOR,
+    cancellationReason: reason || 'Vendor requested cancellation',
+    description: description || '',
+    requestSource: 'vendor_portal',
+    ip: req.ip || req.connection?.remoteAddress,
+    userAgent: req.headers['user-agent'] || 'Unknown'
+  };
   
-  const cancelledBooking = await bookingLifecycleOrchestrator.cancelBooking(id, 'vendor', {
-    reason: reason || 'Vendor requested cancellation',
-    description
-  });
+  const cancelledBooking = await bookingLifecycleOrchestrator.cancel(context);
+  
+  // Populate for DTO mapping
+  const populatedBooking = await Booking.findById(cancelledBooking._id).populate('venueId').lean();
+  const customerUserId = populatedBooking.userId._id || populatedBooking.userId;
+  const customerProfile = await User.findById(customerUserId).lean();
+
+  const dto = toVendorBookingDTO(populatedBooking, customerProfile);
   
   res.status(200).json({
     success: true,
     message: 'Booking cancelled successfully',
-    data: cancelledBooking
+    data: dto
   });
 });

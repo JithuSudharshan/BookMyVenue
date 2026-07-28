@@ -37,22 +37,23 @@ export const getTransactions = async (walletId, page = 1, limit = 10, filter = '
 /**
  * Credit a wallet by adding amount.
  */
-export const creditWallet = async (walletId, amount, description, referenceId = null) => {
+export const creditWallet = async (walletId, amount, description, referenceId = null, referenceType = 'Unknown', session = null) => {
   const wallet = await Wallet.findByIdAndUpdate(
     walletId,
     { $inc: { currentBalance: amount } },
-    { new: true }
+    { new: true, session }
   );
 
-  const transaction = await WalletTransaction.create({
+  const transaction = await WalletTransaction.create([{
     walletId,
     transactionType: 'Credit',
     amount,
     description,
     referenceId,
-  });
+    referenceType,
+  }], { session });
 
-  return { wallet, transaction };
+  return { wallet, transaction: transaction[0] };
 };
 
 /**
