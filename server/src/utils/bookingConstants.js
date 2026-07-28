@@ -43,7 +43,11 @@ export const USER_ROLES = {
 };
 
 export const DOMAIN_EVENTS = {
+  BOOKING_CREATED: 'BookingCreated',
+  BOOKING_CONFIRMED: 'BookingConfirmed',
   BOOKING_CANCELLED: 'BookingCancelled',
   REFUND_PROCESSED: 'RefundProcessed',
+  VENDOR_APPROVED: 'VendorApproved',
+  VENUE_STATUS_CHANGED: 'VenueStatusChanged',
   AVAILABILITY_RELEASED: 'AvailabilityReleased'
 };

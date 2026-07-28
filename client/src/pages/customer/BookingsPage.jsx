@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { 
   CalendarDays, MapPin, Users, IndianRupee, 
   Clock, ChevronLeft, ChevronRight,
-  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Star, Ban
+  CheckCircle, XCircle, FileText, Calendar, MessageSquare, Star, Ban,
+  RotateCcw, HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCustomerBookings, cancelCustomerBooking } from "../../api/user-api/bookingApi";
@@ -358,54 +359,70 @@ function BookingsPage() {
             </div>
           }
           actionSlot={
-            <>
-              {selectedBooking.accessPolicy?.permissions?.canContactVendor ? (
+            selectedBooking.bookingStatus === 'cancelled' || selectedBooking.bookingStatus === 'refunded' ? (
+              <>
                 <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
-                  <MessageSquare className="w-3.5 h-3.5" /> Contact
+                  <RotateCcw className="w-3.5 h-3.5" /> Book Again
                 </button>
-              ) : (
-                <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-400 bg-gray-50 border border-gray-100 rounded-lg cursor-not-allowed shadow-sm">
-                  <MessageSquare className="w-3.5 h-3.5" /> Contact
-                </button>
-              )}
-              
-              {selectedBooking.accessPolicy?.permissions?.canDownloadInvoice ? (
                 <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
-                  <FileText className="w-3.5 h-3.5" /> Receipt
+                  <HelpCircle className="w-3.5 h-3.5" /> Support
                 </button>
-              ) : (
-                <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-400 bg-gray-50 border border-gray-100 rounded-lg cursor-not-allowed shadow-sm">
-                  <FileText className="w-3.5 h-3.5" /> Receipt
-                </button>
-              )}
-              
-              {selectedBooking.accessPolicy?.permissions?.canCancel && (
-                <button 
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm cursor-pointer"
-                  onClick={startCancellationFlow}
-                >
-                  <Ban className="w-3.5 h-3.5" /> Cancel
-                </button>
-              )}
-              
-              {selectedBooking.accessPolicy?.permissions?.canReview && (
-                selectedBooking.review ? (
-                  <button
-                    className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-amber-700 bg-white border border-amber-200 rounded-lg hover:bg-amber-50 hover:border-amber-300 transition-colors shadow-sm cursor-pointer"
-                    onClick={() => setViewReviewTarget({ bookingId: selectedBooking._id, venueId: selectedBooking.venue?._id || selectedBooking.venue?.id, review: selectedBooking.review })}
-                  >
-                    <Star size={14} className="fill-amber-400 text-amber-400" /> View Review
+                {selectedBooking.accessPolicy?.permissions?.canDownloadInvoice && (
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                    <FileText className="w-3.5 h-3.5" /> Receipt
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {selectedBooking.accessPolicy?.permissions?.canContactVendor ? (
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                    <MessageSquare className="w-3.5 h-3.5" /> Contact
                   </button>
                 ) : (
-                  <button
-                    className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white bg-primary rounded-lg border border-transparent cursor-pointer hover:bg-primary/90 transition-colors shadow-sm"
-                    onClick={() => setReviewTarget({ bookingId: selectedBooking._id, venueId: selectedBooking.venue?._id || selectedBooking.venue?.id })}
-                  >
-                    <Star size={14} /> Write Review
+                  <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-400 bg-gray-50 border border-gray-100 rounded-lg cursor-not-allowed shadow-sm">
+                    <MessageSquare className="w-3.5 h-3.5" /> Contact
                   </button>
-                )
-              )}
-            </>
+                )}
+                
+                {selectedBooking.accessPolicy?.permissions?.canDownloadInvoice ? (
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                    <FileText className="w-3.5 h-3.5" /> Receipt
+                  </button>
+                ) : (
+                  <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-400 bg-gray-50 border border-gray-100 rounded-lg cursor-not-allowed shadow-sm">
+                    <FileText className="w-3.5 h-3.5" /> Receipt
+                  </button>
+                )}
+                
+                {selectedBooking.accessPolicy?.permissions?.canCancel && (
+                  <button 
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm cursor-pointer"
+                    onClick={startCancellationFlow}
+                  >
+                    <Ban className="w-3.5 h-3.5" /> Cancel
+                  </button>
+                )}
+                
+                {selectedBooking.accessPolicy?.permissions?.canReview && (
+                  selectedBooking.review ? (
+                    <button
+                      className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-amber-700 bg-white border border-amber-200 rounded-lg hover:bg-amber-50 hover:border-amber-300 transition-colors shadow-sm cursor-pointer"
+                      onClick={() => setViewReviewTarget({ bookingId: selectedBooking._id, venueId: selectedBooking.venue?._id || selectedBooking.venue?.id, review: selectedBooking.review })}
+                    >
+                      <Star size={14} className="fill-amber-400 text-amber-400" /> View Review
+                    </button>
+                  ) : (
+                    <button
+                      className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white bg-primary rounded-lg border border-transparent cursor-pointer hover:bg-primary/90 transition-colors shadow-sm"
+                      onClick={() => setReviewTarget({ bookingId: selectedBooking._id, venueId: selectedBooking.venue?._id || selectedBooking.venue?.id })}
+                    >
+                      <Star size={14} /> Write Review
+                    </button>
+                  )
+                )}
+              </>
+            )
           }
         />
       )}

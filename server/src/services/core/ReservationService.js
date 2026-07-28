@@ -8,6 +8,8 @@ import { validateHourlySlots, validateDailyRange } from './AvailabilityValidator
 import { calculateHourlyPrice, calculateDailyPrice } from './PricingEngineService.js';
 import { determinePaymentPolicy } from './PaymentPolicyEngine.js';
 import mongoose from 'mongoose';
+import EventBus from '../../utils/EventBus.js';
+import { DOMAIN_EVENTS } from '../../utils/bookingConstants.js';
 export const createReservation = async (userId, venueId, bookingData) => {
   const { bookingMode, date, fromTime, toTime, startDate, endDate, guestCount } = bookingData;
   
@@ -215,6 +217,19 @@ export const confirmReservation = async (sessionId, paymentDetails = {}) => {
       );
     }
   }
+
+  // Publish Domain Events for Notifications
+  EventBus.publish(DOMAIN_EVENTS.BOOKING_CREATED, {
+    bookingId: booking._id,
+    vendorId: booking.vendorId,
+    bookingNumber: booking.bookingNumber
+  });
+  
+  EventBus.publish(DOMAIN_EVENTS.BOOKING_CONFIRMED, {
+    bookingId: booking._id,
+    customerId: booking.userId,
+    bookingNumber: booking.bookingNumber
+  });
 
   return booking;
 };

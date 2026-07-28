@@ -7,7 +7,7 @@ import BookingStatsCards from '../../components/vendor/bookings/BookingStatsCard
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
 import BookingTabs from '../../components/vendor/bookings/BookingTabs';
 import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
-import { Eye, Phone, Mail, Lock, Download, XCircle, CheckCircle, Ban, ChevronLeft } from 'lucide-react';
+import { Eye, Phone, Mail, Lock, Download, XCircle, CheckCircle, Ban, ChevronLeft, HelpCircle } from 'lucide-react';
 import BaseBookingDetailsDrawer from '../../components/common/bookings/BaseBookingDetailsDrawer';
 import SlideToCancel from '../../components/common/bookings/SlideToCancel';
 
@@ -181,6 +181,15 @@ const VendorBookingsPage = () => {
 
   const renderVendorDrawerActions = (booking) => {
     if (!booking) return null;
+    
+    if (booking.bookingStatus === 'cancelled' || booking.bookingStatus === 'refunded') {
+      return (
+        <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer w-full md:w-auto">
+          <HelpCircle className="w-3.5 h-3.5" /> Support
+        </button>
+      );
+    }
+    
     return (
       <>
         <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-500 bg-white border border-gray-200 rounded-lg cursor-not-allowed hover:bg-gray-50 transition-colors shadow-sm">

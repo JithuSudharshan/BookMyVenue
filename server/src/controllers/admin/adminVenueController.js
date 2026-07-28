@@ -4,7 +4,8 @@ import {
   updateVenueStatusService,
   updateVenueVisibilityService,
 } from "../../services/admin/adminVenueService.js";
-import notificationService from '../../services/notificationService.js';
+import EventBus from '../../utils/EventBus.js';
+import { DOMAIN_EVENTS } from '../../utils/bookingConstants.js';
 
 export const getAdminVenues = async (req, res) => {
   try {
@@ -45,24 +46,11 @@ export const updateVenueStatus = async (req, res) => {
     const { status, rejectionReason } = req.body;
     const venue = await updateVenueStatusService(req.params.id, status, rejectionReason, req.user._id);
     
-    // Notify the vendor
-    let notificationType = 'INFO';
-    let message = `Your venue "${venue.name}" status has been updated to ${status}.`;
-    
-    if (status === 'approved') {
-      notificationType = 'SUCCESS';
-      message = `Congratulations! Your venue "${venue.name}" has been approved.`;
-    } else if (status === 'rejected') {
-      notificationType = 'ERROR';
-      message = `Your venue "${venue.name}" was rejected. Reason: ${rejectionReason}`;
-    }
-
-    notificationService.sendNotification({
-        recipient: venue.vendorId, // Assuming venue has vendorId
-        title: `Venue ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-        message,
-        type: notificationType,
-        link: `/vendor/venues/${venue._id}` // Link directly to the specific venue page
+    EventBus.publish(DOMAIN_EVENTS.VENUE_STATUS_CHANGED, {
+      vendorId: venue.vendorId,
+      venueId: venue._id,
+      venueName: venue.name,
+      status: status
     });
 
     res.status(200).json({

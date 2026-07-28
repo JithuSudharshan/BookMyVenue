@@ -18,12 +18,12 @@ import legacyVendorRoutes from './routes/vendor/vendorRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 
 // Event Subscribers
-import { setupBookingEventSubscribers } from './subscribers/bookingEventSubscriber.js';
+import { setupNotificationSubscribers } from './subscribers/notificationSubscriber.js';
 
 const app = express();
 
 // Initialize Event Subscribers
-setupBookingEventSubscribers();
+setupNotificationSubscribers();
 
 // ── Middleware ─────────────────────────────────────────
 app.use(cors({

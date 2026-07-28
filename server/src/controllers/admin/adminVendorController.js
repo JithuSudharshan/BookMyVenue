@@ -3,7 +3,8 @@ import {
   getVendorByIdService,
   verifyVendorService,
 } from "../../services/admin/adminVendorService.js";
-import notificationService from '../../services/notificationService.js';
+import EventBus from '../../utils/EventBus.js';
+import { DOMAIN_EVENTS } from '../../utils/bookingConstants.js';
 
 export const getVendors = async (req, res) => {
   try {
@@ -47,25 +48,11 @@ export const verifyVendor = async (req, res) => {
     const { status, adminRemarks } = req.body;
     const vendor = await verifyVendorService(req.params.id, status, adminRemarks);
 
-    // Notify the vendor
-    let notificationType = 'INFO';
-    let message = `Your onboarding profile status has been updated to ${status}.`;
-    
     if (status === 'approved') {
-      notificationType = 'SUCCESS';
-      message = `Congratulations! Your vendor profile has been approved.`;
-    } else if (status === 'rejected' || status === 'changes_requested') {
-      notificationType = 'WARNING';
-      message = `Your vendor profile needs attention. Remarks: ${adminRemarks}`;
+      EventBus.publish(DOMAIN_EVENTS.VENDOR_APPROVED, {
+        vendorId: vendor.userId
+      });
     }
-
-    notificationService.sendNotification({
-        recipient: vendor.userId, // vendor document has userId linking to their User account
-        title: `Onboarding Profile ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-        message,
-        type: notificationType,
-        link: `/vendor` // Link back to vendor profile page
-    });
 
     res.status(200).json({
       message: `Vendor verification status updated to ${status}`,

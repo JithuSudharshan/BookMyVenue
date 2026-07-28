@@ -206,6 +206,14 @@ class BookingLifecycleOrchestrator {
       paymentStatus: newPaymentStatus,
       requestSource: context.requestSource
     });
+
+    if (refundableAmount > 0) {
+      EventBus.publish(DOMAIN_EVENTS.REFUND_PROCESSED, {
+        bookingId: booking._id,
+        customerId: booking.userId._id || booking.userId,
+        amount: refundableAmount
+      });
+    }
   }
 }
 
