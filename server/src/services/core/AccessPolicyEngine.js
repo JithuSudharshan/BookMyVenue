@@ -23,8 +23,13 @@ export const getCustomerAccessPolicy = (booking) => {
   
   const isConfirmedOrCompleted = ['confirmed', 'completed'].includes(booking.bookingStatus?.toLowerCase());
   
-  // Sensitive info requires a valid active booking, payment compliance, and being inside the coordination window
-  const canViewSensitiveInfo = isConfirmedOrCompleted && isWithinCoordinationWindow && paymentSatisfied;
+  // Sensitive info requires a valid active booking.
+  // It unlocks immediately upon full payment ('completed').
+  // If only advance is paid, it unlocks only within the coordination window.
+  const canViewSensitiveInfo = isConfirmedOrCompleted && (
+    booking.paymentStatus === 'completed' || 
+    (isWithinCoordinationWindow && paymentSatisfied)
+  );
   
   return {
     permissions: {

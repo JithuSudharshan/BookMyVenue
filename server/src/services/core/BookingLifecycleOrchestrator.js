@@ -214,6 +214,15 @@ class BookingLifecycleOrchestrator {
     const ledgerDescription = `Refund for cancelled booking: ${booking.bookingNumber || booking._id}`;
     const idempotencyKey = `REFUND:${booking._id}:wallet`;
 
+    // Safely debit the admin wallet to keep the ledger balanced.
+    // If it fails (e.g. insufficient funds in dev), we don't await/throw to avoid blocking the customer refund.
+    TransactionService.processAdminWalletDebit(
+      refundableAmount,
+      booking._id,
+      idempotencyKey,
+      `Debit for customer refund of cancelled booking ${booking.bookingNumber || booking._id}`
+    ).catch(e => console.error('Admin wallet debit failed silently:', e));
+
     return await TransactionService.processWalletRefund(
       customerUserId,
       refundableAmount,

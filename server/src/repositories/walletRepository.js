@@ -59,7 +59,7 @@ export const creditWallet = async (walletId, amount, description, referenceId = 
 /**
  * Debit a wallet by subtracting amount (with balance check).
  */
-export const debitWallet = async (walletId, amount, description, referenceId = null) => {
+export const debitWallet = async (walletId, amount, description, referenceId = null, referenceType = 'Unknown', session = null) => {
   const wallet = await Wallet.findById(walletId);
   if (!wallet || wallet.currentBalance < amount) {
     throw new Error('Insufficient wallet balance.');
@@ -71,13 +71,14 @@ export const debitWallet = async (walletId, amount, description, referenceId = n
     { new: true }
   );
 
-  const transaction = await WalletTransaction.create({
+  const transaction = await WalletTransaction.create([{
     walletId,
     transactionType: 'Debit',
     amount,
     description,
     referenceId,
-  });
+    referenceType,
+  }], { session });
 
-  return { wallet: updatedWallet, transaction };
+  return { wallet: updatedWallet, transaction: transaction[0] };
 };

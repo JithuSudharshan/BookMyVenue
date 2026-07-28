@@ -10,6 +10,7 @@ import { DOMAIN_EVENTS } from '../utils/bookingConstants.js';
 import BookingSession from '../models/bookingSessionModel.js';
 import Booking from '../models/bookingModel.js';
 import { getRazorpayInstance } from '../config/razorpay.js';
+import TransactionService from '../services/core/TransactionService.js';
 
 export const getPricingSummary = catchAsync(async (req, res) => {
   const { venueId, bookingMode, date, fromTime, toTime, startDate, endDate, guestCount } = req.body;
@@ -257,6 +258,14 @@ export const verifyBalance = catchAsync(async (req, res) => {
   if (!updatedBooking) {
     return res.status(400).json({ success: false, message: 'Balance payment already processed or invalid state.' });
   }
+
+  // Safely credit the admin wallet
+  await TransactionService.processAdminWalletCredit(
+    amountPaid, 
+    updatedBooking._id, 
+    'BalancePayment', 
+    `Balance payment for booking ${updatedBooking.bookingNumber}`
+  );
 
   EventBus.publish(DOMAIN_EVENTS.BALANCE_PAID, {
     bookingId: updatedBooking._id,

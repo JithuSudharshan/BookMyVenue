@@ -10,6 +10,7 @@ import { determinePaymentPolicy } from './PaymentPolicyEngine.js';
 import mongoose from 'mongoose';
 import EventBus from '../../utils/EventBus.js';
 import { DOMAIN_EVENTS } from '../../utils/bookingConstants.js';
+import TransactionService from './TransactionService.js';
 export const createReservation = async (userId, venueId, bookingData) => {
   const { bookingMode, date, fromTime, toTime, startDate, endDate, guestCount } = bookingData;
   
@@ -225,6 +226,17 @@ export const confirmReservation = async (sessionId, paymentDetails = {}) => {
         { upsert: true, new: true }
       );
     }
+  }
+
+  // Credit the admin wallet for the initial payment (advance or full)
+  const amountPaid = booking.payment.razorpayAmount + booking.payment.walletAmount;
+  if (amountPaid > 0) {
+    TransactionService.processAdminWalletCredit(
+      amountPaid,
+      booking._id,
+      'InitialPayment',
+      `Initial payment received for booking ${booking.bookingNumber}`
+    ).catch(e => console.error('Admin wallet initial credit failed:', e));
   }
 
   // Publish Domain Events for Notifications

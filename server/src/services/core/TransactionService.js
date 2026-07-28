@@ -1,4 +1,4 @@
-import { creditWallet, findOrCreateWallet } from '../../repositories/walletRepository.js';
+import { creditWallet, debitWallet, findOrCreateWallet } from '../../repositories/walletRepository.js';
 import AppError from '../../utils/AppError.js';
 
 class TransactionService {
@@ -33,6 +33,81 @@ class TransactionService {
       }
       console.error('TransactionService [processWalletRefund] failed:', error);
       throw new AppError('Failed to process wallet refund. Please contact support.', 500);
+    }
+  }
+
+  /**
+   * Credits the admin wallet with the specified amount.
+   * Useful for capturing balance payments and platform fees.
+   * 
+   * @param {number} amount - The amount to credit
+   * @param {string} referenceId - The Booking ID
+   * @param {string} referenceType - E.g. 'BalancePayment'
+   * @param {string} description - Description for ledger
+   * @returns {Promise<Object>}
+   */
+  async processAdminWalletCredit(amount, referenceId, referenceType, description) {
+    if (amount <= 0) return null;
+
+    try {
+      // Find the admin user dynamically
+      const { default: User } = await import('../../models/userModel.js');
+      const adminUser = await User.findOne({ role: 'admin' });
+      
+      if (!adminUser) {
+        console.warn('⚠️ No Admin user found. Cannot credit admin wallet.');
+        return null;
+      }
+
+      let wallet = await findOrCreateWallet(adminUser._id, 'admin');
+      const { transaction } = await creditWallet(wallet._id, amount, description, referenceId, referenceType);
+      return transaction;
+    } catch (error) {
+      if (error.code === 11000) {
+        // Idempotency conflict
+        console.warn(`Idempotency: Admin wallet credit for ${referenceType} ${referenceId} already processed.`);
+        return null;
+      }
+      console.error('TransactionService [processAdminWalletCredit] failed:', error);
+      throw new AppError('Failed to process admin wallet credit', 500);
+    }
+  }
+
+  /**
+   * Debits the admin wallet with the specified amount.
+   * Useful for capturing refunds back to customers.
+   * 
+   * @param {number} amount - The amount to debit
+   * @param {string} referenceId - The Booking ID
+   * @param {string} referenceType - E.g. 'Refund'
+   * @param {string} description - Description for ledger
+   * @returns {Promise<Object>}
+   */
+  async processAdminWalletDebit(amount, referenceId, referenceType, description) {
+    if (amount <= 0) return null;
+
+    try {
+      const { default: User } = await import('../../models/userModel.js');
+      const adminUser = await User.findOne({ role: 'admin' });
+      
+      if (!adminUser) {
+        console.warn('⚠️ No Admin user found. Cannot debit admin wallet.');
+        return null;
+      }
+
+      let wallet = await findOrCreateWallet(adminUser._id, 'admin');
+      const { transaction } = await debitWallet(wallet._id, amount, description, referenceId, referenceType);
+      return transaction;
+    } catch (error) {
+      if (error.code === 11000) {
+        // Idempotency conflict
+        console.warn(`Idempotency: Admin wallet debit for ${referenceType} ${referenceId} already processed.`);
+        return null;
+      }
+      console.error('TransactionService [processAdminWalletDebit] failed:', error);
+      // We don't throw an error here because if the admin's wallet has insufficient balance (e.g. testing) 
+      // we shouldn't block the customer's refund.
+      return null;
     }
   }
 
