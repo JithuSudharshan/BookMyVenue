@@ -6,9 +6,13 @@ import axiosInstance from '../axiosConfig.js';
  * @param {number} limit
  * @returns {Promise<Object>}
  */
-export const getCustomerBookings = async (page = 1, limit = 10, filter = 'All') => {
+export const getCustomerBookings = async (page = 1, limit = 10, filter = 'All', search = '', bookingMode = '') => {
   try {
-    const response = await axiosInstance.get(`/customer/bookings?page=${page}&limit=${limit}&filter=${filter}`);
+    let url = `/customer/bookings?page=${page}&limit=${limit}&filter=${filter}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (bookingMode) url += `&bookingMode=${encodeURIComponent(bookingMode)}`;
+    
+    const response = await axiosInstance.get(url);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed to fetch bookings.');

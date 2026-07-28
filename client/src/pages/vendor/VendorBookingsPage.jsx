@@ -7,8 +7,8 @@ import BookingStatsCards from '../../components/vendor/bookings/BookingStatsCard
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
 import BookingTabs from '../../components/vendor/bookings/BookingTabs';
 import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
-import { Eye } from 'lucide-react';
-import BookingDetailsDrawer from '../../components/vendor/bookings/BookingDetailsDrawer';
+import { Eye, Phone, Mail, Lock, Download, XCircle, CheckCircle } from 'lucide-react';
+import BaseBookingDetailsDrawer from '../../components/common/bookings/BaseBookingDetailsDrawer';
 
 const VendorBookingsPage = () => {
   const [stats, setStats] = useState(null);
@@ -103,6 +103,95 @@ const VendorBookingsPage = () => {
     }
   };
 
+  // Vendor Specific Drawer Content
+  const renderVendorDrawerInformation = (booking) => {
+    if (!booking) return null;
+    const customer = booking.customer || {};
+    const showContact = customer.phone || customer.email;
+
+    return (
+      <section className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
+          Customer Details
+        </h3>
+        
+        {showContact ? (
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden flex-shrink-0">
+              {customer.profileImage ? (
+                <img src={customer.profileImage} alt={customer.fullName} className="w-full h-full object-cover" />
+              ) : (
+                customer.fullName?.charAt(0) || 'C'
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{customer.fullName || 'Unknown Customer'}</p>
+                  <p className="text-[11px] text-gray-500 font-mono mt-0.5">Ref: {booking.bookingNumber}</p>
+                </div>
+              </div>
+              
+              <div className="mt-3 space-y-2 text-sm text-gray-700 bg-gray-50/40 rounded-lg p-3 border border-gray-50">
+                {customer.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-gray-400" /> {customer.phone}
+                  </div>
+                )}
+                {customer.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5 text-gray-400" /> {customer.email}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50/50 border border-amber-100 rounded-lg p-4 flex items-start gap-3">
+            <div className="p-2 bg-amber-100/50 rounded-full flex-shrink-0">
+              <Lock className="w-4 h-4 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">Locked until full payment</p>
+              <p className="text-xs text-amber-700 mt-1">Contact details will unlock automatically once the customer completes their balance payment.</p>
+            </div>
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  const renderVendorDrawerActions = (booking) => {
+    if (!booking) return null;
+    return (
+      <>
+        <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-500 bg-white border border-gray-200 rounded-lg cursor-not-allowed hover:bg-gray-50 transition-colors shadow-sm">
+          <Phone className="w-3.5 h-3.5" /> Contact
+        </button>
+        <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-500 bg-white border border-gray-200 rounded-lg cursor-not-allowed hover:bg-gray-50 transition-colors shadow-sm">
+          <Download className="w-3.5 h-3.5" /> Invoice
+        </button>
+        
+        {['pending', 'confirmed'].includes(booking.bookingStatus?.toLowerCase()) ? (
+          <button 
+            className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm cursor-pointer"
+            onClick={() => handleCancelBooking(booking._id)}
+          >
+            <XCircle className="w-3.5 h-3.5" /> Cancel
+          </button>
+        ) : (
+          <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-400 bg-white border border-red-100 rounded-lg cursor-not-allowed shadow-sm">
+            <XCircle className="w-3.5 h-3.5" /> Cancel
+          </button>
+        )}
+
+        <button disabled className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white bg-primary rounded-lg border border-transparent cursor-not-allowed hover:bg-primary/90 transition-colors shadow-sm">
+          <CheckCircle className="w-4 h-4" /> Mark Done
+        </button>
+      </>
+    );
+  };
+
   return (
     <div className="p-4 md:p-8 w-full max-w-7xl mx-auto">
       {/* Header section */}
@@ -182,11 +271,12 @@ const VendorBookingsPage = () => {
       )}
 
       {/* Drawer */}
-      <BookingDetailsDrawer 
+      <BaseBookingDetailsDrawer 
         isOpen={drawerOpen} 
         onClose={() => setDrawerOpen(false)} 
         booking={selectedBooking} 
-        onCancelBooking={handleCancelBooking}
+        roleSpecificInformation={renderVendorDrawerInformation(selectedBooking)}
+        actionSlot={renderVendorDrawerActions(selectedBooking)}
       />
     </div>
   );

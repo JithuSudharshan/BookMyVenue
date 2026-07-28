@@ -44,3 +44,33 @@ export const determinePaymentPolicy = (bookingMode, startDateStr, totalAmount) =
     }
   };
 };
+
+/**
+ * Evaluates whether a booking has satisfied its current payment requirement
+ * based on the current date and the booking's policy metadata.
+ */
+export const isPaymentRequirementSatisfied = (booking) => {
+  if (booking.paymentStatus === 'completed') return true;
+  
+  if (booking.paymentStatus === 'advance_paid') {
+    const eventDateStr = booking.bookingMode === 'hourly' ? booking.date : booking.startDate;
+    if (!eventDateStr) return false;
+    
+    const eventDate = new Date(eventDateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    
+    const daysUntilEvent = (eventDate - today) / (1000 * 60 * 60 * 24);
+    const fullPaymentThresholdDays = booking.pricing?.policyMetadata?.fullPaymentThresholdDays || 7;
+    
+    // If we are within the threshold, full payment is required
+    if (daysUntilEvent <= fullPaymentThresholdDays) {
+      return false;
+    }
+    // Otherwise, advance payment is still sufficient
+    return true;
+  }
+  
+  return false;
+};

@@ -8,6 +8,10 @@ import { getCustomerBookings, cancelCustomerBooking } from "../../api/user-api/b
 import ReviewForm from '../../components/common/ReviewForm';
 import ReviewDetailsModal from '../../components/common/ReviewDetailsModal';
 import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
+import BaseBookingDetailsDrawer from '../../components/common/bookings/BaseBookingDetailsDrawer';
+import CustomerDrawerInfo from '../../components/customer/bookings/CustomerDrawerInfo';
+import BookingTabs from '../../components/vendor/bookings/BookingTabs';
+import BookingFilters from '../../components/vendor/bookings/BookingFilters';
 import './BookingsPage.css';
 
 function BookingsPage() {
@@ -18,24 +22,33 @@ function BookingsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalBookingsCount, setTotalBookingsCount] = useState(0);
   
-  // Local UI state for filtering
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState('upcoming');
+  const [searchFilters, setSearchFilters] = useState({ search: '', bookingMode: '' });
 
   // Review form & details state
   const [reviewTarget, setReviewTarget] = useState(null); // { bookingId, venueId, existingReview }
   const [viewReviewTarget, setViewReviewTarget] = useState(null); // { bookingId, venueId, review }
 
+  // Drawer state
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const limit = 5;
 
   useEffect(() => {
-    fetchBookings(page, filter);
-  }, [page, filter]);
+    // Only debounce if there is a search term being typed, otherwise fetch immediately
+    const handler = setTimeout(() => {
+      fetchBookings(page, filter, searchFilters.search, searchFilters.bookingMode);
+    }, searchFilters.search ? 500 : 0);
 
-  const fetchBookings = async (currentPage, currentFilter) => {
+    return () => clearTimeout(handler);
+  }, [page, filter, searchFilters.search, searchFilters.bookingMode]);
+
+  const fetchBookings = async (currentPage, currentFilter, currentSearch, currentBookingMode) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await getCustomerBookings(currentPage, limit, currentFilter);
+      const res = await getCustomerBookings(currentPage, limit, currentFilter, currentSearch, currentBookingMode);
       if (res.success) {
         setBookings(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
@@ -61,6 +74,11 @@ function BookingsPage() {
     setPage(1);
   };
 
+  const handleSearchFilterChange = (updates) => {
+    setSearchFilters(prev => ({ ...prev, ...updates }));
+    setPage(1);
+  };
+
   const handleCancelBooking = async (bookingId) => {
     if (window.confirm("Are you sure you want to cancel this booking? The refund will be credited to your wallet instantly.")) {
       try {
@@ -74,7 +92,15 @@ function BookingsPage() {
     }
   };
 
+  const handleOpenDrawer = (booking) => {
+    setSelectedBooking(booking);
+    setDrawerOpen(true);
+  };
 
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setTimeout(() => setSelectedBooking(null), 300); // clear after animation
+  };
 
   const getStatusBadgeColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -130,20 +156,11 @@ function BookingsPage() {
         </div>
       )}
 
-      {/* Filters - Always show if they have bookings, or if they have an active filter that returned 0 results */}
-      {(totalBookingsCount > 0 || filter !== 'All') && (
-        <div className="bk-filters">
-          {['All', 'Upcoming', 'Completed', 'Cancelled'].map(f => (
-            <button 
-              key={f}
-              className={`bk-filter-btn ${filter === f ? 'active' : ''}`}
-              onClick={() => handleFilterChange(f)}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Filters & Tabs */}
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-2">
+        <BookingTabs activeTab={filter} onChange={handleFilterChange} />
+        <BookingFilters filters={searchFilters} venues={[]} onChange={handleSearchFilterChange} />
+      </div>
 
       {bookings.length === 0 && !loading && !error ? (
         <div className="bk-empty">
@@ -170,41 +187,12 @@ function BookingsPage() {
             const venue = booking.venue || {};
 
             const customerActions = (
-              <>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all" onClick={() => {}}>
-                  <MessageSquare size={14} /> Contact Venue
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all" onClick={() => {}}>
-                  <FileText size={14} /> Receipt
-                </button>
-                
-                {['pending', 'confirmed'].includes(booking.bookingStatus?.toLowerCase()) && (
-                  <button 
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all"
-                    onClick={() => handleCancelBooking(booking._id)}
-                  >
-                    <Ban size={14} /> Cancel Booking
-                  </button>
-                )}
-                
-                {booking.bookingStatus === 'Completed' && (
-                  booking.review ? (
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-100 hover:bg-amber-100 rounded-xl transition-all"
-                      onClick={() => setViewReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id, review: booking.review })}
-                    >
-                      <Star size={14} className="fill-amber-400" /> View Review
-                    </button>
-                  ) : (
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white bg-primary hover:bg-primary/90 border border-transparent rounded-xl transition-all shadow-sm"
-                      onClick={() => setReviewTarget({ bookingId: booking._id, venueId: venue._id || venue.id })}
-                    >
-                      <Star size={14} /> Write a Review
-                    </button>
-                  )
-                )}
-              </>
+              <button
+                onClick={() => handleOpenDrawer(booking)}
+                className="flex items-center gap-1.5 px-4 py-2 text-[11px] sm:text-xs font-semibold text-white bg-primary hover:bg-primary/90 border border-transparent rounded-xl transition-all shadow-sm"
+              >
+                <CalendarDays size={14} /> View Details
+              </button>
             );
 
             return (
@@ -266,6 +254,70 @@ function BookingsPage() {
             setViewReviewTarget(null);
             fetchBookings(page, filter);
           }}
+        />
+      )}
+
+      {/* Drawer */}
+      {selectedBooking && (
+        <BaseBookingDetailsDrawer
+          isOpen={drawerOpen}
+          onClose={handleCloseDrawer}
+          booking={selectedBooking}
+          isCustomerPortal={true}
+          roleSpecificInformation={<CustomerDrawerInfo booking={selectedBooking} />}
+          actionSlot={
+            <>
+              {selectedBooking.accessPolicy?.permissions?.canContactVendor ? (
+                <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                  <MessageSquare className="w-3.5 h-3.5" /> Contact
+                </button>
+              ) : (
+                <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-400 bg-gray-50 border border-gray-100 rounded-lg cursor-not-allowed shadow-sm">
+                  <MessageSquare className="w-3.5 h-3.5" /> Contact
+                </button>
+              )}
+              
+              {selectedBooking.accessPolicy?.permissions?.canDownloadInvoice ? (
+                <button className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+                  <FileText className="w-3.5 h-3.5" /> Receipt
+                </button>
+              ) : (
+                <button disabled className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-400 bg-gray-50 border border-gray-100 rounded-lg cursor-not-allowed shadow-sm">
+                  <FileText className="w-3.5 h-3.5" /> Receipt
+                </button>
+              )}
+              
+              {selectedBooking.accessPolicy?.permissions?.canCancel && (
+                <button 
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-semibold tracking-wide uppercase text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm cursor-pointer"
+                  onClick={() => {
+                    handleCloseDrawer();
+                    handleCancelBooking(selectedBooking._id);
+                  }}
+                >
+                  <Ban className="w-3.5 h-3.5" /> Cancel
+                </button>
+              )}
+              
+              {selectedBooking.accessPolicy?.permissions?.canReview && (
+                selectedBooking.review ? (
+                  <button
+                    className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-amber-700 bg-white border border-amber-200 rounded-lg hover:bg-amber-50 hover:border-amber-300 transition-colors shadow-sm cursor-pointer"
+                    onClick={() => setViewReviewTarget({ bookingId: selectedBooking._id, venueId: selectedBooking.venue?._id || selectedBooking.venue?.id, review: selectedBooking.review })}
+                  >
+                    <Star size={14} className="fill-amber-400 text-amber-400" /> View Review
+                  </button>
+                ) : (
+                  <button
+                    className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white bg-primary rounded-lg border border-transparent cursor-pointer hover:bg-primary/90 transition-colors shadow-sm"
+                    onClick={() => setReviewTarget({ bookingId: selectedBooking._id, venueId: selectedBooking.venue?._id || selectedBooking.venue?.id })}
+                  >
+                    <Star size={14} /> Write Review
+                  </button>
+                )
+              )}
+            </>
+          }
         />
       )}
     </div>

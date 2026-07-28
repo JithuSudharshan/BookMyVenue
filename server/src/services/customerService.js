@@ -279,18 +279,37 @@ export const deleteAvatar = async (userId) => {
  * @param {number} limit - Number of records per page
  * @returns {Promise<Object>} - Paginated bookings
  */
-export const getBookings = async (userId, page = 1, limit = 10, filter = 'All') => {
+export const getBookings = async (userId, page = 1, limit = 10, filter = 'All', search = '', bookingMode = '') => {
   if (!userId) {
     throw new AppError('Unauthorized. User ID not found.', 401);
   }
 
   const query = { userId };
-  if (filter === 'Upcoming') {
-    query.bookingStatus = { $in: ['Pending', 'Confirmed'] };
-  } else if (filter === 'Completed') {
-    query.bookingStatus = 'Completed';
-  } else if (filter === 'Cancelled') {
-    query.bookingStatus = 'Cancelled';
+  const filterLower = filter.toLowerCase();
+  
+  if (filterLower === 'upcoming') {
+    query.bookingStatus = { $in: ['pending', 'confirmed'] };
+  } else if (filterLower === 'completed') {
+    query.bookingStatus = 'completed';
+  } else if (filterLower === 'cancelled') {
+    query.bookingStatus = 'cancelled';
+  } else if (filterLower === 'today') {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    query.$or = [
+      { date: { $gte: startOfDay, $lte: endOfDay } },
+      { startDate: { $gte: startOfDay, $lte: endOfDay } }
+    ];
+  }
+  
+  if (search) {
+    query.bookingNumber = { $regex: search, $options: 'i' };
+  }
+  
+  if (bookingMode) {
+    query.bookingMode = bookingMode;
   }
 
   const skip = (page - 1) * limit;

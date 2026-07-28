@@ -130,8 +130,10 @@ export const getCustomerBookings = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const filter = req.query.filter || 'All';
+    const search = req.query.search || '';
+    const bookingMode = req.query.bookingMode || '';
     
-    const data = await customerService.getBookings(userId, page, limit, filter);
+    const data = await customerService.getBookings(userId, page, limit, filter, search, bookingMode);
     
     res.status(200).json({
       success: true,

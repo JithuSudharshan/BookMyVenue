@@ -1,3 +1,5 @@
+import { getCustomerAccessPolicy } from '../../services/core/AccessPolicyEngine.js';
+
 /**
  * Data Transfer Object for Customer Booking Responses.
  * Ensures sensitive vendor information (like onboarding docs, admin remarks) is stripped out
@@ -9,6 +11,10 @@
  */
 export const toCustomerBookingDTO = (booking, vendorProfile) => {
   if (!booking) return null;
+
+  const accessPolicy = getCustomerAccessPolicy(booking);
+  const { permissions } = accessPolicy;
+
 
   const venue = booking.venueId || {};
 
@@ -37,7 +43,10 @@ export const toCustomerBookingDTO = (booking, vendorProfile) => {
       _id: venue._id,
       name: venue.name,
       images: venue.images || [],
-      location: venue.location || null, // Customers need full location to find the venue
+      location: {
+        ...venue.location,
+        googleMapLink: permissions.canViewDirections ? venue.location?.googleMapLink : null
+      },
       rules: venue.rules || [], // Customers need to know venue rules
       checkInTime: venue.checkInTime || null,
       checkOutTime: venue.checkOutTime || null,
@@ -47,9 +56,12 @@ export const toCustomerBookingDTO = (booking, vendorProfile) => {
     vendor: vendorProfile ? {
       displayName: vendorProfile.fullName || vendorProfile.firstName || 'Venue Owner',
       profileImage: vendorProfile.profileImage || null,
-      phone: vendorProfile.phone || null,
-      email: vendorProfile.email || booking.vendorId?.email || null, // Fallback to User email if populated
+      phone: permissions.canViewVendorContact ? vendorProfile.phone : null,
+      email: permissions.canViewVendorContact ? (vendorProfile.email || booking.vendorId?.email) : null,
     } : null,
+    
+    // Access & Permissions metadata for Frontend UI logic
+    accessPolicy,
     
     // Pricing & Payment Summary
     pricing: {
