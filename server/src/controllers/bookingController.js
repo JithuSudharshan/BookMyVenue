@@ -8,6 +8,8 @@ import catchAsync from '../utils/catchAsync.js';
 import EventBus from '../utils/EventBus.js';
 import { DOMAIN_EVENTS } from '../utils/bookingConstants.js';
 import BookingSession from '../models/bookingSessionModel.js';
+import Booking from '../models/bookingModel.js';
+import { getRazorpayInstance } from '../config/razorpay.js';
 
 export const getPricingSummary = catchAsync(async (req, res) => {
   const { venueId, bookingMode, date, fromTime, toTime, startDate, endDate, guestCount } = req.body;
@@ -184,7 +186,8 @@ export const payBalance = catchAsync(async (req, res) => {
   }
 
   // Create Razorpay Order directly for the remaining amount
-  const orderDetails = await PaymentService.razorpay.orders.create({
+  const razorpay = getRazorpayInstance();
+  const orderDetails = await razorpay.orders.create({
     amount: Math.round(booking.pricing.remainingAmount * 100),
     currency: 'INR',
     receipt: `bal_${booking.bookingNumber}`,

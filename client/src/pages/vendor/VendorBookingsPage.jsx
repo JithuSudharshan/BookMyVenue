@@ -242,7 +242,7 @@ const VendorBookingsPage = () => {
           </button>
         )}
 
-        {booking.paymentStatus === 'partial' && booking.remainingAmount > 0 ? (
+        {booking.paymentStatus === 'partial' && booking.pricing?.remainingAmount > 0 ? (
           <button 
             onClick={() => handleRequestBalance(booking._id)}
             className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-bold tracking-wide uppercase text-primary bg-white border border-primary rounded-lg hover:bg-primary/10 transition-colors shadow-sm"
@@ -289,7 +289,7 @@ const VendorBookingsPage = () => {
             <div className="space-y-3 pt-3 border-t border-gray-100">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Customer Refund Amount</span>
-                <span className="font-bold text-gray-900">₹{selectedBooking.totalAmount - (selectedBooking.remainingAmount || 0)}</span>
+                <span className="font-bold text-gray-900">₹{(selectedBooking.pricing?.totalAmount || 0) - (selectedBooking.pricing?.remainingAmount || 0)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Refund Destination</span>

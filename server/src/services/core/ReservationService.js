@@ -232,8 +232,8 @@ export const confirmReservation = async (sessionId, paymentDetails = {}) => {
     bookingId: booking._id,
     customerId: booking.userId,
     vendorId: booking.vendorId,
-    venueId: venue._id,
-    venueName: venue.name,
+    venueId: session.venueId._id,
+    venueName: session.venueId.name,
     bookingNumber: booking.bookingNumber
   });
 

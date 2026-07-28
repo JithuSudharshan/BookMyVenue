@@ -14,6 +14,7 @@ import {
   USER_ROLES,
   DOMAIN_EVENTS
 } from '../../utils/bookingConstants.js';
+import { getTodayString, parseDateToInt, getNowMinutes, timeToMinutes } from '../../utils/dateUtils.js';
 import AppError from '../../utils/AppError.js';
 
 class BookingLifecycleOrchestrator {
@@ -114,20 +115,30 @@ class BookingLifecycleOrchestrator {
       throw new AppError('Cannot mark as complete. Balance payment is pending.', 400);
     }
 
-    // Validate Event Time
-    const now = new Date();
-    let eventEndTime;
-    
-    if (booking.bookingMode === 'hourly') {
-      const dateStr = booking.date; // YYYY-MM-DD
-      const timeStr = booking.toTime; // HH:MM
-      eventEndTime = new Date(`${dateStr}T${timeStr}:00`);
-    } else if (booking.bookingMode === 'daily') {
-      const dateStr = booking.endDate; // YYYY-MM-DD
-      eventEndTime = new Date(`${dateStr}T23:59:59`); // End of the day
+    // Validate Event Time (Timezone Safe)
+    const todayInt = parseDateToInt(getTodayString());
+    const nowMins = getNowMinutes();
+
+    let eventDateStr = booking.bookingMode === 'hourly' ? booking.date : booking.endDate;
+    const eventDateInt = parseDateToInt(eventDateStr);
+
+    let hasEnded = false;
+
+    if (eventDateInt < todayInt) {
+      hasEnded = true;
+    } else if (eventDateInt === todayInt) {
+      if (booking.bookingMode === 'hourly') {
+        const eventEndMins = timeToMinutes(booking.toTime);
+        if (nowMins >= eventEndMins) {
+          hasEnded = true;
+        }
+      } else {
+        // Daily bookings end at 23:59. They can only be marked completed the next day.
+        hasEnded = false; 
+      }
     }
 
-    if (eventEndTime && now < eventEndTime) {
+    if (!hasEnded) {
       throw new AppError('Cannot mark booking as completed before the event has ended.', 400);
     }
 
