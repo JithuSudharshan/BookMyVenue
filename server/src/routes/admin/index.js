@@ -9,6 +9,8 @@ import venueRoutes from "./adminVenueRoutes.js";
 import bookingRoutes from "./adminBookingRoutes.js";
 import categoryRoutes from "./categoryRoute.js";
 import subcategoryRoutes from "./subcategoryRoute.js";
+import walletRoutes from "./adminWalletRoutes.js";
+import { adminDeleteReview } from "../../controllers/reviewController.js";
 
 const router = express.Router();
 
@@ -16,7 +18,11 @@ const router = express.Router();
 router.use("/", authRoutes);
 
 // Protected routes (Admin only)
-router.use(adminProtect);
+// Skip auth for OPTIONS preflight requests — browsers send them without a token
+router.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return next();
+  return adminProtect(req, res, next);
+});
 
 
 router.use("/dashboard", dashboardRoutes);
@@ -26,5 +32,7 @@ router.use("/venues", venueRoutes);
 router.use("/bookings", bookingRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/subcategories", subcategoryRoutes);
+router.use("/wallet", walletRoutes);
+router.delete("/reviews/:reviewId", adminDeleteReview);
 
 export default router;

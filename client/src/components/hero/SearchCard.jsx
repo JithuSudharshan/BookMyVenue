@@ -29,6 +29,7 @@ const SearchCard = () => {
 
   // Field values
   const [locationValue, setLocationValue] = useState('')
+  const [coords, setCoords] = useState(null)
   const [dateRange, setDateRange] = useState({ start: null, end: null })
   const [guests, setGuests] = useState(0)
 
@@ -67,6 +68,10 @@ const SearchCard = () => {
     saveRecentSearch(locationValue)
     const params = new URLSearchParams()
     if (locationValue) params.set('location', locationValue)
+    if (coords?.lat && coords?.lng) {
+      params.set('lat', coords.lat)
+      params.set('lng', coords.lng)
+    }
     if (dateRange.start) params.set('date', dateRange.start.toISOString().split('T')[0])
     if (totalGuests > 0) params.set('guests', totalGuests)
     navigate(`/venues?${params.toString()}`)
@@ -92,7 +97,7 @@ const SearchCard = () => {
           <input
             type="text"
             value={locationValue}
-            onChange={e => setLocationValue(e.target.value)}
+            onChange={e => { setLocationValue(e.target.value); setCoords(null); }}
             onFocus={() => setActiveField('location')}
             placeholder="Search destinations"
             className="w-full bg-transparent outline-none text-gray-500 text-sm font-medium placeholder-gray-400 truncate"
@@ -116,7 +121,7 @@ const SearchCard = () => {
         {/* Divider */}
         <div className={`w-px h-8 bg-gray-200 flex-shrink-0 transition-opacity ${activeField ? 'opacity-0' : 'opacity-100'}`} />
 
-        {/* ─── WHO ─── */}
+        {/* ─── HOW MANY ─── */}
         <div
           className={seg('guests')}
           onClick={() => setActiveField(activeField === 'guests' ? null : 'guests')}
@@ -160,7 +165,10 @@ const SearchCard = () => {
       {activeField === 'location' && (
         <LocationPanel
           value={locationValue}
-          onChange={setLocationValue}
+          onChange={(name, selectedCoords = null) => {
+            setLocationValue(name);
+            setCoords(selectedCoords);
+          }}
           onSelectLocation={() => setActiveField('date')}
         />
       )}

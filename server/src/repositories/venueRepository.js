@@ -1,4 +1,5 @@
 import Venue from '../models/venueModel.js';
+import Vendor from '../models/vendorModel.js';
 
 class VenueRepository {
   async getVenuesByVendor(vendorId) {
@@ -6,7 +7,12 @@ class VenueRepository {
   }
 
   async getVenueById(venueId) {
-    return await Venue.findById(venueId);
+    const venue = await Venue.findById(venueId).populate('vendorId', 'email createdAt').lean();
+    if (venue && venue.vendorId && venue.vendorId._id) {
+      const vendorProfile = await Vendor.findOne({ userId: venue.vendorId._id }, 'fullName firstName profileImage').lean();
+      venue.vendorId.profile = vendorProfile || null;
+    }
+    return venue;
   }
 }
 

@@ -2,9 +2,12 @@ import cloudinary from '../config/cloudinary.js';
 import userRepository from '../repositories/userRepository.js';
 import * as customerRepository from '../repositories/customerRepository.js';
 import Booking from '../models/bookingModel.js';
+import Review from '../models/reviewModel.js';
 import '../models/venueModel.js'; // Register Venue schema for populate
+import Vendor from '../models/vendorModel.js';
+import { toCustomerBookingDTO } from '../dto/booking/CustomerBookingDTO.js';
 import * as wishlistRepository from '../repositories/wishlistRepository.js';
-import AppError from '../utils/appError.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * Extract Cloudinary public ID from secure URL.
@@ -276,33 +279,80 @@ export const deleteAvatar = async (userId) => {
  * @param {number} limit - Number of records per page
  * @returns {Promise<Object>} - Paginated bookings
  */
-export const getBookings = async (userId, page = 1, limit = 10, filter = 'All') => {
+export const getBookings = async (userId, page = 1, limit = 10, filter = 'All', search = '', bookingMode = '') => {
   if (!userId) {
     throw new AppError('Unauthorized. User ID not found.', 401);
   }
 
   const query = { userId };
-  if (filter === 'Upcoming') {
-    query.bookingStatus = { $in: ['Pending', 'Confirmed'] };
-  } else if (filter === 'Completed') {
-    query.bookingStatus = 'Completed';
-  } else if (filter === 'Cancelled') {
-    query.bookingStatus = 'Cancelled';
+  const filterLower = filter.toLowerCase();
+  
+  if (filterLower === 'upcoming') {
+    query.bookingStatus = { $in: ['pending', 'confirmed'] };
+  } else if (filterLower === 'completed') {
+    query.bookingStatus = 'completed';
+  } else if (filterLower === 'cancelled') {
+    query.bookingStatus = 'cancelled';
+  } else if (filterLower === 'today') {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    query.$or = [
+      { date: { $gte: startOfDay, $lte: endOfDay } },
+      { startDate: { $gte: startOfDay, $lte: endOfDay } }
+    ];
+  }
+  
+  if (search) {
+    query.bookingNumber = { $regex: search, $options: 'i' };
+  }
+  
+  if (bookingMode) {
+    query.bookingMode = bookingMode;
   }
 
   const skip = (page - 1) * limit;
 
   const bookings = await Booking.find(query)
-    .populate('venueId', 'name location images pricing capacity description')
+    .populate('venueId', 'name location images pricing capacity description rules checkInTime checkOutTime')
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
+
+  // Fetch all unique vendor profiles for these bookings
+  const vendorUserIds = [...new Set(bookings.map(b => b.vendorId?._id || b.vendorId).filter(Boolean))];
+  const vendors = await Vendor.find({ userId: { $in: vendorUserIds } }).lean();
+
+  // Build a lookup map: userId -> vendorProfile
+  const vendorMap = vendors.reduce((acc, vendor) => {
+    acc[vendor.userId.toString()] = vendor;
+    return acc;
+  }, {});
+
+  // Fetch reviews for bookings
+  const bookingIds = bookings.map((b) => b._id);
+  const reviews = await Review.find({ bookingId: { $in: bookingIds } }).lean();
+  const reviewMap = {};
+  reviews.forEach((r) => {
+    reviewMap[r.bookingId.toString()] = r;
+  });
+
+  // Apply DTO and attach review
+  const dtoList = bookings.map(booking => {
+    const vendorUserIdStr = booking.vendorId?._id?.toString() || booking.vendorId?.toString();
+    const vendorProfile = vendorMap[vendorUserIdStr];
+    const dto = toCustomerBookingDTO(booking, vendorProfile);
+    dto.review = reviewMap[booking._id.toString()] || null;
+    return dto;
+  });
 
   const total = await Booking.countDocuments(query);
   const totalPages = Math.ceil(total / limit);
 
   return {
-    bookings,
+    bookings: dtoList,
     pagination: {
       total,
       page,

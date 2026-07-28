@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi'
 import StepIndicator from '../../components/vendor/form/StepIndicator'
 import ImageUploader from '../../components/vendor/form/ImageUploader'
+import BookingConfigForm from '../../components/vendor/form/BookingConfigForm'
 import { toast } from 'sonner'
 import {
   getVendorVenueById,
@@ -51,9 +52,23 @@ const INITIAL_FORM = {
   googleMapLink: '',
   images: [],
   // Step 3
+  // Step 3
   bookingModel: 'daily',
-  openingTime: '09:00',
-  closingTime: '21:00',
+  bookingConfig: {
+    operatingHours: {
+      monday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      tuesday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      wednesday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      thursday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      friday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      saturday: { isOpen: true, openTime: '09:00', closeTime: '21:00' },
+      sunday: { isOpen: true, openTime: '09:00', closeTime: '21:00' }
+    },
+    bookingInterval: 60,
+    preparationTime: 0,
+    advanceBookingLimit: false,
+    maxAdvanceBookingDays: 90
+  },
   // Step 4
   price: '',
   rules: '',
@@ -342,33 +357,12 @@ const Step3 = ({ form, setForm }) => (
       </p>
     </div>
 
-    {/* Hourly: show time pickers */}
-    {form.bookingModel === 'hourly' && (
-      <div className="grid grid-cols-2 gap-5 animate-fade-in">
-        <Field label="Opening Time">
-          <div className="relative">
-            <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="time"
-              value={form.openingTime}
-              onChange={e => setForm(f => ({ ...f, openingTime: e.target.value }))}
-              className={`${inputCls(false)} pl-10`}
-            />
-          </div>
-        </Field>
-        <Field label="Closing Time">
-          <div className="relative">
-            <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="time"
-              value={form.closingTime}
-              onChange={e => setForm(f => ({ ...f, closingTime: e.target.value }))}
-              className={`${inputCls(false)} pl-10`}
-            />
-          </div>
-        </Field>
-      </div>
-    )}
+    {/* Hourly: show config */}
+    <BookingConfigForm 
+      isHourly={form.bookingModel === 'hourly'} 
+      config={form.bookingConfig} 
+      onChange={(newConfig) => setForm(f => ({ ...f, bookingConfig: newConfig }))} 
+    />
   </div>
 )
 
@@ -453,8 +447,8 @@ const Step4 = ({ form, setForm, errors, categoriesData }) => {
             <ReviewRow label="Booking Model" value={form.bookingModel === 'daily' ? '📅 Daily' : '⏱ Hourly'} />
             {form.bookingModel === 'hourly' && (
               <>
-                <ReviewRow label="Opening Time" value={form.openingTime} />
-                <ReviewRow label="Closing Time" value={form.closingTime} />
+                <ReviewRow label="Interval" value={`${form.bookingConfig.bookingInterval} mins`} />
+                <ReviewRow label="Prep Time" value={form.bookingConfig.preparationTime ? `${form.bookingConfig.preparationTime} mins` : 'None'} />
               </>
             )}
           </div>
@@ -582,8 +576,7 @@ const AddVenue = () => {
         googleMapLink: data.location?.googleMapLink || '',
         images: mappedImages,
         bookingModel: data.bookingModel || 'daily',
-        openingTime: data.bookingConfig?.openingTime || data.operatingHours?.start || '09:00',
-        closingTime: data.bookingConfig?.closingTime || data.operatingHours?.end || '21:00',
+        bookingConfig: data.bookingConfig || INITIAL_FORM.bookingConfig,
         price: data.price || '',
         rules: (Array.isArray(data.rules) ? data.rules.join('\n') : data.rules) || '',
       })
@@ -635,10 +628,7 @@ const AddVenue = () => {
     }))
 
     if (form.bookingModel === 'hourly') {
-      formData.append('operatingHours', JSON.stringify({
-        start: form.openingTime,
-        end: form.closingTime
-      }))
+      formData.append('bookingConfig', JSON.stringify(form.bookingConfig))
     }
 
     const existingImages = []
@@ -741,14 +731,14 @@ const AddVenue = () => {
       </div>
 
       {/* ── Main Content ─────────────────────────────────────── */}
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="w-full px-4 lg:px-8 py-10">
 
         <h1 className="text-3xl font-extrabold text-dark text-center mb-8">{isEditMode ? 'Edit Venue Details' : 'Add New Venue'}</h1>
 
         <StepIndicator currentStep={currentStep} />
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 mb-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 mb-8">
           <div className="animate-fade-in">
             {stepComponents[currentStep]}
           </div>

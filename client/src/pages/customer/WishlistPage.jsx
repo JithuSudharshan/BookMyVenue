@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Heart, MapPin, Users, IndianRupee, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MapPin, Users, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, Sparkles, Clock, Star } from 'lucide-react';
+import { toast } from 'sonner';
 import { getWishlist, removeFromWishlist } from '../../api/user-api/wishlistApi';
 import './WishlistPage.css';
 
@@ -8,8 +9,6 @@ function WishlistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [removingId, setRemovingId] = useState(null);
-  
-
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,16 +41,17 @@ function WishlistPage() {
       setRemovingId(wishlistId);
       await removeFromWishlist(venueId);
       setWishlist((prev) => prev.filter((item) => item._id !== wishlistId));
+      setTotalItems((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      alert(err.message || 'Failed to remove from wishlist');
+      toast.error(err.message || 'Failed to remove from wishlist');
     } finally {
       setRemovingId(null);
     }
   };
 
-  // Fixed sort based on order added to wishlist (newest first)
+  // Fixed sort based on order added to wishlist (newest first), filtering out inactive/deleted venues
   const sortedWishlist = useMemo(() => {
-    let result = [...wishlist];
+    let result = wishlist.filter(item => item.venueId && item.venueId.venueStatus !== 'inactive');
     result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     return result;
   }, [wishlist]);
@@ -75,12 +75,10 @@ function WishlistPage() {
           </p>
           {!loading && totalItems > 0 && (
             <p className="mt-2 text-[13px] text-on-surface-variant">
-              Showing {wishlist.length > 0 ? (page - 1) * LIMIT + 1 : 0} - {(page - 1) * LIMIT + wishlist.length} of {totalItems} venues
+              Showing {sortedWishlist.length > 0 ? (page - 1) * LIMIT + 1 : 0} - {(page - 1) * LIMIT + sortedWishlist.length} of {totalItems} venues
             </p>
           )}
         </div>
-        
-
       </div>
 
       {error && (
@@ -90,7 +88,7 @@ function WishlistPage() {
       )}
 
       {/* Empty State */}
-      {wishlist.length === 0 && !loading && !error ? (
+      {sortedWishlist.length === 0 && !loading && !error ? (
         <div className="wl-empty">
           <div className="wl-empty-icon">
             <Heart size={36} fill="currentColor" />
@@ -109,8 +107,15 @@ function WishlistPage() {
             {sortedWishlist.map((item) => {
               const venue = item.venueId || {};
               const isRemoving = removingId === item._id;
-              const imageObj = (venue.images && venue.images.length > 0) ? venue.images[0] : null;
-              const image = imageObj?.url || imageObj;
+              
+              // Pick primary image if specified, otherwise first image
+              const imageObj = venue.images?.find(img => img.isPrimary) || venue.images?.[0];
+              const image = imageObj?.url || (typeof imageObj === 'string' ? imageObj : null);
+
+              // Location text format
+              const locationText = typeof venue.location === 'object' && venue.location !== null
+                ? [venue.location.address, venue.location.city, venue.location.state].filter(Boolean).join(', ')
+                : (venue.location || 'Location unavailable');
 
               return (
                 <div key={item._id} className="wl-card" style={{ opacity: isRemoving ? 0.6 : 1 }}>
@@ -124,6 +129,14 @@ function WishlistPage() {
                       </div>
                     )}
                     <div className="wl-card-overlay" />
+
+                    {/* Booking Model Badge */}
+                    {venue.bookingModel && (
+                      <div className="wl-badge-booking">
+                        <Clock size={12} />
+                        <span>{venue.bookingModel === 'hourly' ? 'Hourly' : 'Daily'}</span>
+                      </div>
+                    )}
                     
                     {/* Toggle Button */}
                     <button 
@@ -132,40 +145,58 @@ function WishlistPage() {
                       disabled={isRemoving}
                       title="Remove from wishlist"
                     >
-                      <Heart size={18} fill="currentColor" stroke="currentColor" />
+                      <Heart size={18} fill="#ff385c" stroke="#ff385c" />
                     </button>
                   </div>
 
                   {/* Content */}
                   <div className="wl-card-content">
                     <div className="wl-card-header">
-                      <h3 className="wl-venue-name">{venue.name || 'Unnamed Venue'}</h3>
+                      <h3 className="wl-venue-name" title={venue.name}>{venue.name || 'Unnamed Venue'}</h3>
+                      <div className="wl-rating-badge">
+                        <Star size={13} fill="#f59e0b" stroke="#f59e0b" />
+                        <span>{venue.averageRating ? Number(venue.averageRating).toFixed(1) : '4.8'}</span>
+                        {venue.totalReviews > 0 && <span className="wl-review-count">({venue.totalReviews})</span>}
+                      </div>
                     </div>
                     
-                    {venue.location && (
-                      <div className="wl-venue-loc">
-                        <MapPin size={14} />
-                        {typeof venue.location === 'object' && venue.location !== null
-                          ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
-                          : venue.location}
+                    {locationText && (
+                      <div className="wl-venue-loc" title={locationText}>
+                        <MapPin size={14} className="shrink-0 text-red-500" />
+                        <span>{locationText}</span>
                       </div>
                     )}
 
                     <div className="wl-venue-stats">
                       {venue.capacity && (
-                        <div className="wl-stat-chip">
+                        <div className="wl-stat-chip" title={`Capacity: ${venue.capacity} guests`}>
                           <Users size={14} className="text-on-surface-variant" />
-                          <span>Up to {venue.capacity} guests</span>
+                          <span>Up to {venue.capacity.toLocaleString('en-IN')} guests</span>
                         </div>
                       )}
-                      {/* You can add Rating or other badges here later if backend provides it */}
+
+                      {/* Amenities Chips */}
+                      {venue.amenities && venue.amenities.length > 0 && (
+                        <div className="wl-amenities-wrap">
+                          {venue.amenities.slice(0, 3).map((amenity, idx) => (
+                            <span key={idx} className="wl-amenity-chip">
+                              {amenity}
+                            </span>
+                          ))}
+                          {venue.amenities.length > 3 && (
+                            <span className="wl-amenity-more" title={venue.amenities.slice(3).join(', ')}>
+                              +{venue.amenities.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="wl-card-footer">
                       <div className="wl-price">
                         {venue.price ? (
                           <>
-                            ₹{venue.price.toLocaleString('en-IN')} <span className="wl-price-label">/ day</span>
+                            ₹{venue.price.toLocaleString('en-IN')} <span className="wl-price-label">/ {venue.bookingModel === 'hourly' ? 'hr' : 'day'}</span>
                           </>
                         ) : (
                           <span className="wl-price-label">Price on request</span>

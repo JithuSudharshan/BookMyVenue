@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { findAdminById } from '../repositories/admin/adminAuthRepository.js';
 
 export const adminProtect = async (req, res, next) => {
+  if (req.method === 'OPTIONS') return next(); // Allow CORS preflight through
   let token;
 
   // Check Authorization header

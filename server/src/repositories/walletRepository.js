@@ -21,12 +21,8 @@ export const getTransactions = async (walletId, page = 1, limit = 10, filter = '
   const query = { walletId };
   if (filter === 'Credit') {
     query.transactionType = 'Credit';
-    query.description = { $not: /refund/i };
   } else if (filter === 'Debit') {
     query.transactionType = 'Debit';
-  } else if (filter === 'Refund') {
-    query.transactionType = 'Credit';
-    query.description = /refund/i;
   }
 
   const transactions = await WalletTransaction.find(query)
@@ -41,28 +37,29 @@ export const getTransactions = async (walletId, page = 1, limit = 10, filter = '
 /**
  * Credit a wallet by adding amount.
  */
-export const creditWallet = async (walletId, amount, description, referenceId = null) => {
+export const creditWallet = async (walletId, amount, description, referenceId = null, referenceType = 'Unknown', session = null) => {
   const wallet = await Wallet.findByIdAndUpdate(
     walletId,
     { $inc: { currentBalance: amount } },
-    { new: true }
+    { new: true, session }
   );
 
-  const transaction = await WalletTransaction.create({
+  const transaction = await WalletTransaction.create([{
     walletId,
     transactionType: 'Credit',
     amount,
     description,
     referenceId,
-  });
+    referenceType,
+  }], { session });
 
-  return { wallet, transaction };
+  return { wallet, transaction: transaction[0] };
 };
 
 /**
  * Debit a wallet by subtracting amount (with balance check).
  */
-export const debitWallet = async (walletId, amount, description, referenceId = null) => {
+export const debitWallet = async (walletId, amount, description, referenceId = null, referenceType = 'Unknown', session = null) => {
   const wallet = await Wallet.findById(walletId);
   if (!wallet || wallet.currentBalance < amount) {
     throw new Error('Insufficient wallet balance.');
@@ -74,13 +71,14 @@ export const debitWallet = async (walletId, amount, description, referenceId = n
     { new: true }
   );
 
-  const transaction = await WalletTransaction.create({
+  const transaction = await WalletTransaction.create([{
     walletId,
     transactionType: 'Debit',
     amount,
     description,
     referenceId,
-  });
+    referenceType,
+  }], { session });
 
-  return { wallet: updatedWallet, transaction };
+  return { wallet: updatedWallet, transaction: transaction[0] };
 };

@@ -3,6 +3,8 @@ import {
   getVendorByIdService,
   verifyVendorService,
 } from "../../services/admin/adminVendorService.js";
+import EventBus from '../../utils/EventBus.js';
+import { DOMAIN_EVENTS } from '../../utils/bookingConstants.js';
 
 export const getVendors = async (req, res) => {
   try {
@@ -45,6 +47,13 @@ export const verifyVendor = async (req, res) => {
   try {
     const { status, adminRemarks } = req.body;
     const vendor = await verifyVendorService(req.params.id, status, adminRemarks);
+
+    if (status === 'approved') {
+      EventBus.publish(DOMAIN_EVENTS.VENDOR_APPROVED, {
+        vendorId: vendor.userId
+      });
+    }
+
     res.status(200).json({
       message: `Vendor verification status updated to ${status}`,
       vendor,

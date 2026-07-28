@@ -71,7 +71,7 @@ function VendorApplicationStatus() {
 
   return (
     <div className="w-full min-h-screen bg-background pb-16">
-      <main className="max-w-4xl mx-auto pt-8 px-4 md:px-8">
+      <main className="w-full pt-8 px-4 md:px-8">
         
         {/* Header Section */}
         <div className="mb-10">
@@ -282,7 +282,7 @@ function VendorApplicationStatus() {
 
         {/* Resubmit Application Button (Only shown when rejected) */}
         {(profile.onboardingStatus === 'rejected' || profile.onboardingStatus === 'changes_requested') && (
-          <div className="max-w-4xl mx-auto mt-10 pt-6 border-t border-outline-variant/30 flex justify-end">
+          <div className="w-full mt-10 pt-6 border-t border-outline-variant/30 flex justify-end">
             <button
               onClick={async () => {
                 try {

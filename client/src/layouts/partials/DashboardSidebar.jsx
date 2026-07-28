@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { User, CalendarDays, Heart, Wallet, LayoutDashboard, Building2, FileText, LogOut, Lock } from 'lucide-react';
+import { User, CalendarDays, Heart, Wallet, LayoutDashboard, Building2, FileText, LogOut, Lock, CreditCard } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const CUSTOMER_NAV_ITEMS = [
@@ -8,6 +8,7 @@ const CUSTOMER_NAV_ITEMS = [
   { path: '/customer/bookings', icon: CalendarDays, label: 'Bookings' },
   { path: '/customer/wishlist', icon: Heart, label: 'Wishlist' },
   { path: '/customer/wallet', icon: Wallet, label: 'Wallet' },
+  { path: '/customer/transactions', icon: CreditCard, label: 'Transactions' },
 ];
 
 const VENDOR_NAV_ITEMS = [

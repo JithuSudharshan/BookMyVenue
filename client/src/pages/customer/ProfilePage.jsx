@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { getProfile, updatePersonalInfo, updateAddress, uploadAvatar, deleteAvatar } from '../../api/user-api/profileApi';
 import { AuthContext } from '../../store/AuthContext';
-import ProfileView from '../../components/user/profile/ProfileView';
+import ProfileView from '../../components/user/Profile/ProfileView';
 import AvatarUpload from '../../components/common/ProfileUi/AvatarUpload';
 import BaseProfilePage from '../../components/common/ProfileUi/BaseProfilePage';
 import { toast } from 'sonner';

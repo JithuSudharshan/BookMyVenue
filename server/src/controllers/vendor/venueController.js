@@ -1,11 +1,20 @@
 import * as venueService from '../../services/vendor/venueService.js';
 import { getCategoriesService } from '../../services/admin/categoryService.js';
+import notificationService from '../../services/notificationService.js';
 
 export const createVenue = async (req, res) => {
     try {
         const vendorId = req.user?.id || req.body.vendorId; 
         const venue = await venueService.createVenueService(vendorId, req.body);
         
+        // Notify Admins
+        notificationService.notifyAdmins({
+            title: 'New Venue Created',
+            message: `A new venue "${venue.name}" has been created and is waiting for submission.`,
+            type: 'INFO',
+            link: `/admin/venues/${venue._id}`
+        });
+
         res.status(201).json({
             success: true,
             message: "Venue created successfully",
@@ -86,6 +95,14 @@ export const submitVenue = async (req, res) => {
         const { id } = req.params;
         const venue = await venueService.submitVenueService(vendorId, id);
         
+        // Notify Admins
+        notificationService.notifyAdmins({
+            title: 'Venue Submitted for Review',
+            message: `Venue "${venue.name}" has been submitted for review.`,
+            type: 'INFO',
+            link: `/admin/venues/${venue._id}` // Link to admin venue details
+        });
+
         res.status(200).json({
             success: true,
             message: "Venue submitted for review successfully",

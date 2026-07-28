@@ -4,6 +4,8 @@ import {
   updateVenueStatusService,
   updateVenueVisibilityService,
 } from "../../services/admin/adminVenueService.js";
+import EventBus from '../../utils/EventBus.js';
+import { DOMAIN_EVENTS } from '../../utils/bookingConstants.js';
 
 export const getAdminVenues = async (req, res) => {
   try {
@@ -43,6 +45,14 @@ export const updateVenueStatus = async (req, res) => {
   try {
     const { status, rejectionReason } = req.body;
     const venue = await updateVenueStatusService(req.params.id, status, rejectionReason, req.user._id);
+    
+    EventBus.publish(DOMAIN_EVENTS.VENUE_STATUS_CHANGED, {
+      vendorId: venue.vendorId,
+      venueId: venue._id,
+      venueName: venue.name,
+      status: status
+    });
+
     res.status(200).json({
       message: `Venue status updated to ${status}`,
       venue,

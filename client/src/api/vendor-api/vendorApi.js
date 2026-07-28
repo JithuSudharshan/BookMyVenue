@@ -124,6 +124,11 @@ export const vendorApi = {
     return response.data?.data ?? response.data;
   },
 
+  getDashboardAnalytics: async (timeRange = '30') => {
+    const response = await axiosInstance.get('/vendor/dashboard/analytics', { params: { timeRange } });
+    return response.data?.data ?? response.data;
+  },
+
   saveStep1: async (formData) => {
     const response = await axiosInstance.put('/vendor/onboarding/step/1', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -179,5 +184,103 @@ export const vendorApi = {
     return response.data?.data ?? response.data;
   },
 };
+// ─── Slot Management API ─────────────────────────────────────────────────────
+export const getSlotMonthOverview = async (venueId, year, month) => {
+  const response = await axiosInstance.get(`/vendor/venues/${venueId}/availability`, { params: { year, month } });
+  return response.data?.data;
+};
 
+export const getVendorDateAvailability = async (venueId, date) => {
+  const response = await axiosInstance.get(`/vendor/venues/${venueId}/availability/date`, { params: { date } });
+  return response.data?.data;
+};
+
+export const blockDailySlots = async (venueId, payload) => {
+  const response = await axiosInstance.post(`/vendor/venues/${venueId}/availability/block/daily`, payload);
+  return response.data?.data;
+};
+
+export const blockHourlySlot = async (venueId, payload) => {
+  const response = await axiosInstance.post(`/vendor/venues/${venueId}/availability/block/hourly`, payload);
+  return response.data?.data;
+};
+
+export const removeSlotOverride = async (venueId, payload) => {
+  const response = await axiosInstance.delete(`/vendor/venues/${venueId}/availability/override`, { data: payload });
+  return response.data?.data;
+};
+
+export const acknowledgeSlots = async (venueId) => {
+  const response = await axiosInstance.patch(`/vendor/venues/${venueId}/availability/acknowledge`);
+  return response.data?.data;
+};
+
+// ─── Vendor Bookings API ──────────────────────────────────────────────────────
+
+/**
+ * Fetch paginated bookings for the authenticated vendor.
+ * @param {Object} params - { page, limit, status, venueId, bookingMode, search }
+ */
+export const getVendorBookings = async (params = {}) => {
+  const response = await axiosInstance.get('/vendor/bookings', { params });
+  return response.data;
+};
+
+/**
+ * Fetch KPI stats for the vendor booking dashboard.
+ */
+export const getVendorBookingStats = async () => {
+  const response = await axiosInstance.get('/vendor/bookings/stats');
+  return response.data?.data;
+};
+
+/**
+ * Fetch slim venue list for the booking filter dropdown.
+ */
+export const getVendorVenueList = async () => {
+  const response = await axiosInstance.get('/vendor/bookings/venues');
+  return response.data?.data;
+};
+
+/**
+ * Cancel a Vendor Booking
+ * @param {string} bookingId
+ * @param {string} reason
+ * @returns {Promise<Object>}
+ */
+export const cancelVendorBooking = async (bookingId, reason, description = '') => {
+  try {
+    const response = await axiosInstance.post(`/vendor/bookings/${bookingId}/cancel`, {
+      reason,
+      description
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed to cancel booking.');
+  }
+};
+
+/**
+ * Request balance payment from the customer.
+ */
+export const requestBalancePayment = async (bookingId) => {
+  try {
+    const response = await axiosInstance.post(`/vendor/bookings/${bookingId}/request-balance`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to request balance payment.');
+  }
+};
+
+/**
+ * Mark a booking as completed.
+ */
+export const markBookingAsCompleted = async (bookingId) => {
+  try {
+    const response = await axiosInstance.patch(`/vendor/bookings/${bookingId}/complete`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to mark booking as completed.');
+  }
+};
 

@@ -104,7 +104,7 @@ function VenueDetails() {
   return (
     <div className="grid gap-[26px]">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-      
+
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-[18px]">
         <div>
           <span className="text-admin-red text-[14px] font-extrabold">Venue Management</span>
@@ -141,8 +141,8 @@ function VenueDetails() {
               <dt className="text-muted text-xs">Venue Images</dt>
               <dd className="m-0 font-extrabold text-ink text-sm">
                 {venue.images && venue.images.length > 0 ? (
-                  <button 
-                    className="min-h-[28px] px-3 rounded-[7px] text-xs font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all" 
+                  <button
+                    className="min-h-[28px] px-3 rounded-[7px] text-xs font-extrabold text-[#6b5555] bg-white border border-line hover:bg-admin-red-soft hover:text-admin-red transition-all"
                     onClick={() => {
                       setCurrentImageIndex(0);
                       setIsImageViewerOpen(true);
@@ -304,11 +304,10 @@ function VenueDetails() {
           )}
           {approvalStatus === 'approved' && (
             <button
-              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold border transition-all ${
-                venue.venueStatus === 'active' 
-                  ? 'text-admin-red bg-white border-[#fecaca] hover:bg-admin-red-soft hover:text-admin-red-dark' 
+              className={`min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold border transition-all ${venue.venueStatus === 'active'
+                  ? 'text-admin-red bg-white border-[#fecaca] hover:bg-admin-red-soft hover:text-admin-red-dark'
                   : 'text-white bg-admin-red border border-admin-red hover:bg-admin-red-dark hover:border-admin-red-dark'
-              }`}
+                }`}
               type="button"
               onClick={() => setPendingAction({ type: venue.venueStatus === 'active' ? 'deactivate' : 'activate' })}
             >
@@ -320,27 +319,27 @@ function VenueDetails() {
 
       {/* Image Viewer Overlay */}
       {isImageViewerOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/85 z-[9999] flex flex-col items-center justify-center p-5"
-          onClick={() => setIsImageViewerOpen(false)} 
+          onClick={() => setIsImageViewerOpen(false)}
         >
-          <button 
-            onClick={() => setIsImageViewerOpen(false)} 
+          <button
+            onClick={() => setIsImageViewerOpen(false)}
             className="absolute top-6 right-8 bg-transparent border-0 text-white text-4xl cursor-pointer hover:text-admin-red transition-colors"
           >
             &times;
           </button>
-          
-          <img 
-            src={venue.images[currentImageIndex].url} 
-            alt="Venue image" 
+
+          <img
+            src={venue.images[currentImageIndex].url}
+            alt="Venue image"
             className="max-w-[90%] max-h-[75vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()} 
+            onClick={(e) => e.stopPropagation()}
           />
-          
+
           {venue.images.length > 1 && (
             <div className="mt-6 flex gap-5 items-center" onClick={(e) => e.stopPropagation()}>
-              <button 
+              <button
                 className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-ink bg-white border border-transparent hover:bg-admin-red hover:text-white transition-all"
                 onClick={() => setCurrentImageIndex(prev => prev === 0 ? venue.images.length - 1 : prev - 1)}
               >
@@ -349,7 +348,7 @@ function VenueDetails() {
               <span className="text-white font-bold text-sm">
                 {currentImageIndex + 1} / {venue.images.length}
               </span>
-              <button 
+              <button
                 className="min-h-[36px] px-3.5 rounded-[7px] text-[13px] font-extrabold text-ink bg-white border border-transparent hover:bg-admin-red hover:text-white transition-all"
                 onClick={() => setCurrentImageIndex(prev => prev === venue.images.length - 1 ? 0 : prev + 1)}
               >
@@ -407,9 +406,8 @@ function VenueDetails() {
                   if (formErrors.rejectReason) setFormErrors({});
                 }}
                 placeholder="Please explain why this venue is being rejected..."
-                className={`w-full p-2.5 rounded-[7px] text-sm text-ink outline-none bg-white border ${
-                  formErrors.rejectReason ? 'border-admin-red' : 'border-line hover:border-admin-red focus:border-admin-red'
-                } transition-colors`}
+                className={`w-full p-2.5 rounded-[7px] text-sm text-ink outline-none bg-white border ${formErrors.rejectReason ? 'border-admin-red' : 'border-line hover:border-admin-red focus:border-admin-red'
+                  } transition-colors`}
               />
               {formErrors.rejectReason && <div className="text-admin-red text-xs mt-1">{formErrors.rejectReason}</div>}
             </div>

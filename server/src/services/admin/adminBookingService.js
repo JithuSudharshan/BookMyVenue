@@ -2,8 +2,8 @@ import {
   getAllBookings,
   getBookingById,
   getBookingStats,
-  cancelBookingById,
 } from "../../repositories/admin/adminBookingRepository.js";
+import bookingLifecycleOrchestrator from "../core/BookingLifecycleOrchestrator.js";
 
 /**
  * Retrieves a list of bookings filtered, searched, and paginated.
@@ -35,11 +35,10 @@ export const getAdminBookingByIdService = async (id) => {
  * @returns {Promise<Object>} The updated booking document.
  */
 export const cancelAdminBookingService = async (id, { cancellationReason, cancellationDescription }) => {
-  const booking = await cancelBookingById(id, { cancellationReason, cancellationDescription });
-  if (!booking) {
-    throw new Error("Booking not found");
-  }
-  return booking;
+  return await bookingLifecycleOrchestrator.cancelBooking(id, 'admin', {
+    reason: cancellationReason || 'Admin requested cancellation',
+    description: cancellationDescription
+  });
 };
 
 /**

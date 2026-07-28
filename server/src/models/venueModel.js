@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import { BOOKING_MODELS } from '../utils/venueConstants.js';
 
 function isStrict() {
-    // Only enforce required fields if the venue is NOT a draft or rejected
-    return ['submitted', 'under_review', 'approved'].includes(this.approval?.status);
+  // Only enforce required fields if the venue is NOT a draft or rejected
+  return ['submitted', 'under_review', 'approved'].includes(this.approval?.status);
 }
 
 const venueSchema = new mongoose.Schema(
@@ -113,6 +113,19 @@ const venueSchema = new mongoose.Schema(
       min: 0,
     },
 
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    reviews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     // ─── Booking Configuration ───────────────────────────────
     bookingModel: {
       type: String,
@@ -121,8 +134,26 @@ const venueSchema = new mongoose.Schema(
     },
 
     bookingConfig: {
-      openingTime: String,
-      closingTime: String,
+      bookingMode: { 
+        type: String, 
+        enum: ['hourly', 'daily', 'both'], 
+        default: 'daily' 
+      },
+      
+      operatingHours: {
+        monday:    { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+        tuesday:   { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+        wednesday: { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+        thursday:  { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+        friday:    { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+        saturday:  { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+        sunday:    { isOpen: { type: Boolean, default: true }, openTime: { type: String, default: '09:00' }, closeTime: { type: String, default: '21:00' } },
+      },
+
+      bookingInterval: { type: Number, default: 60 },
+      
+      advanceBookingLimit: { type: Boolean, default: false },
+      maxAdvanceBookingDays: { type: Number, default: 90 },
     },
 
     // ─── Rules ───────────────────────────────────────────────
@@ -159,6 +190,25 @@ const venueSchema = new mongoose.Schema(
       },
     },
 
+    // ─── Slot Management ─────────────────────────────────────
+    hasAcknowledgedSlots: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ─── Rating & Reviews ─────────────────────────────────────
+    averageRating: {
+      type: Number,
+      default: 4.8,
+      min: 0,
+      max: 5,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     // ─── Visibility ──────────────────────────────────────────
     venueStatus: {
       type: String,
@@ -173,13 +223,15 @@ const venueSchema = new mongoose.Schema(
 );
 
 // Custom validation for images length when submitted
-venueSchema.pre('validate', function(next) {
-    if (isStrict.call(this) && (!this.images || this.images.length < 3)) {
-        this.invalidate('images', 'At least 3 images are required for submission');
-    }
-    next();
+venueSchema.pre('validate', function (next) {
+  if (isStrict.call(this) && (!this.images || this.images.length < 3)) {
+    this.invalidate('images', 'At least 3 images are required for submission');
+  }
+  next();
 });
 
 const Venue = mongoose.model('Venue', venueSchema);
 
 export default Venue;
+
+

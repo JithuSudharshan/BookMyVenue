@@ -2,8 +2,12 @@ import * as venueRepository from '../../repositories/vendor/venueRepository.js';
 import Category from '../../models/categoryModel.js';
 import Subcategory from '../../models/subcategoryModel.js';
 import Venue from '../../models/venueModel.js';
+import AvailabilityOverride from '../../models/availabilityOverrideModel.js';
+import BookingSession from '../../models/bookingSessionModel.js';
+import Booking from '../../models/bookingModel.js';
 import { generateSlug } from '../../utils/generateSlug.js';
-import AppError from '../../utils/appError.js';
+import AppError from '../../utils/AppError.js';
+import { getTodayString } from '../../utils/dateUtils.js';
 
 const validateTimeRange = (opening, closing) => {
     const openDate = new Date(`1970-01-01T${opening}:00Z`);
@@ -29,10 +33,14 @@ export const validateVenueBusinessRules = async (venueData) => {
     }
 
     if (bookingModel === 'hourly') {
-        if (bookingConfig && bookingConfig.openingTime && bookingConfig.closingTime) {
-            if (!validateTimeRange(bookingConfig.openingTime, bookingConfig.closingTime)) {
-                throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
-            }
+        if (bookingConfig && bookingConfig.operatingHours) {
+            Object.values(bookingConfig.operatingHours).forEach(day => {
+                if (day.isOpen && day.openTime && day.closeTime) {
+                    if (!validateTimeRange(day.openTime, day.closeTime)) {
+                        throw new AppError("Invalid time range. Closing time must be after opening time.", 400);
+                    }
+                }
+            });
         }
     }
 };
@@ -104,7 +112,7 @@ export const submitVenueService = async (vendorId, venueId) => {
     // Set approval status to trigger strict Mongoose validation on save()
     venue.approval.status = 'submitted';
     venue.approval.submittedAt = new Date();
-    
+
     // Using .save() triggers Mongoose's full document validation (which now uses isStrict())
     return await venue.save();
 };
@@ -122,7 +130,7 @@ export const createVenueService = async (vendorId, venueData) => {
     }
 
     venueData.vendorId = vendorId;
-    venueData.approval = { 
+    venueData.approval = {
         status: 'submitted',
         submittedAt: new Date()
     };
@@ -155,10 +163,53 @@ export const updateVenueService = async (vendorId, venueId, updateData) => {
 
     await validateVenueBusinessRules(updateData);
 
+    // Interval Locking
+    if (updateData.bookingConfig && updateData.bookingConfig.bookingInterval) {
+        if (venue.bookingConfig && venue.bookingConfig.bookingInterval) {
+            if (updateData.bookingConfig.bookingInterval !== venue.bookingConfig.bookingInterval) {
+                const todayStr = getTodayString();
+                
+                // 1. Check Availability Overrides
+                const hasOverrides = await AvailabilityOverride.findOne({ venueId, date: { $gte: todayStr } });
+                
+                // 2. Check Active Sessions (Hourly or Daily)
+                const hasSessions = await BookingSession.findOne({
+                    venueId,
+                    status: 'active',
+                    $or: [
+                        { date: { $gte: todayStr } },
+                        { startDate: { $gte: todayStr } }
+                    ]
+                });
+                
+                // 3. Check Bookings
+                const hasBookings = await Booking.findOne({
+                    venueId,
+                    bookingStatus: { $in: ['pending', 'confirmed'] },
+                    $or: [
+                        { date: { $gte: todayStr } },
+                        { startDate: { $gte: todayStr } }
+                    ]
+                });
+
+                if (hasOverrides || hasSessions || hasBookings) {
+                    throw new AppError(
+                        "Cannot change booking interval. This venue has upcoming bookings or active reservation sessions. Complete or cancel all future bookings before changing the booking interval.", 
+                        400
+                    );
+                }
+            }
+        }
+    }
+
     venue.set(updateData);
 
-    // Revert status to submitted if it's not a draft
-    if (venue.approval?.status !== 'draft') {
+    // Check if the update contains core fields that require re-approval
+    const coreFields = ['name', 'description', 'category', 'subcategory', 'capacity', 'address', 'city', 'state', 'pincode', 'googleMapLink', 'images', 'bookingModel', 'price'];
+    const needsReapproval = Object.keys(updateData).some(key => coreFields.includes(key) && updateData[key] !== undefined);
+
+    // Revert status to submitted if it's not a draft and core fields were changed
+    if (needsReapproval && venue.approval?.status !== 'draft') {
         venue.approval.status = 'submitted';
         venue.approval.submittedAt = new Date();
         venue.approval.rejectionReason = null;
@@ -281,6 +332,10 @@ export const unblockVenueService = async (vendorId, venueId) => {
 
     if (venue.venueStatus === 'active') throw new AppError("Venue already active", 409);
     if (venue.approval.status !== 'approved') throw new AppError("Cannot activate unapproved venue", 400);
+
+    if (!venue.hasAcknowledgedSlots) {
+        throw new AppError('Please confirm your slot management settings before going live.', 403);
+    }
 
     return await venueRepository.updateVenueStatus(venueId, 'venueStatus', 'active');
 };

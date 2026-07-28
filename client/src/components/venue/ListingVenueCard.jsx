@@ -125,20 +125,26 @@ const ListingVenueCard = ({ venue }) => {
           <h3 className="font-semibold text-gray-900 text-[15px] leading-snug truncate flex-1">
             {venue.name}
           </h3>
-          {venue.rating !== undefined && (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <FiStar className="w-3.5 h-3.5 fill-current text-gray-900" />
-              <span className="text-sm font-medium text-gray-900">{venue.rating != null ? Number(venue.rating).toFixed(1) : '0.0'}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <FiStar className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-sm font-medium text-gray-900">{venue.rating != null ? Number(venue.rating).toFixed(1) : '0.0'}</span>
+            <span className="text-xs text-gray-500">({venue.reviews || 0})</span>
+          </div>
         </div>
 
-        {/* Location */}
-        <p className="text-sm text-gray-500 truncate">
-          {typeof venue.location === 'object' && venue.location !== null
-            ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
-            : venue.location || 'Location not specified'}
-        </p>
+        {/* Location & Distance */}
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm text-gray-500 truncate">
+            {typeof venue.location === 'object' && venue.location !== null
+              ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
+              : venue.location || 'Location not specified'}
+          </p>
+          {venue.distanceKm != null && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full flex-shrink-0">
+              📍 {venue.distanceKm} km away
+            </span>
+          )}
+        </div>
 
         {/* Capacity */}
         {venue.capacity && (

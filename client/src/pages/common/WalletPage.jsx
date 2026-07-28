@@ -2,17 +2,19 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { 
   Wallet, ArrowDownCircle, ArrowUpCircle, 
   ChevronLeft, ChevronRight, ReceiptText, 
-  Search, ArrowDownToLine, ArrowUpFromLine, RefreshCcw, Calendar, CheckCircle2
+  Search, ArrowDownToLine, ArrowUpFromLine, Calendar, CheckCircle2, PlusCircle
 } from 'lucide-react';
 import { fetchWalletDetails } from '../../api/user-api/walletApi';
+import BaseModal from '../../components/ui/BaseModal';
 import './WalletPage.css';
 
 const LIMIT = 8;
+const PRESET_AMOUNTS = [500, 1000, 2000, 5000];
 
 function WalletPage() {
   const [walletData, setWalletData] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [stats, setStats] = useState({ totalCredits: 0, totalDebits: 0, totalRefunds: 0 });
+  const [stats, setStats] = useState({ totalCredits: 0, totalDebits: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -21,6 +23,9 @@ function WalletPage() {
 
   // Local UI State
   const [filter, setFilter] = useState('All'); 
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState('');
+  const [topUpError, setTopUpError] = useState('');
 
   useEffect(() => {
     loadWallet(page, filter);
@@ -58,13 +63,43 @@ function WalletPage() {
     setPage(1);
   };
 
+  const handleAmountChange = (val) => {
+    setTopUpAmount(val);
+    const num = Number(val);
+    if (val !== '' && (isNaN(num) || num <= 0)) {
+      setTopUpError('Please enter a valid amount greater than ₹0');
+    } else if (num > 50000) {
+      setTopUpError('Maximum top-up amount per transaction is ₹50,000');
+    } else {
+      setTopUpError('');
+    }
+  };
+
+  const handleProceedToRazorpay = () => {
+    const num = Number(topUpAmount);
+    if (!num || num <= 0 || num > 50000) return;
+    
+    // Razorpay Integration Stub — Backend developer will replace/integrate this
+    console.log('Initiating Razorpay checkout for amount:', num);
+    // Future integration: call createRazorpayOrder(num), load Razorpay SDK, open modal
+  };
+
+  const handleCloseModal = () => {
+    setIsTopUpModalOpen(false);
+    setTopUpAmount('');
+    setTopUpError('');
+  };
+
+  const parsedAmount = Number(topUpAmount);
+  const isValidAmount = Boolean(parsedAmount > 0 && parsedAmount <= 50000 && !topUpError);
+
   return (
     <div className="wp-page">
       {/* Header */}
       <div className="wp-header">
         <h1 className="wp-title">Wallet</h1>
         <p className="wp-subtitle">
-          Manage your credits, payment history, and refunds securely.
+          Manage your credits and payment history securely.
         </p>
       </div>
 
@@ -75,14 +110,18 @@ function WalletPage() {
           <div className="wp-balance-amount">
             {loading ? '...' : formatCurrency(walletData?.currentBalance ?? 0)}
           </div>
-          {walletData && (
-            <div className="wp-wallet-id">
-              ID: {walletData._id}
-            </div>
-          )}
         </div>
-        <div className="wp-balance-icon">
-          <Wallet size={48} strokeWidth={1.5} className="text-white" />
+        <div className="wp-balance-actions">
+          <button 
+            className="wp-topup-btn"
+            onClick={() => setIsTopUpModalOpen(true)}
+          >
+            <PlusCircle size={18} />
+            <span>Add Money</span>
+          </button>
+          <div className="wp-balance-icon">
+            <Wallet size={48} strokeWidth={1.5} className="text-white" />
+          </div>
         </div>
       </div>
 
@@ -97,7 +136,7 @@ function WalletPage() {
       {/* Filters */}
       <div className="wp-filters-container">
         <div className="wp-filters">
-          {['All', 'Credit', 'Debit', 'Refund'].map(f => (
+          {['All', 'Credit', 'Debit'].map(f => (
             <button 
               key={f}
               className={`wp-filter-btn ${filter === f ? 'active' : ''}`}
@@ -133,17 +172,9 @@ function WalletPage() {
           <div className="wp-txn-list">
             {transactions.map((txn) => {
               const isCredit = txn.transactionType === 'Credit';
-              const isRefund = (txn.description || '').toLowerCase().includes('refund');
-              
-              let typeClass = isCredit ? 'credit' : 'debit';
-              let badgeText = txn.transactionType;
-              let Icon = isCredit ? ArrowDownCircle : ArrowUpCircle;
-              
-              if (isRefund) {
-                typeClass = 'refund';
-                badgeText = 'Refund';
-                Icon = RefreshCcw;
-              }
+              const typeClass = isCredit ? 'credit' : 'debit';
+              const badgeText = txn.transactionType;
+              const Icon = isCredit ? ArrowDownCircle : ArrowUpCircle;
 
               return (
                 <div key={txn._id} className="wp-txn-card">
@@ -201,8 +232,62 @@ function WalletPage() {
           </div>
         )}
       </div>
+
+      {/* Top-Up Modal */}
+      <BaseModal
+        isOpen={isTopUpModalOpen}
+        onClose={handleCloseModal}
+        title="Add Money to Wallet"
+        maxWidth="max-w-md"
+      >
+        <div className="wp-modal-body">
+          <div className="wp-input-group">
+            <label className="wp-input-label">Enter Amount</label>
+            <div className="wp-input-wrapper">
+              <span className="wp-input-symbol">₹</span>
+              <input
+                type="number"
+                className="wp-topup-input"
+                placeholder="0.00"
+                value={topUpAmount}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                min="1"
+                max="50000"
+                autoFocus
+              />
+            </div>
+            {topUpError && <p className="wp-error-text">{topUpError}</p>}
+          </div>
+
+          <div className="wp-input-group">
+            <label className="wp-input-label">Quick Add</label>
+            <div className="wp-presets-grid">
+              {PRESET_AMOUNTS.map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  className={`wp-preset-chip ${Number(topUpAmount) === amt ? 'active' : ''}`}
+                  onClick={() => handleAmountChange(amt.toString())}
+                >
+                  +₹{amt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="wp-pay-btn"
+            disabled={!isValidAmount}
+            onClick={handleProceedToRazorpay}
+          >
+            Proceed to Pay {isValidAmount ? formatCurrency(parsedAmount) : ''}
+          </button>
+        </div>
+      </BaseModal>
     </div>
   );
 }
 
 export default WalletPage;
+

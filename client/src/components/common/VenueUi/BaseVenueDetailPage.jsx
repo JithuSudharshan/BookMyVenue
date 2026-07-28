@@ -5,8 +5,11 @@ import {
   IndianRupee,
   CheckCircle,
   ChevronLeft,
-  Calendar,
+  Info
 } from 'lucide-react';
+import VenueImageMosaic from './VenueImageMosaic';
+import VenueHostCard from '../../user/VenueHostCard';
+import { getAmenityIcon } from '../../../utils/amenityUtils';
 
 const BaseVenueDetailPage = ({
   venue,
@@ -17,6 +20,8 @@ const BaseVenueDetailPage = ({
   headerActionsSlot = null,
   sidebarSlot = null,
   customBadgesSlot = null,
+  locationSlot = null,
+  reviewsSlot = null,
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
 
@@ -47,112 +52,129 @@ const BaseVenueDetailPage = ({
         </div>
       </div>
 
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-headline-lg text-on-surface mb-2">{venue.name}</h1>
-            {customBadgesSlot}
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center text-on-surface-variant font-body-md">
-              <MapPin className="w-4 h-4 mr-1 text-primary" />
+      {/* Gallery Section - Now At Top */}
+      <div className="mb-8">
+        <VenueImageMosaic images={venue.images || []} />
+      </div>
+
+      {/* Main Content + Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+        <div className="lg:col-span-3 space-y-8">
+          
+          {/* Page Header (Title & Quick Info) moved below gallery */}
+          <div>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-3">
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 mb-1">{venue.name}</h1>
+                {customBadgesSlot}
+              </div>
+              {headerActionsSlot && (
+                <div className="flex flex-wrap items-center gap-3">
+                  {headerActionsSlot}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Info Strip */}
+            <div className="flex flex-wrap items-center text-gray-900 font-medium text-lg gap-2">
+              <span className="capitalize">{venue.bookingModel || 'Daily'} Booking Venue</span>
+              <span className="text-gray-400">•</span>
+              <span>Up to {venue.capacity ?? '—'} guests</span>
+              <span className="text-gray-400">•</span>
+              <span>₹{venue.price?.toLocaleString('en-IN')} Base Price</span>
+            </div>
+            
+            <div className="flex items-center text-gray-600 mt-2 font-body-md">
+              <MapPin className="w-4 h-4 mr-1" />
               {typeof venue.location === 'object' && venue.location !== null
                 ? [venue.location.city, venue.location.state].filter(Boolean).join(', ')
                 : venue.location}
             </div>
           </div>
-        </div>
-        {headerActionsSlot && (
-          <div className="flex flex-wrap items-center gap-3">
-            {headerActionsSlot}
-          </div>
-        )}
-      </div>
 
-      {/* Gallery Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-        <div className="md:col-span-3 aspect-video md:h-[440px] rounded-3xl overflow-hidden shadow-md relative group">
-          {venue.images && venue.images.length > 0 ? (
-            <img
-              src={venue.images[selectedImage]?.url || venue.images[selectedImage]}
-              alt="Venue view"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-          ) : (
-            <div className="w-full h-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-body-lg rounded-3xl border border-outline-variant">
-              No Images Available
-            </div>
-          )}
-        </div>
-
-        {venue.images && venue.images.length > 1 && (
-          <div className="flex overflow-x-auto md:flex-col gap-4 pb-2 md:pb-0 md:h-[440px] md:overflow-y-auto pr-1">
-            {venue.images.map((img, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedImage(idx)}
-                className={`flex-shrink-0 w-32 md:w-full aspect-video rounded-xl overflow-hidden border-2 transition-all ${
-                  selectedImage === idx
-                    ? 'border-primary ring-2 ring-primary/30'
-                    : 'border-transparent opacity-60 hover:opacity-100'
-                }`}
-              >
-                <img src={img?.url || img} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Main Content + Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-10">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
-              <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="font-label-sm text-on-surface-variant mb-1">Capacity</p>
-              <p className="font-title-md text-on-surface">{venue.capacity ?? '—'} pax</p>
-            </div>
-            <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
-              <IndianRupee className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="font-label-sm text-on-surface-variant mb-1">Base Price</p>
-              <p className="font-title-md text-on-surface">₹{venue.price?.toLocaleString('en-IN')}</p>
-            </div>
-            <div className="bg-surface p-5 rounded-2xl border border-outline-variant text-center shadow-sm">
-              <Calendar className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="font-label-sm text-on-surface-variant mb-1">Buffer Time</p>
-              <p className="font-title-md text-on-surface">{venue.bufferTime || 0} hrs</p>
-            </div>
-          </div>
-
-          <div>
-            <h2 className="font-headline-sm text-on-surface mb-3">About this venue</h2>
+          <hr className="border-gray-200" />
+          <div className="pt-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">About this venue</h2>
             <p className="font-body-lg text-on-surface-variant leading-relaxed whitespace-pre-line">
               {venue.description || 'No description provided.'}
             </p>
           </div>
 
-          <hr className="border-outline-variant" />
+          {venue.amenities && venue.amenities.length > 0 && (
+            <>
+              <hr className="border-gray-200" />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-5">What this place offers</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
+                  {venue.amenities.map((amenity, idx) => {
+                    const Icon = getAmenityIcon(amenity);
+                    return (
+                      <div key={idx} className="flex items-center text-gray-900 font-body-md">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0 text-gray-700">
+                          <Icon className="w-5 h-5" strokeWidth={1.5} />
+                        </div>
+                        <span className="font-medium text-gray-800">{amenity}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+          {venue.vendorId && typeof venue.vendorId === 'object' && (
+            <>
+              <hr className="border-gray-200" />
+              <VenueHostCard vendor={venue.vendorId} />
+            </>
+          )}
+
+          <hr className="border-gray-200" />
 
           <div>
-            <h2 className="font-headline-sm text-on-surface mb-5">Amenities</h2>
-            {venue.amenities && venue.amenities.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
-                {venue.amenities.map((amenity, idx) => (
-                  <div key={idx} className="flex items-center text-on-surface font-body-md">
-                    <CheckCircle className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
-                    <span>{amenity}</span>
-                  </div>
-                ))}
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">Things to know</h2>
+            <div className="flex flex-col gap-8">
+              {/* Payment Policy */}
+              <div>
+                <h3 className="font-bold text-gray-900 mb-3">Payment Policy</h3>
+                <ul className="space-y-2 text-gray-600 font-body-md">
+                  <li>
+                    {venue.bookingModel === 'hourly' 
+                      ? "100% advance required to secure booking." 
+                      : "30% advance required to secure booking."}
+                  </li>
+                </ul>
               </div>
-            ) : (
-              <p className="text-on-surface-variant font-body-md">No amenities listed.</p>
-            )}
+
+              {/* Venue Rules */}
+              {venue.rules && venue.rules.length > 0 && (
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-3">Venue Rules</h3>
+                  <ul className="space-y-2 text-gray-600 font-body-md list-disc list-inside">
+                    {venue.rules.map((rule, idx) => (
+                      <li key={idx}>{rule}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
+
+          {locationSlot && (
+            <>
+              <hr className="border-outline-variant" />
+              {locationSlot}
+            </>
+          )}
+
+          {reviewsSlot && (
+            <>
+              <hr className="border-outline-variant" />
+              {reviewsSlot}
+            </>
+          )}
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-2">
           <div className="sticky top-24 space-y-5">
             {sidebarSlot}
           </div>

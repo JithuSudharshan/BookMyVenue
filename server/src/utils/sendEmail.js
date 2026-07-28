@@ -1,27 +1,29 @@
 import nodemailer from 'nodemailer';
 
-const createTestTransporter = async () => {
-  // Generate a test Ethereal account
-  const testAccount = await nodemailer.createTestAccount();
+// Singleton transporter — created once at startup using static credentials from .env
+// This avoids making a live network call to Ethereal on every email send (which caused intermittent TLS errors).
+let _transporter = null;
 
-  return nodemailer.createTransport({
+const getTransporter = () => {
+  if (_transporter) return _transporter;
+
+  _transporter = nodemailer.createTransport({
     host: 'smtp.ethereal.email',
     port: 587,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
+      user: process.env.ETHEREAL_USER,
+      pass: process.env.ETHEREAL_PASS,
     },
   });
+
+  return _transporter;
 };
+
 
 export const sendVerificationEmail = async (email, token) => {
   try {
-    const transporter = process.env.NODE_ENV === 'production'
-      ? /* Implement production SMTP config */ null
-      : await createTestTransporter();
-
-    if (!transporter) throw new Error("Production SMTP not configured");
+    const transporter = getTransporter();
 
     const verifyUrl = `http://localhost:5173/verify-email/${token}`;
 
@@ -100,11 +102,7 @@ export const sendVerificationEmail = async (email, token) => {
 
 export const sendPasswordResetEmail = async (email, token) => {
   try {
-    const transporter = process.env.NODE_ENV === 'production'
-      ? /* Implement production SMTP config */ null
-      : await createTestTransporter();
-
-    if (!transporter) throw new Error("Production SMTP not configured");
+    const transporter = getTransporter();
 
     const resetUrl = `http://localhost:5173/reset-password/${token}`;
 

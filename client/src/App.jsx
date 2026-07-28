@@ -23,6 +23,7 @@ import ProfilePage from './pages/customer/ProfilePage';
 import BookingsPage from './pages/customer/BookingsPage';
 import WishlistPage from './pages/customer/WishlistPage';
 import WalletPage from './pages/common/WalletPage';
+import TransactionsPage from './pages/customer/TransactionsPage';
 import NotFound from './pages/common/NotFound';
 import OAuthSuccess from './pages/OAuthSuccess';
 import VendorSignup from './pages/VendorSignup';
@@ -72,6 +73,7 @@ function App() {
               <Route path="/customer/bookings" element={<BookingsPage />} />
               <Route path="/customer/wishlist" element={<WishlistPage />} />
               <Route path="/customer/wallet" element={<WalletPage />} />
+              <Route path="/customer/transactions" element={<TransactionsPage />} />
             </Route>
           </Route>
 

@@ -1,13 +1,15 @@
 import express from 'express';
 import * as venueController from '../../controllers/vendor/venueController.js';
-import { validateVenueSubmit } from '../../validators/venueValidator.js';
+import { validateVenueSubmit, validateVenueUpdate } from '../../validators/venueValidator.js';
 import { uploadVenueImage } from '../../middlewares/uploadMiddleware.js';
+import { getVendorReviews } from '../../controllers/reviewController.js';
+import { protect, authorize } from '../../middlewares/authMiddleware.js';
 
 const parseVenueData = (req, res, next) => {
     try {
         if (req.body.location && typeof req.body.location === 'string') req.body.location = JSON.parse(req.body.location);
         if (req.body.amenities && typeof req.body.amenities === 'string') req.body.amenities = JSON.parse(req.body.amenities);
-        if (req.body.operatingHours && typeof req.body.operatingHours === 'string') req.body.operatingHours = JSON.parse(req.body.operatingHours);
+        if (req.body.bookingConfig && typeof req.body.bookingConfig === 'string') req.body.bookingConfig = JSON.parse(req.body.bookingConfig);
         
         let existingImages = [];
         if (req.body.images && typeof req.body.images === 'string') {
@@ -26,9 +28,10 @@ const parseVenueData = (req, res, next) => {
             if (!existingImages.some(img => img.isPrimary)) {
                 existingImages[0].isPrimary = true;
             }
+            req.body.images = existingImages;
+        } else if (req.body.images !== undefined) {
+            req.body.images = existingImages;
         }
-
-        req.body.images = existingImages;
         
         // Map for validator
         if (req.body.location) {
@@ -40,8 +43,8 @@ const parseVenueData = (req, res, next) => {
         }
         
         // Map category/subcategory for validator
-        req.body.category = req.body.categoryId;
-        req.body.subcategory = req.body.subcategoryId;
+        if (req.body.categoryId !== undefined) req.body.category = req.body.categoryId;
+        if (req.body.subcategoryId !== undefined) req.body.subcategory = req.body.subcategoryId;
 
         next();
     } catch (error) {
@@ -57,6 +60,9 @@ const router = express.Router();
 // Categories Route
 router.get('/categories', venueController.getActiveCategories);
 
+// Reviews Route (vendor reads reviews for their venues)
+router.get('/reviews', protect, authorize('vendor'), getVendorReviews);
+
 // Draft Routes
 router.post('/draft', uploadVenueImage.array('images', 10), parseVenueData, venueController.saveDraft); // For initial creation
 router.patch('/:id/draft', uploadVenueImage.array('images', 10), parseVenueData, venueController.saveDraft); // For updating draft
@@ -66,7 +72,7 @@ router.post('/', uploadVenueImage.array('images', 10), parseVenueData, validateV
 router.get('/', venueController.getVendorVenues); // Also handles ?status=draft
 router.get('/:id', venueController.getVenueById); // Also acts as continueDraft
 router.patch('/:id/submit', venueController.submitVenue);
-router.patch('/:id', uploadVenueImage.array('images', 10), parseVenueData, validateVenueSubmit, venueController.updateVenue);
+router.patch('/:id', uploadVenueImage.array('images', 10), parseVenueData, validateVenueUpdate, venueController.updateVenue);
 router.patch('/:id/block', venueController.blockVenue);
 router.patch('/:id/unblock', venueController.unblockVenue);
 

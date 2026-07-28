@@ -1,7 +1,18 @@
+
 import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema(
   {
+    bookingNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    sessionId: {
+      type: String, // String from crypto.randomUUID
+      required: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -12,47 +23,85 @@ const bookingSchema = new mongoose.Schema(
       ref: 'Venue',
       required: [true, 'Please add a venue reference'],
     },
-    slotIds: [
-      {
-        type: String, // Assuming slot IDs or time references will be strings or ObjectIds
-      },
-    ],
-    bookingDate: {
-      type: Date,
-      required: [true, 'Please provide a booking date'],
+    vendorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Please add a vendor reference'],
     },
+
+    bookingMode: {
+      type: String,
+      enum: ['hourly', 'daily'],
+      required: true,
+    },
+
+    // Hourly
+    date: { type: String }, // YYYY-MM-DD
+    fromTime: { type: String }, // HH:MM
+    toTime: { type: String }, // HH:MM
+    durationMinutes: { type: Number },
+
+    // Daily
+    startDate: { type: String }, // YYYY-MM-DD
+    endDate: { type: String }, // YYYY-MM-DD
+    nights: { type: Number },
+
     guestCount: {
       type: Number,
       required: [true, 'Please provide the guest count'],
       min: [1, 'At least 1 guest is required'],
     },
+
+    pricing: {
+      baseAmount: { type: Number, required: true },
+      totalAmount: { type: Number, required: true },
+      advanceAmount: { type: Number, required: true },
+      remainingAmount: { type: Number, required: true, default: 0 },
+      paymentPolicy: { type: String, enum: ['full_payment', 'advance_payment'], required: true, default: 'full_payment' },
+      balanceDueDate: { type: Date, default: null },
+      policyMetadata: { type: Object, default: {} },
+    },
+
+    payment: {
+      method: { type: String, enum: ['wallet', 'razorpay', 'hybrid'], required: true },
+      walletAmount: { type: Number, default: 0 },
+      razorpayAmount: { type: Number, default: 0 },
+      razorpayOrderId: { type: String },
+      razorpayPaymentId: { type: String },
+      razorpaySignature: { type: String },
+      paidAt: { type: Date },
+    },
+
     bookingStatus: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Cancelled', 'Completed'],
-      default: 'Pending',
+      enum: ['pending', 'confirmed', 'cancelled', 'completed', 'refund_pending', 'refunded'],
+      default: 'confirmed', // Created only after payment, so defaults to confirmed
     },
+    
     paymentStatus: {
       type: String,
-      enum: ['Pending', 'Partial', 'Completed', 'Refunded'],
-      default: 'Pending',
+      enum: ['pending', 'partial', 'completed', 'refunded'],
+      default: 'completed', 
     },
-    totalAmount: {
-      type: Number,
-      required: [true, 'Please provide the total amount'],
-      min: [0, 'Total amount cannot be negative'],
+
+    cancellation: {
+      cancelledAt: { type: Date },
+      cancelledBy: { type: String, enum: ['user', 'vendor', 'admin'] },
+      reason: { type: String },
+      refundAmount: { type: Number },
+      refundStatus: { type: String, enum: ['pending', 'processed', 'not_applicable'] },
     },
-    advanceAmount: {
-      type: Number,
-      required: [true, 'Please provide the advance amount'],
-      min: [0, 'Advance amount cannot be negative'],
-    },
-    cancellationReason: {
+
+    timeline: [
+      {
+        status: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        note: { type: String },
+      }
+    ],
+
+    invoiceUrl: {
       type: String,
-      enum: ['Disputes', 'Fraud', 'Legal issues', 'Emergencies', 'Support intervention'],
-    },
-    cancellationDescription: {
-      type: String,
-      trim: true,
     },
   },
   {
@@ -60,6 +109,14 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
+// Indexes
+bookingSchema.index({ vendorId: 1, bookingStatus: 1 });
+bookingSchema.index({ userId: 1, bookingStatus: 1 });
+bookingSchema.index({ venueId: 1, date: 1 });
+bookingSchema.index({ venueId: 1, startDate: 1 });
+bookingSchema.index({ venueId: 1, bookingDate: -1 });
+
 const Booking = mongoose.model('Booking', bookingSchema);
 
 export default Booking;
+
