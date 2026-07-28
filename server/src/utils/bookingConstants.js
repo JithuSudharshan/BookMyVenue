@@ -43,11 +43,15 @@ export const USER_ROLES = {
 };
 
 export const DOMAIN_EVENTS = {
-  BOOKING_CREATED: 'BookingCreated',
   BOOKING_CONFIRMED: 'BookingConfirmed',
   BOOKING_CANCELLED: 'BookingCancelled',
   REFUND_PROCESSED: 'RefundProcessed',
   VENDOR_APPROVED: 'VendorApproved',
   VENUE_STATUS_CHANGED: 'VenueStatusChanged',
-  AVAILABILITY_RELEASED: 'AvailabilityReleased'
+  PAYMENT_FAILED: 'PaymentFailed',
+  BOOKING_EXPIRED: 'BookingExpired',
+  AVAILABILITY_RELEASED: 'AvailabilityReleased',
+  BALANCE_REQUESTED: 'BalanceRequested',
+  BALANCE_PAID: 'BalancePaid',
+  BOOKING_COMPLETED: 'BookingCompleted'
 };

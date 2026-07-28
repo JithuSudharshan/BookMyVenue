@@ -19,11 +19,13 @@ import notificationRoutes from './routes/notificationRoutes.js';
 
 // Event Subscribers
 import { setupNotificationSubscribers } from './subscribers/notificationSubscriber.js';
+import { startBookingCronJobs } from './cron/bookingCron.js';
 
 const app = express();
 
-// Initialize Event Subscribers
+// Initialize Event Subscribers & Cron
 setupNotificationSubscribers();
+startBookingCronJobs();
 
 // ── Middleware ─────────────────────────────────────────
 app.use(cors({

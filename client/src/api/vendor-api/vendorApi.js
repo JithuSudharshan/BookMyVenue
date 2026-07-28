@@ -260,3 +260,27 @@ export const cancelVendorBooking = async (bookingId, reason, description = '') =
   }
 };
 
+/**
+ * Request balance payment from the customer.
+ */
+export const requestBalancePayment = async (bookingId) => {
+  try {
+    const response = await axiosInstance.post(`/vendor/bookings/${bookingId}/request-balance`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to request balance payment.');
+  }
+};
+
+/**
+ * Mark a booking as completed.
+ */
+export const markBookingAsCompleted = async (bookingId) => {
+  try {
+    const response = await axiosInstance.patch(`/vendor/bookings/${bookingId}/complete`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to mark booking as completed.');
+  }
+};
+

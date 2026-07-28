@@ -1,7 +1,8 @@
 import catchAsync from '../utils/catchAsync.js';
 import * as vendorBookingService from '../services/core/vendorBookingService.js';
 import bookingLifecycleOrchestrator from '../services/core/BookingLifecycleOrchestrator.js';
-import { USER_ROLES } from '../utils/bookingConstants.js';
+import { USER_ROLES, DOMAIN_EVENTS } from '../utils/bookingConstants.js';
+import EventBus from '../utils/EventBus.js';
 import Booking from '../models/bookingModel.js';
 import User from '../models/userModel.js';
 import { toVendorBookingDTO } from '../dto/booking/VendorBookingDTO.js';
@@ -80,4 +81,52 @@ export const cancelVendorBooking = catchAsync(async (req, res) => {
     message: 'Booking cancelled successfully',
     data: dto
   });
+});
+
+/**
+ * POST /api/vendor/bookings/:id/request-balance
+ * Emits a socket notification to the customer to pay the remaining balance.
+ */
+export const requestBalance = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const vendorUserId = req.user._id;
+
+  const booking = await Booking.findOne({ _id: id, vendorId: vendorUserId }).populate('venueId');
+  if (!booking) {
+    return res.status(404).json({ success: false, message: 'Booking not found' });
+  }
+
+  if (booking.paymentStatus !== 'partial' || booking.pricing.remainingAmount <= 0) {
+    return res.status(400).json({ success: false, message: 'Balance payment is not applicable for this booking' });
+  }
+
+  EventBus.publish(DOMAIN_EVENTS.BALANCE_REQUESTED, {
+    bookingId: booking._id,
+    customerId: booking.userId,
+    bookingNumber: booking.bookingNumber,
+    venueId: booking.venueId._id,
+    venueName: booking.venueId.name,
+    balanceAmount: booking.pricing.remainingAmount
+  });
+
+  res.status(200).json({ success: true, message: 'Balance payment requested successfully.' });
+});
+
+/**
+ * PATCH /api/vendor/bookings/:id/complete
+ * Marks a fully-paid booking as completed.
+ */
+export const markAsCompleted = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const vendorUserId = req.user._id;
+
+  const completedBooking = await bookingLifecycleOrchestrator.complete({
+    bookingId: id,
+    actorId: vendorUserId
+  });
+
+  const customerProfile = await User.findById(completedBooking.userId).lean();
+  const dto = toVendorBookingDTO(completedBooking, customerProfile);
+
+  res.status(200).json({ success: true, message: 'Booking marked as completed.', data: dto });
 });

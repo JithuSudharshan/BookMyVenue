@@ -20,4 +20,8 @@ router.delete('/session/:sessionId', bookingController.releaseSession);
 router.post('/payment/order', bookingController.createPaymentOrder);
 router.post('/payment/verify', bookingController.verifyPayment);
 
+// Balance payment routes
+router.post('/:id/pay-balance', bookingController.payBalance);
+router.post('/payment/verify-balance/:id', bookingController.verifyBalance);
+
 export default router;

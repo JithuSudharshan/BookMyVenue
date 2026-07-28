@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import { getVendorBookings, getVendorBookingStats, getVendorVenueList, cancelVendorBooking } from '../../api/vendor-api/vendorApi';
+import { getVendorBookings, getVendorBookingStats, getVendorVenueList, cancelVendorBooking, requestBalancePayment, markBookingAsCompleted } from '../../api/vendor-api/vendorApi';
 
 import BookingStatsCards from '../../components/vendor/bookings/BookingStatsCards';
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
@@ -117,6 +117,36 @@ const VendorBookingsPage = () => {
     setCancellationReason('VENUE_UNAVAILABLE');
   };
 
+  const handleRequestBalance = async (bookingId) => {
+    try {
+      setLoading(true);
+      const res = await requestBalancePayment(bookingId);
+      if (res.success) {
+        toast.success("Balance payment requested successfully.");
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to request balance payment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkCompleted = async (bookingId) => {
+    try {
+      setLoading(true);
+      const res = await markBookingAsCompleted(bookingId);
+      if (res.success && res.data) {
+        setBookings(prev => prev.map(b => b._id === bookingId ? res.data : b));
+        setSelectedBooking(res.data);
+        toast.success("Booking marked as completed.");
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to complete booking.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const cancelCancellationFlow = () => {
     setIsCancelling(false);
   };
@@ -212,7 +242,20 @@ const VendorBookingsPage = () => {
           </button>
         )}
 
-        <button disabled className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white bg-primary rounded-lg border border-transparent cursor-not-allowed hover:bg-primary/90 transition-colors shadow-sm">
+        {booking.paymentStatus === 'partial' && booking.remainingAmount > 0 ? (
+          <button 
+            onClick={() => handleRequestBalance(booking._id)}
+            className="flex items-center justify-center gap-2 px-4 py-2 text-[11px] font-bold tracking-wide uppercase text-primary bg-white border border-primary rounded-lg hover:bg-primary/10 transition-colors shadow-sm"
+          >
+            Request Balance
+          </button>
+        ) : null}
+
+        <button 
+          disabled={booking.bookingStatus !== 'confirmed' || (booking.paymentStatus === 'partial')} 
+          onClick={() => handleMarkCompleted(booking._id)}
+          className={`flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white rounded-lg border border-transparent transition-colors shadow-sm ${booking.bookingStatus === 'confirmed' && booking.paymentStatus !== 'partial' ? 'bg-primary hover:bg-primary/90 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+        >
           <CheckCircle className="w-4 h-4" /> Mark Done
         </button>
       </>

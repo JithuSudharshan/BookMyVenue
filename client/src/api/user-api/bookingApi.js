@@ -36,3 +36,27 @@ export const cancelCustomerBooking = async (bookingId, reason, description = '')
     throw new Error(error.response?.data?.message || error.message || 'Failed to cancel booking.');
   }
 };
+
+/**
+ * Initiate balance payment for a booking.
+ */
+export const payBalancePayment = async (bookingId) => {
+  try {
+    const response = await axiosInstance.post(`/bookings/${bookingId}/pay-balance`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to initiate balance payment.');
+  }
+};
+
+/**
+ * Verify Razorpay payment for balance.
+ */
+export const verifyBalancePayment = async (bookingId, verificationData) => {
+  try {
+    const response = await axiosInstance.post(`/bookings/payment/verify-balance/${bookingId}`, verificationData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to verify balance payment.');
+  }
+};

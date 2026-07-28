@@ -6,7 +6,7 @@ import {
   RotateCcw, HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getCustomerBookings, cancelCustomerBooking } from "../../api/user-api/bookingApi";
+import { getCustomerBookings, cancelCustomerBooking, payBalancePayment, verifyBalancePayment } from "../../api/user-api/bookingApi";
 import ReviewForm from '../../components/common/ReviewForm';
 import ReviewDetailsModal from '../../components/common/ReviewDetailsModal';
 import BaseBookingCard from '../../components/common/bookings/BaseBookingCard';
@@ -15,6 +15,8 @@ import SlideToCancel from '../../components/common/bookings/SlideToCancel';
 import CustomerDrawerInfo from '../../components/customer/bookings/CustomerDrawerInfo';
 import BookingTabs from '../../components/vendor/bookings/BookingTabs';
 import BookingFilters from '../../components/vendor/bookings/BookingFilters';
+import { AuthContext } from '../../store/AuthContext';
+import { useContext } from 'react';
 import './BookingsPage.css';
 
 function BookingsPage() {
@@ -39,6 +41,8 @@ function BookingsPage() {
   // Cancellation UX State
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('Change of plans');
+
+  const { user } = useContext(AuthContext);
 
   const limit = 5;
 
@@ -112,6 +116,56 @@ function BookingsPage() {
 
   const cancelCancellationFlow = () => {
     setIsCancelling(false);
+  };
+
+  const handlePayBalance = async (bookingId) => {
+    try {
+      setLoading(true);
+      const res = await payBalancePayment(bookingId);
+      
+      const order = res.data;
+      const options = {
+        key: order.key || import.meta.env.VITE_RAZORPAY_KEY_ID || 'dummy',
+        amount: order.amount,
+        currency: order.currency,
+        name: "BookMyVenue",
+        description: "Balance Payment",
+        order_id: order.razorpayOrderId,
+        handler: async function (response) {
+          try {
+            const verifyResponse = await verifyBalancePayment(bookingId, {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature
+            });
+
+            if (verifyResponse.success) {
+              toast.success('Balance payment successful!');
+              setDrawerOpen(false);
+              fetchBookings(page, filter);
+            }
+          } catch (error) {
+            toast.error(error.message || 'Payment verification failed.');
+          }
+        },
+        prefill: {
+          name: user?.name || "Customer",
+          email: user?.email || "",
+          contact: user?.phone || ""
+        },
+        theme: { color: "#4F46E5" }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        toast.error(response.error.description || 'Payment failed. Please try again.');
+      });
+      rzp.open();
+    } catch (err) {
+      toast.error(err.message || 'Failed to initiate balance payment.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOpenDrawer = (booking) => {
@@ -404,6 +458,15 @@ function BookingsPage() {
                   </button>
                 )}
                 
+                {selectedBooking.paymentStatus === 'partial' && selectedBooking.pricing?.remainingAmount > 0 && (
+                  <button 
+                    className="flex items-center justify-center gap-2 px-5 py-2 text-[11px] font-bold tracking-wide uppercase text-white bg-primary rounded-lg border border-transparent cursor-pointer hover:bg-primary/90 transition-colors shadow-sm"
+                    onClick={() => handlePayBalance(selectedBooking._id)}
+                  >
+                    <IndianRupee className="w-3.5 h-3.5" /> Pay Balance (₹{selectedBooking.pricing.remainingAmount})
+                  </button>
+                )}
+
                 {selectedBooking.accessPolicy?.permissions?.canReview && (
                   selectedBooking.review ? (
                     <button

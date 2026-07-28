@@ -41,13 +41,13 @@ const HeroSection = () => {
       <div className="relative container mx-auto px-4 lg:px-8 py-20 md:py-28 flex flex-col items-center text-center">
 
         {/* Headline */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 drop-shadow-lg max-w-3xl">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 max-w-3xl" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
           Find & Book the Perfect{' '}
           <span className="text-red-400">Venue</span> in Kerala
         </h1>
 
         {/* Sub-headline */}
-        <p className="text-base md:text-lg text-white/85 font-medium mb-8 max-w-xl drop-shadow">
+        <p className="text-base md:text-lg text-white/85 font-medium mb-8 max-w-xl" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           Weddings · Birthdays · Corporate Events · and more across all 14 districts
         </p>
 

@@ -90,6 +90,96 @@ class BookingLifecycleOrchestrator {
     return this._loadBooking(context.bookingId);
   }
 
+  /**
+   * Orchestrates the completion of a booking.
+   * 
+   * @param {Object} context
+   * @param {string} context.actorId - ID of the vendor initiating completion.
+   * @param {string} context.bookingId - ID of the booking to complete.
+   * @returns {Promise<Object>} The completed booking document.
+   */
+  async complete(context) {
+    const booking = await this._loadBooking(context.bookingId);
+
+    // Validate ownership
+    if (booking.vendorId.toString() !== context.actorId.toString()) {
+      throw new AppError('Unauthorized: You do not own the venue for this booking.', 403);
+    }
+
+    // Validate status
+    if (booking.bookingStatus !== BOOKING_STATUS.CONFIRMED) {
+      throw new AppError(`Booking cannot be completed from ${booking.bookingStatus} state.`, 400);
+    }
+    if (booking.paymentStatus !== PAYMENT_STATUS.COMPLETED && booking.pricing.remainingAmount > 0) {
+      throw new AppError('Cannot mark as complete. Balance payment is pending.', 400);
+    }
+
+    // Validate Event Time
+    const now = new Date();
+    let eventEndTime;
+    
+    if (booking.bookingMode === 'hourly') {
+      const dateStr = booking.date; // YYYY-MM-DD
+      const timeStr = booking.toTime; // HH:MM
+      eventEndTime = new Date(`${dateStr}T${timeStr}:00`);
+    } else if (booking.bookingMode === 'daily') {
+      const dateStr = booking.endDate; // YYYY-MM-DD
+      eventEndTime = new Date(`${dateStr}T23:59:59`); // End of the day
+    }
+
+    if (eventEndTime && now < eventEndTime) {
+      throw new AppError('Cannot mark booking as completed before the event has ended.', 400);
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    let updatedBooking;
+
+    try {
+      const timelineEvents = [
+        {
+          status: BOOKING_STATUS.COMPLETED,
+          note: 'Marked as completed by vendor.',
+          timestamp: new Date()
+        }
+      ];
+
+      updatedBooking = await Booking.findOneAndUpdate(
+        {
+          _id: booking._id,
+          bookingStatus: BOOKING_STATUS.CONFIRMED
+        },
+        {
+          $set: { bookingStatus: BOOKING_STATUS.COMPLETED },
+          $push: { timeline: { $each: timelineEvents } }
+        },
+        { new: true, session }
+      ).populate('venueId');
+
+      if (!updatedBooking) {
+        throw new AppError('Booking transition failed: Booking is not in a confirmed state.', 409);
+      }
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+
+    EventBus.publish(DOMAIN_EVENTS.BOOKING_COMPLETED, {
+      bookingId: updatedBooking._id,
+      bookingNumber: updatedBooking.bookingNumber,
+      customerId: updatedBooking.userId._id || updatedBooking.userId,
+      vendorId: updatedBooking.vendorId,
+      venueId: updatedBooking.venueId._id,
+      venueName: updatedBooking.venueId.name
+    });
+
+    return updatedBooking;
+  }
+
   // --- Internal Delegate Methods ---
 
   async _loadBooking(bookingId) {

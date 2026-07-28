@@ -104,6 +104,15 @@ export const getActiveSession = async (sessionId) => {
   if (new Date() > session.expiresAt) {
     session.status = 'expired';
     await session.save();
+
+    EventBus.publish(DOMAIN_EVENTS.BOOKING_EXPIRED, {
+      bookingId: session.sessionId,
+      customerId: session.userId,
+      bookingNumber: session.sessionId.substring(0,8).toUpperCase(),
+      venueId: session.venueId._id || session.venueId,
+      venueName: session.venueId.name || 'Venue'
+    });
+
     throw new AppError('Reservation session expired', 404);
   }
   return session;
@@ -219,15 +228,12 @@ export const confirmReservation = async (sessionId, paymentDetails = {}) => {
   }
 
   // Publish Domain Events for Notifications
-  EventBus.publish(DOMAIN_EVENTS.BOOKING_CREATED, {
-    bookingId: booking._id,
-    vendorId: booking.vendorId,
-    bookingNumber: booking.bookingNumber
-  });
-  
   EventBus.publish(DOMAIN_EVENTS.BOOKING_CONFIRMED, {
     bookingId: booking._id,
     customerId: booking.userId,
+    vendorId: booking.vendorId,
+    venueId: venue._id,
+    venueName: venue.name,
     bookingNumber: booking.bookingNumber
   });
 
